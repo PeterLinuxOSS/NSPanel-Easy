@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.5.15)
+  name: NSPanel Easy Configuration (v9999.99.9)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -194,7 +194,21 @@ blueprint:
                   value: '%p %-I:%M'
         temperature_unit:
           name: Temperature Unit
-          description: "Select the temperature unit to display."
+          description: >-
+            Select the temperature unit for sensors provided by Home Assistant without a pre-defined unit.
+
+
+            IMPORTANT!
+
+            The panel's embedded sensor is managed locally
+            and requires its own setting as a substitution in your panel's YAML:
+
+            ```yaml
+
+            substitutions:
+              temp_units: "°F"
+
+            ```
           default: '°C'
           selector:
             select:
@@ -3933,7 +3947,7 @@ trigger_variables:
 
 variables:
   # Version will be following release version defined automatically when merging to main
-  blueprint_version: 2026.5.15
+  blueprint_version: 9999.99.9
 
   pages:
     current: '{{ states(currentpage) }}'
