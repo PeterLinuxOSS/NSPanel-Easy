@@ -22,10 +22,10 @@ namespace esphome::nspanel_easy {
  * such as settings, home, weather information, and more.
  */
 constexpr const char *const page_names[] = {
-    "alarm",        "boot",         "button",       "buttonpage01", "buttonpage02", "buttonpage03", "buttonpage04",
-    "canvas",       "climate",      "confirm",      "cover",        "debug",        "entitypage01", "entitypage02",
-    "entitypage03", "entitypage04", "fan",          "home",         "home_smpl",    "keyb_num",     "light",
-    "media_player", "notification", "popup_select", "qrcode",       "screensaver",  "select",       "settings",
+    "boot",         "home",         "screensaver",  "alarm",        "button",       "buttonpage01", "buttonpage02",
+    "buttonpage03", "buttonpage04", "canvas",       "climate",      "confirm",      "cover",        "debug",
+    "entitypage01", "entitypage02", "entitypage03", "entitypage04", "fan",          "home_smpl",    "keyb_num",
+    "light",        "media_player", "notification", "popup_select", "qrcode",       "select",       "settings",
     "switch",       "theme_apply",  "timer",        "utilities",    "water_heater", "weather01",    "weather02",
     "weather03",    "weather04",    "weather05"};
 
