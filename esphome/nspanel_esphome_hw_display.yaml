@@ -101,6 +101,7 @@ display:
             wait_for_display->stop();
             ESP_LOGI("${TAG_HW_DISPLAY}", "Nextion setup triggered");
             system_flags.nextion_ready = true;
+            boot_request_blueprint_settings->execute("setup");
 
     on_page:
       then:

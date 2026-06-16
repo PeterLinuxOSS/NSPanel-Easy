@@ -8,11 +8,18 @@
 ---
 substitutions:
   TAG_CHIPS: nspanel.chips
+  chips_page_boot: true
+  chips_page_home: true
+  chips_page_screensaver: true
 
 esphome:
   platformio_options:
     build_flags:
       - -D NSPANEL_EASY_CHIPS
+      - -D NSPANEL_EASY_CHIPS_PAGE_BOOT=${1 if chips_page_boot else 0}
+      - -D NSPANEL_EASY_CHIPS_PAGE_HOME=${1 if chips_page_home else 0}
+      - -D NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER=${1 if chips_page_screensaver else 0}
+
 
 globals:
   # Font ID used for all chip icons. Persisted so relay chips can render
@@ -140,9 +147,18 @@ script:
   - id: !extend page_change
     then:
       - lambda: |-
-          is_chips_page = (new_page_id == get_page_id("boot")
-                        || new_page_id == get_page_id("home")
-                        || new_page_id == get_page_id("screensaver"));
+          is_chips_page = ( false ||
+                            #if NSPANEL_EASY_CHIPS_PAGE_BOOT
+                            new_page_id == get_page_id("boot") ||
+                            #endif  // NSPANEL_EASY_CHIPS_PAGE_BOOT
+                            #if NSPANEL_EASY_CHIPS_PAGE_HOME
+                            new_page_id == get_page_id("home") ||
+                            #endif  // NSPANEL_EASY_CHIPS_PAGE_HOME
+                            #if NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER
+                            new_page_id == get_page_id("screensaver") ||
+                            #endif  // NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER
+                            false
+                        );
           if (!is_chips_page) return;
 
           ESP_LOGV("${TAG_CHIPS}", "Rendering chips");

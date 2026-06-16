@@ -27,7 +27,7 @@ constexpr const char *const page_names[] = {
     "buttonpage03", "buttonpage04", "notification", "qrcode",      "entitypage01", "entitypage02", "entitypage03",
     "entitypage04", "fan",          "alarm",        "keyb_num",    "media_player", "confirm",      "utilities",
     "home_smpl",    "debug",        "water_heater", "theme_apply", "switch",       "button",       "canvas",
-    "popup_select", "select"};
+    "popup_select", "select",       "timer"};
 
 constexpr size_t PAGE_COUNT = sizeof(page_names) / sizeof(page_names[0]);
 static_assert(PAGE_COUNT <= UINT8_MAX, "PAGE_COUNT exceeds uint8_t range");
@@ -122,6 +122,7 @@ static_assert(get_page_id("settings") != UINT8_MAX, "Missing required page: sett
 static_assert(get_page_id("select") != UINT8_MAX, "Missing required page: select");
 static_assert(get_page_id("switch") != UINT8_MAX, "Missing required page: switch");
 static_assert(get_page_id("theme_apply") != UINT8_MAX, "Missing required page: theme_apply");
+static_assert(get_page_id("timer") != UINT8_MAX, "Missing required page: timer");
 static_assert(get_page_id("utilities") != UINT8_MAX, "Missing required page: utilities");
 static_assert(get_page_id("water_heater") != UINT8_MAX, "Missing required page: water_heater");
 static_assert(get_page_id("weather01") != UINT8_MAX, "Missing required page: weather01");

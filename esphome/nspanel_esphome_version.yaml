@@ -14,11 +14,11 @@ substitutions:
   # Minimum required blueprint version for compatibility
   # Select 'next' or '${version}' when you change the "contract" between ESPHome and Blueprint
   # Versioning workflow will replace this by the new version being generated
-  min_blueprint_version: 2026.5.14
+  min_blueprint_version: 2026.5.15
 
   # Minimum required TFT version for compatibility
   # Must be manually updated with Nextion Editor
-  min_tft_version: 19.8
+  min_tft_version: 19.9
 
   # Minimum required ESPHome compiler to run this
   # Versioning workflow will take care of updating this
@@ -99,9 +99,7 @@ script:
               ESP_LOGE("${TAG_VERSIONING}", "2. Locate the blueprint named 'NSPanel Easy Configuration'");
               ESP_LOGE("${TAG_VERSIONING}", "3. Click on the corresponding 3-dot menu");
               ESP_LOGE("${TAG_VERSIONING}", "4. Choose 'Re-import blueprint'");
-              ESP_LOGE("${TAG_VERSIONING}", "5. Select the 'Re-import' button");
-              ESP_LOGE("${TAG_VERSIONING}", "6. Navigate to YAML configuration reloading dashboard");
-              ESP_LOGE("${TAG_VERSIONING}", "7. Select 'Automations' to reload the automations");
+              ESP_LOGE("${TAG_VERSIONING}", "5. Click the 'Re-import' button");
               ESP_LOGE("${TAG_VERSIONING}", "For more detailed instructions, please refer to the online documentation:");
               ESP_LOGE("${TAG_VERSIONING}", "https://github.com/edwardtfn/NSPanel-Easy/blob/main/docs/howto.md#update-blueprint");
             }

@@ -97,10 +97,9 @@ use_blueprint:
 3. Click "Re-import" button:
 
     ![image](pics/ha_blueprint_dashboard_reimport_confirm.png)
-4. Reload automations or restart Home Assistant.
-5. The new Blueprint is now available.
+4. The new Blueprint is now available.
 Settings that have already been made are adopted.
-6. Please review the blueprint settings (under Automations tab) for new settings available with the new version.
+5. Please review the blueprint settings (under Automations tab) for new settings available with the new version.
 
 ## Update ESPHome
 <!-- markdownlint-disable MD028 -->
@@ -323,7 +322,7 @@ More information: <https://esphome.io/components/rtttl/#common-beeps>
 
 Although the NSPanel can execute scripts directly over the buttons, there is also the possibility of starting automations directly by the means of Input_Boolean.
 
-For this, a helper must first be created under ***Settings --> Devices & services --> Helpers***
+For this, a helper must first be created under _**Settings --> Devices & services --> Helpers**_
 
 Now add the created Input_Boolean as a trigger in the desired automation under State.
 

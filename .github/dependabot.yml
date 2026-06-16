@@ -67,6 +67,10 @@ updates:
         patterns:
           - "mikefarah/*"
           - "softprops/*"
+      # Actions used to build ESPHome
+      actions-builders:
+        patterns:
+          - "esphome/*"
 
   # ---------------------------------------------------------------------------
   # Python (pip)

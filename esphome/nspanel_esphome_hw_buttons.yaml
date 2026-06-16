@@ -190,12 +190,12 @@ script:
             }
             switch (display_mode_idx) {
               case 1:  // EU model
-                disp1->fill_area(48, 307, 118, 3, button_bar_left_color);
-                disp1->fill_area(47, 308, 120, 1, button_bar_left_color);
+                disp1->fill_area(48, 312, 118, 3, button_bar_left_color);
+                disp1->fill_area(47, 313, 120, 1, button_bar_left_color);
                 break;
               case 2:  // US Portrait
-                disp1->fill_area(17, 466, 118, 3, button_bar_left_color);
-                disp1->fill_area(16, 467, 120, 1, button_bar_left_color);
+                disp1->fill_area(17, 471, 118, 3, button_bar_left_color);
+                disp1->fill_area(16, 472, 120, 1, button_bar_left_color);
                 break;
               case 3:  // US Landscape
                 disp1->fill_area(467, 174, 3, 118, button_bar_left_color);
@@ -217,12 +217,12 @@ script:
             }
             switch (display_mode_idx) {
               case 1:  // EU model
-                disp1->fill_area(289, 307, 118, 3, button_bar_right_color);
-                disp1->fill_area(288, 308, 120, 1, button_bar_right_color);
+                disp1->fill_area(289, 312, 118, 3, button_bar_right_color);
+                disp1->fill_area(288, 313, 120, 1, button_bar_right_color);
                 break;
               case 2:  // US Portrait
-                disp1->fill_area(184, 466, 118, 3, button_bar_right_color);
-                disp1->fill_area(183, 467, 120, 1, button_bar_right_color);
+                disp1->fill_area(184, 471, 118, 3, button_bar_right_color);
+                disp1->fill_area(183, 472, 120, 1, button_bar_right_color);
                 break;
               case 3:  // US Landscape
                 disp1->fill_area(467, 28, 3, 118, button_bar_right_color);

@@ -1,0 +1,64 @@
+#####################################################################################################
+#####                 NSPanel Easy - https://github.com/edwardtfn/NSPanel-Easy                  #####
+#####################################################################################################
+##### ESPHOME Page timer                                                                        #####
+##### PLEASE only make changes if it is necessary and also the required knowledge is available. #####
+##### For normal use with the Blueprint, no changes are necessary.                              #####
+#####################################################################################################
+
+---
+substitutions:
+  TAG_PAGE_TIMER: nspanel.page.timer
+
+esphome:
+  platformio_options:
+    build_flags:
+      - -D NSPANEL_EASY_PAGE_TIMER
+
+script:
+  - id: !extend event_from_display
+    then:
+      - lambda: |-
+          if (params[0] != "timer") return;
+          if (detailed_entity->state.empty()) {
+            ESP_LOGW("${TAG_PAGE_TIMER}", "No detailed entity");
+            return;
+          }
+
+          // CSV Format: timer,<action>
+          // params[0]=page, params[1]=action
+
+          if (params_count != 2) {
+            ESP_LOGW("${TAG_PAGE_TIMER}", "Bad params");
+            return;
+          }
+
+          const std::string& action = params[1];
+
+          ESP_LOGV("${TAG_PAGE_TIMER}", "Timer action: %s", action.c_str());
+
+          fire_ha_event("action_call", {
+            {"action", ("timer." + action).c_str()},
+            {"entity", detailed_entity->state.c_str()}
+          });
+
+  - id: !extend page_change
+    then:
+      - lambda: |-
+          if (new_page_id != get_page_id("timer")) return;
+          page_timer->execute();
+
+  - id: page_timer
+    mode: single
+    then:  # There's nothing here so far
+
+  - id: !extend reset_globals
+    then:
+      - lambda: |-
+          if (new_page_id != get_page_id("timer")) return;
+          display_entity_keep = true;
+
+  - id: !extend stop_page_constructors
+    then:
+      - lambda: page_timer->stop();
+...
