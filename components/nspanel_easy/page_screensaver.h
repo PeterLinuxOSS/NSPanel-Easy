@@ -40,7 +40,7 @@ constexpr HMIComponent SWIPE = {"swipe", 2};    ///< Swipe gesture capture area
 constexpr HMIComponent TIMER_SWIPESTORE = {"swipestore", 3};  ///< Swipe coordinate sampling timer (50 ms)
 
 // All visual components for iteration (timers and touch caps excluded)
-constexpr HMIComponent ALL[] = {PAGE, TEXT};
+constexpr HMIComponent ALL[] = {TEXT};
 
 constexpr size_t COMPONENT_COUNT = sizeof(ALL) / sizeof(ALL[0]);
 

@@ -180,7 +180,7 @@ api:
             ESP_LOGV("${TAG_API}", "  page: '%s'", page.c_str());
 
             const bool is_chip_target = (page == "chips");
-            const bool is_home_page = (page == hmi::home::PAGE.name);
+            const bool is_home_page = (page == "home");
             const bool is_current_page = (page == current_page->state) || (is_chip_target && is_chips_page);
 
             // Only process if home page (global) OR current page
@@ -350,7 +350,7 @@ script:
                                                                               extractNextionComponent(component, page);
           const std::string component_page = nextion_component.page;
           const char* target_id = nextion_component.component_id;
-          const bool is_home_page = (component_page == hmi::home::PAGE.name);
+          const bool is_home_page = (component_page == "home");
           const bool is_current_page = (component_page == current_page->state);
 
           // Always update the home page persistent visibility variable,

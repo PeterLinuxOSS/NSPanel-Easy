@@ -40,7 +40,7 @@ constexpr HMIComponent ICON_STATE = {"icon_state", 3};  ///< QR code icon (4 cha
 constexpr HMIComponent PAGE_LABEL = {"page_label", 4};  ///< QR code label text (30 chars max)
 
 // All visual components for iteration
-constexpr HMIComponent ALL[] = {PAGE, BUTTON_BACK, QR, ICON_STATE, PAGE_LABEL};
+constexpr HMIComponent ALL[] = {BUTTON_BACK, QR, ICON_STATE, PAGE_LABEL};
 
 constexpr size_t COMPONENT_COUNT = sizeof(ALL) / sizeof(ALL[0]);
 
