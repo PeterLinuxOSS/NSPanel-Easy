@@ -363,10 +363,10 @@ jobs:
       - name: Locate compiled binaries
         id: locate
         run: |
-          BIN=$(find prebuilt/.esphome/build -name "firmware.bin" | head -1)
-          BIN_FACTORY=$(find prebuilt/.esphome/build -name "firmware-factory.bin" | head -1)
+          BIN=$(find prebuilt/.esphome/build -name "firmware.ota.bin" | head -1)
+          BIN_FACTORY=$(find prebuilt/.esphome/build -name "firmware.factory.bin" | head -1)
           if [ -z "$BIN" ]; then
-            echo "ERROR: firmware.bin not found after build"
+            echo "ERROR: firmware.ota.bin not found after build"
             echo "Build directory contents:"
             find prebuilt/.esphome/build -type f 2>/dev/null || echo "Build directory does not exist"
             exit 1
@@ -454,10 +454,10 @@ jobs:
       - name: Locate compiled binaries
         id: locate
         run: |
-          BIN=$(find prebuilt/.esphome/build -name "firmware.bin" | head -1)
-          BIN_FACTORY=$(find prebuilt/.esphome/build -name "firmware-factory.bin" | head -1)
+          BIN=$(find prebuilt/.esphome/build -name "firmware.ota.bin" | head -1)
+          BIN_FACTORY=$(find prebuilt/.esphome/build -name "firmware.factory.bin" | head -1)
           if [ -z "$BIN" ]; then
-            echo "ERROR: firmware.bin not found after build"
+            echo "ERROR: firmware.ota.bin not found after build"
             echo "Build directory contents:"
             find prebuilt/.esphome/build -type f 2>/dev/null || echo "Build directory does not exist"
             exit 1
