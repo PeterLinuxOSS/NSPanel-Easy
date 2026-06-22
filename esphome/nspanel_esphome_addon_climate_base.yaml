@@ -107,7 +107,7 @@ script:
                 ? static_cast<uint8_t>(val)
                 : static_cast<uint8_t>(nspanel_easy::CLIMATE_CHIP_ACTIVE_ONLY);
             if (!valid) {
-              ESP_LOGW("${TAG_ADDON_CLIMATE}", "Invalid climate_chip_visibility: %d. Falling back to ACTIVE_ONLY", val);
+              ESP_LOGW("${TAG_ADDON_CLIMATE}", "Invalid climate_chip_visibility: %d. Falling back to ACTIVE_ONLY", static_cast<uint8_t>(val));
             }
             ESP_LOGD("${TAG_ADDON_CLIMATE}", "climate_chip_visibility set to %" PRIu8, id(climate_chip_visibility));
             if (id(is_embedded_thermostat) && id(climate_chip_visibility) != previous) {
