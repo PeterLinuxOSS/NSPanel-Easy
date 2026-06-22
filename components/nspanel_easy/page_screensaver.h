@@ -29,9 +29,6 @@ namespace hmi::screensaver {
  * Note: All components are local scope, so names do not include a page prefix.
  */
 
-// Page definition
-constexpr HMIComponent PAGE = {"screensaver", get_page_id("screensaver")};
-
 // Display components
 constexpr HMIComponent TEXT = {"text", 4};  ///< Time/clock label (word-wrap enabled, 1000 chars max)
 

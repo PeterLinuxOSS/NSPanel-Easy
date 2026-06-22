@@ -68,9 +68,6 @@ namespace hmi::utilities {
  * Based on the typical Nextion HMI design patterns.
  */
 
-// Page definition
-constexpr HMIComponent PAGE = {"utilities", 27};  ///< Utilities page (index 27 in page_names array)
-
 // Title components (global scope - accessible from other pages)
 constexpr HMIComponent TITLE = {"utilities.title", 1};            ///< Page title display
 constexpr HMIComponent TITLE_ICON = {"utilities.title_icon", 2};  ///< Title icon

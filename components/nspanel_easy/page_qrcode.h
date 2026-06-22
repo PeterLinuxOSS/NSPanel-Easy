@@ -27,9 +27,6 @@ namespace hmi::qrcode {
  * Note: All components are local scope, so names don't include page prefix.
  */
 
-// Page definition
-constexpr HMIComponent PAGE = {"qrcode", 17};  ///< QR Code page (index 17 in page_names array)
-
 // Button components
 constexpr HMIComponent BUTTON_BACK = {"button_back", 1};  ///< Back button (3 chars max) - returns to home
 
