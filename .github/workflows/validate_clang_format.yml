@@ -14,7 +14,7 @@ jobs:
     name: Clang Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # PR head repo (handles forks), otherwise current repo
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
