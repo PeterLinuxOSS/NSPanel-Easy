@@ -38,7 +38,7 @@ jobs:
       any_changed: ${{ steps.changed.outputs.any_changed || steps.fallback.outputs.any_changed }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Detect changed files
         id: changed
@@ -76,7 +76,7 @@ jobs:
     if: needs.changes.outputs.any_changed == 'true' || github.event_name != 'pull_request'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Python
         uses: actions/setup-python@v6.2.0
@@ -130,7 +130,7 @@ jobs:
             yaml-file: .test/esphome_idf_standard.yaml
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build firmware
         uses: esphome/build-action@v7.3.0
         with:
@@ -180,7 +180,7 @@ jobs:
             yaml-file: .test/esphome_idf_standard.yaml
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build firmware
         uses: esphome/build-action@v7.3.0
         with:
@@ -208,7 +208,7 @@ jobs:
             yaml-file: prebuilt/wall_display.yaml
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build firmware
         uses: esphome/build-action@v7.3.0
         with:
@@ -255,7 +255,7 @@ jobs:
             yaml-file: prebuilt/wall_display.yaml
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build firmware
         uses: esphome/build-action@v7.3.0
         with:

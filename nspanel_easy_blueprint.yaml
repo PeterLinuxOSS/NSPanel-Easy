@@ -17,7 +17,7 @@ blueprint:
   source_url: https://raw.githubusercontent.com/edwardtfn/NSPanel-Easy/refs/tags/latest/nspanel_easy_blueprint.yaml
   domain: automation
   homeassistant:
-    min_version: 2026.3.0
+    min_version: 2026.4.0
 
   input:
     nspanel_name:  # This key was kept with this name to support inputs from legacy versions where the panel name was used
@@ -1367,6 +1367,7 @@ blueprint:
                   - cover
                   - fan
                   - input_boolean
+                  - input_select
                   - light
                   - lock
                   - media_player
@@ -1523,6 +1524,28 @@ blueprint:
             When enabled, a confirmation dialog will be shown before the action is executed.
           selector:
             boolean:
+        entity01_custom_action:
+          name: Button page 1, Button 1 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity01_state_entity:
+          name: Button page 1, Button 1 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity01_state_value:
+          name: Button page 1, Button 1 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity02:
           name: Button page 1, Button 2 - Entity
           description: *description_button_entity
@@ -1550,6 +1573,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity02_custom_action:
+          name: Button page 1, Button 2 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity02_state_entity:
+          name: Button page 1, Button 2 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity02_state_value:
+          name: Button page 1, Button 2 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity03:
           name: Button page 1, Button 3 - Entity
           description: *description_button_entity
@@ -1577,6 +1622,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity03_custom_action:
+          name: Button page 1, Button 3 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity03_state_entity:
+          name: Button page 1, Button 3 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity03_state_value:
+          name: Button page 1, Button 3 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity04:
           name: Button page 1, Button 4 - Entity
           description: *description_button_entity
@@ -1604,6 +1671,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity04_custom_action:
+          name: Button page 1, Button 4 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity04_state_entity:
+          name: Button page 1, Button 4 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity04_state_value:
+          name: Button page 1, Button 4 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity05:
           name: Button page 1, Button 5 - Entity
           description: *description_button_entity
@@ -1631,6 +1720,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity05_custom_action:
+          name: Button page 1, Button 5 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity05_state_entity:
+          name: Button page 1, Button 5 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity05_state_value:
+          name: Button page 1, Button 5 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity06:
           name: Button page 1, Button 6 - Entity
           description: *description_button_entity
@@ -1658,6 +1769,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity06_custom_action:
+          name: Button page 1, Button 6 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity06_state_entity:
+          name: Button page 1, Button 6 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity06_state_value:
+          name: Button page 1, Button 6 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity07:
           name: Button page 1, Button 7 - Entity
           description: *description_button_entity
@@ -1685,6 +1818,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity07_custom_action:
+          name: Button page 1, Button 7 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity07_state_entity:
+          name: Button page 1, Button 7 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity07_state_value:
+          name: Button page 1, Button 7 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity08:
           name: Button page 1, Button 8 - Entity
           description: *description_button_entity
@@ -1712,6 +1867,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity08_custom_action:
+          name: Button page 1, Button 8 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity08_state_entity:
+          name: Button page 1, Button 8 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity08_state_value:
+          name: Button page 1, Button 8 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
     button_page_02:
       name: Button page 02
       icon: mdi:gesture-tap-button
@@ -1751,6 +1928,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity09_custom_action:
+          name: Button page 2, Button 1 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity09_state_entity:
+          name: Button page 2, Button 1 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity09_state_value:
+          name: Button page 2, Button 1 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity10:
           name: Button page 2, Button 2 - Entity
           description: *description_button_entity
@@ -1778,6 +1977,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity10_custom_action:
+          name: Button page 2, Button 2 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity10_state_entity:
+          name: Button page 2, Button 2 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity10_state_value:
+          name: Button page 2, Button 2 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity11:
           name: Button page 2, Button 3 - Entity
           description: *description_button_entity
@@ -1805,6 +2026,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity11_custom_action:
+          name: Button page 2, Button 3 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity11_state_entity:
+          name: Button page 2, Button 3 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity11_state_value:
+          name: Button page 2, Button 3 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity12:
           name: Button page 2, Button 4 - Entity
           description: *description_button_entity
@@ -1832,6 +2075,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity12_custom_action:
+          name: Button page 2, Button 4 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity12_state_entity:
+          name: Button page 2, Button 4 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity12_state_value:
+          name: Button page 2, Button 4 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity13:
           name: Button page 2, Button 5 - Entity
           description: *description_button_entity
@@ -1859,6 +2124,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity13_custom_action:
+          name: Button page 2, Button 5 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity13_state_entity:
+          name: Button page 2, Button 5 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity13_state_value:
+          name: Button page 2, Button 5 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity14:
           name: Button page 2, Button 6 - Entity
           description: *description_button_entity
@@ -1886,6 +2173,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity14_custom_action:
+          name: Button page 2, Button 6 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity14_state_entity:
+          name: Button page 2, Button 6 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity14_state_value:
+          name: Button page 2, Button 6 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity15:
           name: Button page 2, Button 7 - Entity
           description: *description_button_entity
@@ -1913,6 +2222,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity15_custom_action:
+          name: Button page 2, Button 7 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity15_state_entity:
+          name: Button page 2, Button 7 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity15_state_value:
+          name: Button page 2, Button 7 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity16:
           name: Button page 2, Button 8 - Entity
           description: *description_button_entity
@@ -1940,6 +2271,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity16_custom_action:
+          name: Button page 2, Button 8 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity16_state_entity:
+          name: Button page 2, Button 8 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity16_state_value:
+          name: Button page 2, Button 8 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
     button_page_03:
       name: Button page 03
       icon: mdi:gesture-tap-button
@@ -1979,6 +2332,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity17_custom_action:
+          name: Button page 3, Button 1 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity17_state_entity:
+          name: Button page 3, Button 1 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity17_state_value:
+          name: Button page 3, Button 1 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity18:
           name: Button page 3, Button 2 - Entity
           description: *description_button_entity
@@ -2006,6 +2381,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity18_custom_action:
+          name: Button page 3, Button 2 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity18_state_entity:
+          name: Button page 3, Button 2 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity18_state_value:
+          name: Button page 3, Button 2 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity19:
           name: Button page 3, Button 3 - Entity
           description: *description_button_entity
@@ -2033,6 +2430,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity19_custom_action:
+          name: Button page 3, Button 3 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity19_state_entity:
+          name: Button page 3, Button 3 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity19_state_value:
+          name: Button page 3, Button 3 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity20:
           name: Button page 3, Button 4 - Entity
           description: *description_button_entity
@@ -2060,6 +2479,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity20_custom_action:
+          name: Button page 3, Button 4 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity20_state_entity:
+          name: Button page 3, Button 4 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity20_state_value:
+          name: Button page 3, Button 4 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity21:
           name: Button page 3, Button 5 - Entity
           description: *description_button_entity
@@ -2087,6 +2528,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity21_custom_action:
+          name: Button page 3, Button 5 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity21_state_entity:
+          name: Button page 3, Button 5 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity21_state_value:
+          name: Button page 3, Button 5 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity22:
           name: Button page 3, Button 6 - Entity
           description: *description_button_entity
@@ -2114,6 +2577,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity22_custom_action:
+          name: Button page 3, Button 6 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity22_state_entity:
+          name: Button page 3, Button 6 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity22_state_value:
+          name: Button page 3, Button 6 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity23:
           name: Button page 3, Button 7 - Entity
           description: *description_button_entity
@@ -2141,6 +2626,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity23_custom_action:
+          name: Button page 3, Button 7 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity23_state_entity:
+          name: Button page 3, Button 7 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity23_state_value:
+          name: Button page 3, Button 7 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity24:
           name: Button page 3, Button 8 - Entity
           description: *description_button_entity
@@ -2168,6 +2675,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity24_custom_action:
+          name: Button page 3, Button 8 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity24_state_entity:
+          name: Button page 3, Button 8 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity24_state_value:
+          name: Button page 3, Button 8 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
     button_page_04:
       name: Button page 04
       icon: mdi:gesture-tap-button
@@ -2207,6 +2736,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity25_custom_action:
+          name: Button page 4, Button 1 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity25_state_entity:
+          name: Button page 4, Button 1 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity25_state_value:
+          name: Button page 4, Button 1 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity26:
           name: Button page 4, Button 2 - Entity
           description: *description_button_entity
@@ -2234,6 +2785,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity26_custom_action:
+          name: Button page 4, Button 2 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity26_state_entity:
+          name: Button page 4, Button 2 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity26_state_value:
+          name: Button page 4, Button 2 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity27:
           name: Button page 4, Button 3 - Entity
           description: *description_button_entity
@@ -2261,6 +2834,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity27_custom_action:
+          name: Button page 4, Button 3 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity27_state_entity:
+          name: Button page 4, Button 3 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity27_state_value:
+          name: Button page 4, Button 3 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity28:
           name: Button page 4, Button 4 - Entity
           description: *description_button_entity
@@ -2288,6 +2883,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity28_custom_action:
+          name: Button page 4, Button 4 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity28_state_entity:
+          name: Button page 4, Button 4 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity28_state_value:
+          name: Button page 4, Button 4 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity29:
           name: Button page 4, Button 5 - Entity
           description: *description_button_entity
@@ -2315,6 +2932,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity29_custom_action:
+          name: Button page 4, Button 5 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity29_state_entity:
+          name: Button page 4, Button 5 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity29_state_value:
+          name: Button page 4, Button 5 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity30:
           name: Button page 4, Button 6 - Entity
           description: *description_button_entity
@@ -2342,6 +2981,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity30_custom_action:
+          name: Button page 4, Button 6 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity30_state_entity:
+          name: Button page 4, Button 6 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity30_state_value:
+          name: Button page 4, Button 6 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity31:
           name: Button page 4, Button 7 - Entity
           description: *description_button_entity
@@ -2369,6 +3030,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity31_custom_action:
+          name: Button page 4, Button 7 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity31_state_entity:
+          name: Button page 4, Button 7 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity31_state_value:
+          name: Button page 4, Button 7 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
         entity32:
           name: Button page 4, Button 8 - Entity
           description: *description_button_entity
@@ -2396,6 +3079,28 @@ blueprint:
           description: *description_ask_for_confirmation
           selector:
             boolean:
+        entity32_custom_action:
+          name: Button page 4, Button 8 - Custom action
+          description: >-
+            Additional action(s) to run when the button is clicked.
+          default: []
+          selector:
+            action:
+        entity32_state_entity:
+          name: Button page 4, Button 8 - State Indicator Entity
+          description: >
+            Specifies the entity reflecting the state of this button's indicator.
+            If not set, the state of the controlled entity itself will dictate the indicator's state.
+          default: *selector_entity_single_default_empty
+          selector: *hardware-button-state-selector
+        entity32_state_value:
+          name: Button page 4, Button 8 - State Value
+          description: >
+            When set, the button indicator is on when the State Indicator Entity's
+            state matches this value. When empty, the indicator uses standard on/off logic.
+          default: ""
+          selector:
+            text:
     entities_pages:
       name: Entities pages - Overall
       icon: mdi:format-list-bulleted-square
@@ -4077,6 +4782,46 @@ triggers:
         trigger: state
         entity_id: !input entity08
 
+      - alias: Button 01 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity01_state_entity
+
+      - alias: Button 02 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity02_state_entity
+
+      - alias: Button 03 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity03_state_entity
+
+      - alias: Button 04 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity04_state_entity
+
+      - alias: Button 05 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity05_state_entity
+
+      - alias: Button 06 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity06_state_entity
+
+      - alias: Button 07 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity07_state_entity
+
+      - alias: Button 08 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity08_state_entity
+
   - triggers:  # Button page 02
       - alias: Button 01
         id: trigger_buttonpage_state
@@ -4117,6 +4862,46 @@ triggers:
         id: trigger_buttonpage_state
         trigger: state
         entity_id: !input entity16
+
+      - alias: Button 01 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity09_state_entity
+
+      - alias: Button 02 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity10_state_entity
+
+      - alias: Button 03 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity11_state_entity
+
+      - alias: Button 04 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity12_state_entity
+
+      - alias: Button 05 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity13_state_entity
+
+      - alias: Button 06 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity14_state_entity
+
+      - alias: Button 07 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity15_state_entity
+
+      - alias: Button 08 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity16_state_entity
 
   - triggers:  # Button page 03
       - alias: Button 01
@@ -4159,6 +4944,46 @@ triggers:
         trigger: state
         entity_id: !input entity24
 
+      - alias: Button 01 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity17_state_entity
+
+      - alias: Button 02 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity18_state_entity
+
+      - alias: Button 03 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity19_state_entity
+
+      - alias: Button 04 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity20_state_entity
+
+      - alias: Button 05 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity21_state_entity
+
+      - alias: Button 06 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity22_state_entity
+
+      - alias: Button 07 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity23_state_entity
+
+      - alias: Button 08 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity24_state_entity
+
   - triggers:  # Button page 04
       - alias: Button 01
         id: trigger_buttonpage_state
@@ -4199,6 +5024,46 @@ triggers:
         id: trigger_buttonpage_state
         trigger: state
         entity_id: !input entity32
+
+      - alias: Button 01 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity25_state_entity
+
+      - alias: Button 02 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity26_state_entity
+
+      - alias: Button 03 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity27_state_entity
+
+      - alias: Button 04 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity28_state_entity
+
+      - alias: Button 05 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity29_state_entity
+
+      - alias: Button 06 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity30_state_entity
+
+      - alias: Button 07 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity31_state_entity
+
+      - alias: Button 08 - State entity
+        id: trigger_buttonpage_state
+        trigger: state
+        entity_id: !input entity32_state_entity
 
   - triggers:  # Entities page 01
       - alias: Entity 01
@@ -5190,6 +6055,8 @@ actions:
             icon: !input 'entity01_icon'
             icon_color_rgb: !input 'entity01_icon_color'
             confirm: !input 'entity01_confirm'
+            state_entity: !input 'entity01_state_entity'
+            state_value: !input 'entity01_state_value'
             page: buttonpage01
             component: button01
           - entity: !input 'entity02'
@@ -5197,6 +6064,8 @@ actions:
             icon: !input 'entity02_icon'
             icon_color_rgb: !input 'entity02_icon_color'
             confirm: !input 'entity02_confirm'
+            state_entity: !input 'entity02_state_entity'
+            state_value: !input 'entity02_state_value'
             page: buttonpage01
             component: button02
           - entity: !input 'entity03'
@@ -5204,6 +6073,8 @@ actions:
             icon: !input 'entity03_icon'
             icon_color_rgb: !input 'entity03_icon_color'
             confirm: !input 'entity03_confirm'
+            state_entity: !input 'entity03_state_entity'
+            state_value: !input 'entity03_state_value'
             page: buttonpage01
             component: button03
           - entity: !input 'entity04'
@@ -5211,6 +6082,8 @@ actions:
             icon: !input 'entity04_icon'
             icon_color_rgb: !input 'entity04_icon_color'
             confirm: !input 'entity04_confirm'
+            state_entity: !input 'entity04_state_entity'
+            state_value: !input 'entity04_state_value'
             page: buttonpage01
             component: button04
           - entity: !input 'entity05'
@@ -5218,6 +6091,8 @@ actions:
             icon: !input 'entity05_icon'
             icon_color_rgb: !input 'entity05_icon_color'
             confirm: !input 'entity05_confirm'
+            state_entity: !input 'entity05_state_entity'
+            state_value: !input 'entity05_state_value'
             page: buttonpage01
             component: button05
           - entity: !input 'entity06'
@@ -5225,6 +6100,8 @@ actions:
             icon: !input 'entity06_icon'
             icon_color_rgb: !input 'entity06_icon_color'
             confirm: !input 'entity06_confirm'
+            state_entity: !input 'entity06_state_entity'
+            state_value: !input 'entity06_state_value'
             page: buttonpage01
             component: button06
           - entity: !input 'entity07'
@@ -5232,6 +6109,8 @@ actions:
             icon: !input 'entity07_icon'
             icon_color_rgb: !input 'entity07_icon_color'
             confirm: !input 'entity07_confirm'
+            state_entity: !input 'entity07_state_entity'
+            state_value: !input 'entity07_state_value'
             page: buttonpage01
             component: button07
           - entity: !input 'entity08'
@@ -5239,6 +6118,8 @@ actions:
             icon: !input 'entity08_icon'
             icon_color_rgb: !input 'entity08_icon_color'
             confirm: !input 'entity08_confirm'
+            state_entity: !input 'entity08_state_entity'
+            state_value: !input 'entity08_state_value'
             page: buttonpage01
             component: button08
           - entity: !input 'entity09'
@@ -5246,6 +6127,8 @@ actions:
             icon: !input 'entity09_icon'
             icon_color_rgb: !input 'entity09_icon_color'
             confirm: !input 'entity09_confirm'
+            state_entity: !input 'entity09_state_entity'
+            state_value: !input 'entity09_state_value'
             page: buttonpage02
             component: button01
           - entity: !input 'entity10'
@@ -5253,6 +6136,8 @@ actions:
             icon: !input 'entity10_icon'
             icon_color_rgb: !input 'entity10_icon_color'
             confirm: !input 'entity10_confirm'
+            state_entity: !input 'entity10_state_entity'
+            state_value: !input 'entity10_state_value'
             page: buttonpage02
             component: button02
           - entity: !input 'entity11'
@@ -5260,6 +6145,8 @@ actions:
             icon: !input 'entity11_icon'
             icon_color_rgb: !input 'entity11_icon_color'
             confirm: !input 'entity11_confirm'
+            state_entity: !input 'entity11_state_entity'
+            state_value: !input 'entity11_state_value'
             page: buttonpage02
             component: button03
           - entity: !input 'entity12'
@@ -5267,6 +6154,8 @@ actions:
             icon: !input 'entity12_icon'
             icon_color_rgb: !input 'entity12_icon_color'
             confirm: !input 'entity12_confirm'
+            state_entity: !input 'entity12_state_entity'
+            state_value: !input 'entity12_state_value'
             page: buttonpage02
             component: button04
           - entity: !input 'entity13'
@@ -5274,6 +6163,8 @@ actions:
             icon: !input 'entity13_icon'
             icon_color_rgb: !input 'entity13_icon_color'
             confirm: !input 'entity13_confirm'
+            state_entity: !input 'entity13_state_entity'
+            state_value: !input 'entity13_state_value'
             page: buttonpage02
             component: button05
           - entity: !input 'entity14'
@@ -5281,6 +6172,8 @@ actions:
             icon: !input 'entity14_icon'
             icon_color_rgb: !input 'entity14_icon_color'
             confirm: !input 'entity14_confirm'
+            state_entity: !input 'entity14_state_entity'
+            state_value: !input 'entity14_state_value'
             page: buttonpage02
             component: button06
           - entity: !input 'entity15'
@@ -5288,6 +6181,8 @@ actions:
             icon: !input 'entity15_icon'
             icon_color_rgb: !input 'entity15_icon_color'
             confirm: !input 'entity15_confirm'
+            state_entity: !input 'entity15_state_entity'
+            state_value: !input 'entity15_state_value'
             page: buttonpage02
             component: button07
           - entity: !input 'entity16'
@@ -5295,6 +6190,8 @@ actions:
             icon: !input 'entity16_icon'
             icon_color_rgb: !input 'entity16_icon_color'
             confirm: !input 'entity16_confirm'
+            state_entity: !input 'entity16_state_entity'
+            state_value: !input 'entity16_state_value'
             page: buttonpage02
             component: button08
           - entity: !input 'entity17'
@@ -5302,6 +6199,8 @@ actions:
             icon: !input 'entity17_icon'
             icon_color_rgb: !input 'entity17_icon_color'
             confirm: !input 'entity17_confirm'
+            state_entity: !input 'entity17_state_entity'
+            state_value: !input 'entity17_state_value'
             page: buttonpage03
             component: button01
           - entity: !input 'entity18'
@@ -5309,6 +6208,8 @@ actions:
             icon: !input 'entity18_icon'
             icon_color_rgb: !input 'entity18_icon_color'
             confirm: !input 'entity18_confirm'
+            state_entity: !input 'entity18_state_entity'
+            state_value: !input 'entity18_state_value'
             page: buttonpage03
             component: button02
           - entity: !input 'entity19'
@@ -5316,6 +6217,8 @@ actions:
             icon: !input 'entity19_icon'
             icon_color_rgb: !input 'entity19_icon_color'
             confirm: !input 'entity19_confirm'
+            state_entity: !input 'entity19_state_entity'
+            state_value: !input 'entity19_state_value'
             page: buttonpage03
             component: button03
           - entity: !input 'entity20'
@@ -5323,6 +6226,8 @@ actions:
             icon: !input 'entity20_icon'
             icon_color_rgb: !input 'entity20_icon_color'
             confirm: !input 'entity20_confirm'
+            state_entity: !input 'entity20_state_entity'
+            state_value: !input 'entity20_state_value'
             page: buttonpage03
             component: button04
           - entity: !input 'entity21'
@@ -5330,6 +6235,8 @@ actions:
             icon: !input 'entity21_icon'
             icon_color_rgb: !input 'entity21_icon_color'
             confirm: !input 'entity21_confirm'
+            state_entity: !input 'entity21_state_entity'
+            state_value: !input 'entity21_state_value'
             page: buttonpage03
             component: button05
           - entity: !input 'entity22'
@@ -5337,6 +6244,8 @@ actions:
             icon: !input 'entity22_icon'
             icon_color_rgb: !input 'entity22_icon_color'
             confirm: !input 'entity22_confirm'
+            state_entity: !input 'entity22_state_entity'
+            state_value: !input 'entity22_state_value'
             page: buttonpage03
             component: button06
           - entity: !input 'entity23'
@@ -5344,6 +6253,8 @@ actions:
             icon: !input 'entity23_icon'
             icon_color_rgb: !input 'entity23_icon_color'
             confirm: !input 'entity23_confirm'
+            state_entity: !input 'entity23_state_entity'
+            state_value: !input 'entity23_state_value'
             page: buttonpage03
             component: button07
           - entity: !input 'entity24'
@@ -5351,6 +6262,8 @@ actions:
             icon: !input 'entity24_icon'
             icon_color_rgb: !input 'entity24_icon_color'
             confirm: !input 'entity24_confirm'
+            state_entity: !input 'entity24_state_entity'
+            state_value: !input 'entity24_state_value'
             page: buttonpage03
             component: button08
           - entity: !input 'entity25'
@@ -5358,6 +6271,8 @@ actions:
             icon: !input 'entity25_icon'
             icon_color_rgb: !input 'entity25_icon_color'
             confirm: !input 'entity25_confirm'
+            state_entity: !input 'entity25_state_entity'
+            state_value: !input 'entity25_state_value'
             page: buttonpage04
             component: button01
           - entity: !input 'entity26'
@@ -5365,6 +6280,8 @@ actions:
             icon: !input 'entity26_icon'
             icon_color_rgb: !input 'entity26_icon_color'
             confirm: !input 'entity26_confirm'
+            state_entity: !input 'entity26_state_entity'
+            state_value: !input 'entity26_state_value'
             page: buttonpage04
             component: button02
           - entity: !input 'entity27'
@@ -5372,6 +6289,8 @@ actions:
             icon: !input 'entity27_icon'
             icon_color_rgb: !input 'entity27_icon_color'
             confirm: !input 'entity27_confirm'
+            state_entity: !input 'entity27_state_entity'
+            state_value: !input 'entity27_state_value'
             page: buttonpage04
             component: button03
           - entity: !input 'entity28'
@@ -5379,6 +6298,8 @@ actions:
             icon: !input 'entity28_icon'
             icon_color_rgb: !input 'entity28_icon_color'
             confirm: !input 'entity28_confirm'
+            state_entity: !input 'entity28_state_entity'
+            state_value: !input 'entity28_state_value'
             page: buttonpage04
             component: button04
           - entity: !input 'entity29'
@@ -5386,6 +6307,8 @@ actions:
             icon: !input 'entity29_icon'
             icon_color_rgb: !input 'entity29_icon_color'
             confirm: !input 'entity29_confirm'
+            state_entity: !input 'entity29_state_entity'
+            state_value: !input 'entity29_state_value'
             page: buttonpage04
             component: button05
           - entity: !input 'entity30'
@@ -5393,6 +6316,8 @@ actions:
             icon: !input 'entity30_icon'
             icon_color_rgb: !input 'entity30_icon_color'
             confirm: !input 'entity30_confirm'
+            state_entity: !input 'entity30_state_entity'
+            state_value: !input 'entity30_state_value'
             page: buttonpage04
             component: button06
           - entity: !input 'entity31'
@@ -5400,6 +6325,8 @@ actions:
             icon: !input 'entity31_icon'
             icon_color_rgb: !input 'entity31_icon_color'
             confirm: !input 'entity31_confirm'
+            state_entity: !input 'entity31_state_entity'
+            state_value: !input 'entity31_state_value'
             page: buttonpage04
             component: button07
           - entity: !input 'entity32'
@@ -5407,6 +6334,8 @@ actions:
             icon: !input 'entity32_icon'
             icon_color_rgb: !input 'entity32_icon_color'
             confirm: !input 'entity32_confirm'
+            state_entity: !input 'entity32_state_entity'
+            state_value: !input 'entity32_state_value'
             page: buttonpage04
             component: button08
 
@@ -7515,6 +8444,15 @@ actions:
                                     - condition: '{{ repeat.item.entity is defined and repeat.item.entity is string and repeat.item.entity | length > 0 }}'
                                     - variables:
                                         entity_id: '{{ repeat.item.entity }}'
+                                        state_entity_id: >
+                                          {{
+                                            repeat.item.state_entity
+                                            if repeat.item.state_entity is defined
+                                                and repeat.item.state_entity is string
+                                                and repeat.item.state_entity | length > 3
+                                                and "." in repeat.item.state_entity
+                                            else repeat.item.entity
+                                          }}
                                         overlap:
                                           icon: >
                                             {{
@@ -7533,14 +8471,27 @@ actions:
                                     - *variable_entity
                                     - variables:
                                         current_entity_state_available: '{{ entity_state not in ["unavailable"] }}'
-                                        btn_state: >  # Button state (on = true or off = false)
+                                        state_entity_state: '{{ states(state_entity_id) if state_entity_id != entity_id else entity_state }}'
+                                        state_value: >
                                           {{
-                                            (entity_state in enum.states.on and entity_domain not in ["automation"])
-                                            or (entity_domain == "climate" and entity_state != "off")
-                                            or (entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"]
-                                                and not page_constructor
-                                                and trigger.entity_id == repeat.item.entity)
+                                            repeat.item.state_value
+                                            if repeat.item.state_value is defined
+                                                and repeat.item.state_value is string
+                                                and repeat.item.state_value | length > 0
+                                            else ""
                                           }}
+                                        btn_state: >  # Button state (on = true or off = false)
+                                          {% if state_value | length > 0 %}
+                                            {{ state_entity_state == state_value }}
+                                          {% else %}
+                                            {{
+                                              (state_entity_state in enum.states.on and entity_domain not in ["automation"])
+                                              or (entity_domain == "climate" and state_entity_state != "off")
+                                              or (entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                  and not page_constructor
+                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id])
+                                            }}
+                                          {% endif %}
                                         btn_bri_txt: >  # Buttons value (brightness, temperature, etc.)
                                           {% if not has_value(entity_id) %} 0
                                           {% elif entity_domain == "light" and entity_state == "on" %}
@@ -7603,7 +8554,8 @@ actions:
                                         - '{{ btn_state }}'
                                         - '{{ entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"] }}'
                                         - '{{ not page_constructor }}'
-                                        - '{{ trigger.entity_id == repeat.item.entity }}'
+                                        - '{{ trigger.entity_id in [repeat.item.entity, state_entity_id] }}'
+                                        - '{{ state_entity_id == entity_id }}'
                                       then:
                                         - delay:
                                             milliseconds: 800
@@ -10144,7 +11096,185 @@ actions:
                                   - '{{ nspanel_event.command == "short_click" }}'
                                   - '{{ entity_domain not in domains_functionality.detailed_only }}'
                                 sequence:
+                                  - alias: Custom click action
+                                    choose:
+                                      - alias: Custom action - Button 01
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button01" }}'
+                                        sequence: !input entity01_custom_action
+                                      - alias: Custom action - Button 02
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button02" }}'
+                                        sequence: !input entity02_custom_action
+                                      - alias: Custom action - Button 03
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button03" }}'
+                                        sequence: !input entity03_custom_action
+                                      - alias: Custom action - Button 04
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button04" }}'
+                                        sequence: !input entity04_custom_action
+                                      - alias: Custom action - Button 05
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button05" }}'
+                                        sequence: !input entity05_custom_action
+                                      - alias: Custom action - Button 06
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button06" }}'
+                                        sequence: !input entity06_custom_action
+                                      - alias: Custom action - Button 07
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button07" }}'
+                                        sequence: !input entity07_custom_action
+                                      - alias: Custom action - Button 08
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage01" }}'
+                                          - '{{ nspanel_event.component == "button08" }}'
+                                        sequence: !input entity08_custom_action
+                                      - alias: Custom action - Button 09
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button01" }}'
+                                        sequence: !input entity09_custom_action
+                                      - alias: Custom action - Button 10
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button02" }}'
+                                        sequence: !input entity10_custom_action
+                                      - alias: Custom action - Button 11
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button03" }}'
+                                        sequence: !input entity11_custom_action
+                                      - alias: Custom action - Button 12
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button04" }}'
+                                        sequence: !input entity12_custom_action
+                                      - alias: Custom action - Button 13
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button05" }}'
+                                        sequence: !input entity13_custom_action
+                                      - alias: Custom action - Button 14
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button06" }}'
+                                        sequence: !input entity14_custom_action
+                                      - alias: Custom action - Button 15
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button07" }}'
+                                        sequence: !input entity15_custom_action
+                                      - alias: Custom action - Button 16
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage02" }}'
+                                          - '{{ nspanel_event.component == "button08" }}'
+                                        sequence: !input entity16_custom_action
+                                      - alias: Custom action - Button 17
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button01" }}'
+                                        sequence: !input entity17_custom_action
+                                      - alias: Custom action - Button 18
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button02" }}'
+                                        sequence: !input entity18_custom_action
+                                      - alias: Custom action - Button 19
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button03" }}'
+                                        sequence: !input entity19_custom_action
+                                      - alias: Custom action - Button 20
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button04" }}'
+                                        sequence: !input entity20_custom_action
+                                      - alias: Custom action - Button 21
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button05" }}'
+                                        sequence: !input entity21_custom_action
+                                      - alias: Custom action - Button 22
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button06" }}'
+                                        sequence: !input entity22_custom_action
+                                      - alias: Custom action - Button 23
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button07" }}'
+                                        sequence: !input entity23_custom_action
+                                      - alias: Custom action - Button 24
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage03" }}'
+                                          - '{{ nspanel_event.component == "button08" }}'
+                                        sequence: !input entity24_custom_action
+                                      - alias: Custom action - Button 25
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button01" }}'
+                                        sequence: !input entity25_custom_action
+                                      - alias: Custom action - Button 26
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button02" }}'
+                                        sequence: !input entity26_custom_action
+                                      - alias: Custom action - Button 27
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button03" }}'
+                                        sequence: !input entity27_custom_action
+                                      - alias: Custom action - Button 28
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button04" }}'
+                                        sequence: !input entity28_custom_action
+                                      - alias: Custom action - Button 29
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button05" }}'
+                                        sequence: !input entity29_custom_action
+                                      - alias: Custom action - Button 30
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button06" }}'
+                                        sequence: !input entity30_custom_action
+                                      - alias: Custom action - Button 31
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button07" }}'
+                                        sequence: !input entity31_custom_action
+                                      - alias: Custom action - Button 32
+                                        conditions:
+                                          - '{{ nspanel_event.page == "buttonpage04" }}'
+                                          - '{{ nspanel_event.component == "button08" }}'
+                                        sequence: !input entity32_custom_action
                                   - *short_press_action_call
+                                  - alias: Re-render current page buttons after click
+                                    sequence:
+                                      - delay:
+                                          milliseconds: 300
+                                      - *variables_page_buttons
+                                      - repeat:
+                                          for_each: >
+                                            {{
+                                              buttons_pages.buttons
+                                              | selectattr("page", "defined")
+                                              | selectattr("page", "eq", nspanel_event.page)
+                                              | selectattr("entity", "defined")
+                                              | rejectattr("entity", "eq", [])
+                                              | list
+                                            }}
+                                          sequence: *display_button_page_button
 
                       - alias: Climate page
                         conditions:
@@ -10225,7 +11355,7 @@ actions:
                                 entity_domain in domains_functionality.detailed_only or
                                 (entity_domain == "cover" and supported_features | bitwise_and(4) > 0) or
                                 (entity_domain == "fan" and (supported_features | bitwise_and(1) > 0 or supported_features | bitwise_and(2) > 0)) or
-                                (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+                                (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp)) or
                                 (entity_domain == "timer")
                               }}
                             then:
@@ -10637,14 +11767,17 @@ actions:
                   - *variables_page_buttons
                   - repeat:
                       for_each: >
-                        {{
-                          buttons_pages.buttons
+                        {% set trigger_eid = trigger.entity_id %}
+                        {% set page_buttons = buttons_pages.buttons
                           | selectattr("page", "defined")
                           | selectattr("page", "eq", pages.current)
                           | selectattr("entity", "defined")
-                          | selectattr("entity", "eq", trigger.entity_id)
-                          | list
-                        }}
+                          | rejectattr("entity", "eq", [])
+                          | rejectattr("entity", "eq", "")
+                          | list %}
+                        {% set by_entity = page_buttons | selectattr("entity", "eq", trigger_eid) | list %}
+                        {% set by_state = page_buttons | selectattr("state_entity", "defined") | selectattr("state_entity", "eq", trigger_eid) | list %}
+                        {{ (by_entity + by_state) | unique | list }}
                       sequence: *display_button_page_button
               - alias: Climate page
                 conditions:
