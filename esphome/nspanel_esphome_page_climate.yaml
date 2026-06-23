@@ -61,7 +61,7 @@ display:
       then:
         - lambda: |-
             if (touch_event) return;  // Ignore the touch, so only the release will be used
-            if (page_id == hmi::home::PAGE.id and                 // Page `home`
+            if (page_id == get_page_id("home") and                // Page `home`
                 id(is_climate) and                                // Is climate available?
                 (component_id == hmi::home::INDR_TEMP.id or       // Indoor temperature
                 component_id == hmi::home::INDR_TEMP_ICON.id)) {  // Indoor temp icon

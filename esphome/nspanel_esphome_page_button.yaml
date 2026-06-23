@@ -31,7 +31,7 @@ script:
             return;
           }
 
-          if (detailed_entity == nullptr or detailed_entity->state.empty()) {
+          if (detailed_entity->state.empty()) {
             ESP_LOGW("${TAG_PAGE_BUTTON}", "No detailed entity");
             return;
           }

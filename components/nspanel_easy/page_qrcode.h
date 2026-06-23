@@ -27,9 +27,6 @@ namespace hmi::qrcode {
  * Note: All components are local scope, so names don't include page prefix.
  */
 
-// Page definition
-constexpr HMIComponent PAGE = {"qrcode", 17};  ///< QR Code page (index 17 in page_names array)
-
 // Button components
 constexpr HMIComponent BUTTON_BACK = {"button_back", 1};  ///< Back button (3 chars max) - returns to home
 
@@ -43,7 +40,7 @@ constexpr HMIComponent ICON_STATE = {"icon_state", 3};  ///< QR code icon (4 cha
 constexpr HMIComponent PAGE_LABEL = {"page_label", 4};  ///< QR code label text (30 chars max)
 
 // All visual components for iteration
-constexpr HMIComponent ALL[] = {PAGE, BUTTON_BACK, QR, ICON_STATE, PAGE_LABEL};
+constexpr HMIComponent ALL[] = {BUTTON_BACK, QR, ICON_STATE, PAGE_LABEL};
 
 constexpr size_t COMPONENT_COUNT = sizeof(ALL) / sizeof(ALL[0]);
 
