@@ -224,16 +224,16 @@ jobs:
           BIN_FACTORY=$(find prebuilt/.esphome/build -name "firmware.factory.bin" | head -1)
           ok=true
           if [ ! -s "$BIN" ]; then
-            echo "ERROR: firmware.bin missing or empty"
+            echo "ERROR: firmware.ota.bin missing or empty"
             ok=false
           else
-            echo "OK: firmware.bin ($(wc -c < "$BIN") bytes)"
+            echo "OK: firmware.ota.bin ($(wc -c < "$BIN") bytes)"
           fi
           if [ -n "$BIN_FACTORY" ] && [ ! -s "$BIN_FACTORY" ]; then
-            echo "ERROR: firmware-factory.bin found but empty"
+            echo "ERROR: firmware.factory.bin found but empty"
             ok=false
           elif [ -n "$BIN_FACTORY" ]; then
-            echo "OK: firmware-factory.bin ($(wc -c < "$BIN_FACTORY") bytes)"
+            echo "OK: firmware.factory.bin ($(wc -c < "$BIN_FACTORY") bytes)"
           fi
           [ "$ok" = true ] || exit 1
 
@@ -272,16 +272,16 @@ jobs:
           BIN_FACTORY=$(find prebuilt/.esphome/build -name "firmware.factory.bin" | head -1)
           ok=true
           if [ ! -s "$BIN" ]; then
-            echo "ERROR: firmware.bin missing or empty"
+            echo "ERROR: firmware.ota.bin missing or empty"
             ok=false
           else
-            echo "OK: firmware.bin ($(wc -c < "$BIN") bytes)"
+            echo "OK: firmware.ota.bin ($(wc -c < "$BIN") bytes)"
           fi
           if [ -n "$BIN_FACTORY" ] && [ ! -s "$BIN_FACTORY" ]; then
-            echo "ERROR: firmware-factory.bin found but empty"
+            echo "ERROR: firmware.factory.bin found but empty"
             ok=false
           elif [ -n "$BIN_FACTORY" ]; then
-            echo "OK: firmware-factory.bin ($(wc -c < "$BIN_FACTORY") bytes)"
+            echo "OK: firmware.factory.bin ($(wc -c < "$BIN_FACTORY") bytes)"
           fi
           [ "$ok" = true ] || exit 1
 

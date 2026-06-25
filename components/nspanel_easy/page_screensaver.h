@@ -24,7 +24,7 @@ namespace hmi::screensaver {
  * @namespace screensaver
  * @brief Components for the Screensaver page.
  *
- * Component ID mapping for the Screensaver page (index 9 in page_names array).
+ * Component ID mapping for the Screensaver page.
  * Based on the Nextion HMI design file.
  * Note: All components are local scope, so names do not include a page prefix.
  */
