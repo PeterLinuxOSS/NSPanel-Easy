@@ -81,19 +81,19 @@ script:
           }
           if (component == "custom_buttons_font") {
             // Custom buttons icon size
-            id(home_custom_buttons_font_id) = val;
+            id(home_custom_buttons_font_id) = static_cast<uint8_t>(val);
             for (int i = 1; i <= 7; ++i) {
-              disp1->send_command_printf("home.button%02d.font=%" PRIu8, i, val);
+              disp1->send_command_printf("home.button%02d.font=%" PRIu8, i, id(home_custom_buttons_font_id));
             }
 
-            disp1->set_component_font(hmi::home::BT_NOTIFIC.name, val);
-            disp1->set_component_font(hmi::home::BT_QRCODE.name, val);
-            disp1->set_component_font(hmi::home::BT_ENTITIES.name, val);
+            disp1->set_component_font(hmi::home::BT_NOTIFIC.name, id(home_custom_buttons_font_id));
+            disp1->set_component_font(hmi::home::BT_QRCODE.name, id(home_custom_buttons_font_id));
+            disp1->set_component_font(hmi::home::BT_ENTITIES.name, id(home_custom_buttons_font_id));
             blueprint_status_flags.page_home = true;
             return;
           }
           if (component == "outdoor_temp_font") {  // Outdoor temperature font size
-            disp1->set_component_font(hmi::home::OUTDOOR_TEMP.name, val);
+            disp1->set_component_font(hmi::home::OUTDOOR_TEMP.name, static_cast<uint8_t>(val));
             return;
           }
           if (component == "weather_pic") {  // Weather picture (theme-based)

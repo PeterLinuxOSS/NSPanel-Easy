@@ -63,4 +63,4 @@ Program.s
     {
       lcd_dev fffb 0002 0000 0020// Fix touch offset for EU Version
     }
-    page 0//Power on start page boot
+    page boot //Power on start page boot

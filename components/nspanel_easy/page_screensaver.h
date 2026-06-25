@@ -24,13 +24,10 @@ namespace hmi::screensaver {
  * @namespace screensaver
  * @brief Components for the Screensaver page.
  *
- * Component ID mapping for the Screensaver page (index 9 in page_names array).
+ * Component ID mapping for the Screensaver page.
  * Based on the Nextion HMI design file.
  * Note: All components are local scope, so names do not include a page prefix.
  */
-
-// Page definition
-constexpr HMIComponent PAGE = {"screensaver", get_page_id("screensaver")};
 
 // Display components
 constexpr HMIComponent TEXT = {"text", 4};  ///< Time/clock label (word-wrap enabled, 1000 chars max)
@@ -43,7 +40,7 @@ constexpr HMIComponent SWIPE = {"swipe", 2};    ///< Swipe gesture capture area
 constexpr HMIComponent TIMER_SWIPESTORE = {"swipestore", 3};  ///< Swipe coordinate sampling timer (50 ms)
 
 // All visual components for iteration (timers and touch caps excluded)
-constexpr HMIComponent ALL[] = {PAGE, TEXT};
+constexpr HMIComponent ALL[] = {TEXT};
 
 constexpr size_t COMPONENT_COUNT = sizeof(ALL) / sizeof(ALL[0]);
 

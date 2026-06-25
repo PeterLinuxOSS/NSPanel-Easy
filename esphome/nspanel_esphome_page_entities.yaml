@@ -64,11 +64,11 @@ script:
           if (page != "mem") return;
           if (component == "ent_value_xcen") {  // Entities pages alignment (0=Left, 1=Center, 2=Right)
             if (val > 2) {
-              ESP_LOGW("${TAG_PAGE_ENTITIES}", "Invalid alignment value: %i (expected 0-2)", val);
+              ESP_LOGW("${TAG_PAGE_ENTITIES}", "Invalid alignment value: %" PRIi32 " (expected 0-2)", val);
               return;
             }
-            ESP_LOGD("${TAG_PAGE_ENTITIES}", "Set value alignment on entities pages: %i", val);
-            page_entities_value_horizontal_alignment = val;
+            page_entities_value_horizontal_alignment = static_cast<uint8_t>(val);
+            ESP_LOGD("${TAG_PAGE_ENTITIES}", "Set value alignment on entities pages: %" PRIu8, page_entities_value_horizontal_alignment);
             return;
           }
           if (component == "is_entitypages") {  // Visibility of entity pages button on page "Home"

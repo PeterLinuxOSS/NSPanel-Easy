@@ -25,9 +25,6 @@ namespace hmi::home {
  * Based on the Nextion HMI design file.
  */
 
-// Page definition
-constexpr HMIComponent PAGE = {"home", 1};  ///< Home page
-
 // Time and date components
 constexpr HMIComponent TIME = {"home.time", 3};           ///< Time display (5 chars max)
 constexpr HMIComponent DATE = {"home.date", 6};           ///< Date display (25 chars max)

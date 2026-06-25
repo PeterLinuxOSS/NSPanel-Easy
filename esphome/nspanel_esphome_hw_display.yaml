@@ -206,7 +206,7 @@ script:
     then:
       - lambda: |-
           disp1->send_command_printf("button_back_font=%i", id(button_back_font));
-          wakeup_page_id = get_page_id(wakeup_page_name->current_option());
+          wakeup_page_id = get_page_id(wakeup_page_name->current_option().c_str());
           if (wakeup_page_id != get_page_id("boot") and wakeup_page_id != get_page_id("screensaver"))
             disp1->send_command_printf("wakeup_page_id=%" PRIu8, wakeup_page_id);
 
@@ -221,7 +221,7 @@ script:
       # Report Nextion status
       - lambda: |-
           ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "Nextion:");
-          ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Theme: %s", background_type->current_option());
+          ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Theme: %s", background_type->current_option().c_str());
           ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Queue size:  %d", disp1->queue_size());
           if (disp1->is_setup())
             ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Is setup: True");
@@ -415,7 +415,7 @@ script:
   - id: theme_update
     then:
       - lambda: |-
-          ESP_LOGI("${TAG_HW_DISPLAY}", "Apply theme: %s", background_type->current_option());
+          ESP_LOGI("${TAG_HW_DISPLAY}", "Apply theme: %s", background_type->current_option().c_str());
           if (display_easy) {  // To do: Implement logic for new format
             ESP_LOGI("${TAG_HW_DISPLAY}", "New format - No themes yet");
             return;

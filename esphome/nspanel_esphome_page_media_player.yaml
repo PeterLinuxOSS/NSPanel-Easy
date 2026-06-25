@@ -49,8 +49,8 @@ api:
       then:
         - lambda: |-
             ESP_LOGD("${TAG_PAGE_MEDIA_PLAYER}",
-                      "Action: page_media_player entity=%s state=%s muted=%s vol=%d "
-                      "dur=%d pos=%d delta=%d features=%d",
+                      "Action: page_media_player entity=%s state=%s muted=%s vol=%" PRIi32 " "
+                      "dur=%" PRIi32 " pos=%" PRIi32 " delta=%" PRIi32 " features=%" PRIi32 "",
                       entity.c_str(), state.c_str(), YESNO(is_volume_muted), volume_level,
                       media_duration, media_position, media_position_delta, supported_features);
 
@@ -171,7 +171,7 @@ api:
             // volume row appears and hides as a unit.
             if (has_vol_set && last_volume_level != volume_level) {
               last_volume_level = volume_level;
-              disp1->set_component_text_printf("vol_text", "%d%%", volume_level);
+              disp1->set_component_text_printf("vol_text", "%" PRIi32 "%%", volume_level);
               disp1->set_component_value("vol_slider", volume_level);
             }
             disp1->set_component_visibility("vol_slider", has_vol_set);
