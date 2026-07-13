@@ -8664,8 +8664,12 @@ actions:
                                   entity_domain_is_light and
                                   (
                                     supported_features | bitwise_and(1) > 0 or
-                                    enum.ColorMode.BRIGHTNESS in supported_color_modes or
                                     "brightness" in supported_color_modes or
+                                    "color_temp" in supported_color_modes or
+                                    "rgb" in supported_color_modes or
+                                    "hs" in supported_color_modes or
+                                    "xy" in supported_color_modes or
+                                    enum.ColorMode.BRIGHTNESS in supported_color_modes or
                                     supported_color_modes
                                       | map(attribute="value") | list
                                       | select("in", ["brightness"])
