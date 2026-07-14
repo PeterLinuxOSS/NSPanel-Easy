@@ -8664,6 +8664,7 @@ actions:
                                   entity_domain_is_light and
                                   (
                                     supported_features | bitwise_and(1) > 0 or
+                                    "brightness" in states[entity_id].attributes or
                                     enum.ColorMode.BRIGHTNESS in supported_color_modes or
                                     "brightness" in supported_color_modes or
                                     supported_color_modes
