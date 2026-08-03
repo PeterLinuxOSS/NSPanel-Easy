@@ -892,6 +892,8 @@ data:
 > Replace `<your_panel_name>` with the slugified name of your panel (see [Action naming](#action-naming-and-your_panel_name)).
 > This ensures the action executes correctly,
 > waking the display and optionally resetting timers based on the `reset_timer` parameter.
+> 
+> This action is not enabled by default. To enable it ensure you have `include_action_wake_up: true` in the substitutions in your yaml.
 
 **Practical Use Case: Motion Sensor Activation:**
 This action can be seamlessly integrated with a motion sensor to wake the display when motion is detected, making it instantly usable.
