@@ -116,9 +116,8 @@ display:
             if (touch_event) timer_reset_all->execute();  // Reset timers on touch, but not on release (to avoid two calls per touch)
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_HW_DISPLAY
+  build_flags:
+    - -D NSPANEL_EASY_HW_DISPLAY
 
 globals:
   - id: button_back_font

@@ -12,9 +12,8 @@ substitutions:
   TAG_PAGE_ENTITIES: nspanel.page.entities
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_ENTITIES
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_ENTITIES
 
 script:
   - id: !extend action_component_color

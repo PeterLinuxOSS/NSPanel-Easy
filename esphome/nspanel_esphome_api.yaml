@@ -214,9 +214,8 @@ api:
             );
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_API
+  build_flags:
+    - -D NSPANEL_EASY_API
 
 script:
   - id: action_component_color

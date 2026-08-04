@@ -26,9 +26,8 @@ esp32:
       minimum_chip_revision: "3.0"
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_HW_MEMORY
+  build_flags:
+    - -D NSPANEL_EASY_HW_MEMORY
 
 nspanel_easy:
   psram_clk_pin: ${GPIO_PSRAM_CLK_PIN}

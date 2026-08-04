@@ -22,7 +22,7 @@ substitutions:
 
   # Minimum required ESPHome compiler to run this
   # Versioning workflow will take care of updating this
-  min_esphome_compiler_version: 2026.5.0
+  min_esphome_compiler_version: 2026.4.0
 
   TAG_VERSIONING: nspanel.versioning
 
@@ -33,9 +33,8 @@ substitutions:
 esphome:
   project:
     version: '"${version}"'
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_VERSIONING
+  build_flags:
+    - -D NSPANEL_EASY_VERSIONING
   min_version: ${min_esphome_compiler_version}
 
 script:

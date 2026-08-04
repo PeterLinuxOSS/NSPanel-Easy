@@ -11,9 +11,8 @@ substitutions:
   TAG_PAGE_CONFIRM: nspanel.page.confirm
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_CONFIRM
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_CONFIRM
 
 script:
   - id: !extend page_change

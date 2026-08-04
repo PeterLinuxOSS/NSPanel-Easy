@@ -71,9 +71,8 @@ display:
             }
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_CLIMATE
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_CLIMATE
 
 script:
   - id: !extend action_component_val

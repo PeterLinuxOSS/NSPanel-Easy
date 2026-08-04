@@ -11,9 +11,8 @@ substitutions:
   TAG_PAGE_CANVAS: nspanel.page.canvas
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_CANVAS
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_CANVAS
 
 script:
   - id: !extend page_change

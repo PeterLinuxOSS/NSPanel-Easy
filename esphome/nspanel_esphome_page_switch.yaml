@@ -15,9 +15,8 @@ substitutions:
   TAG_PAGE_SWITCH: nspanel.page.switch
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_SWITCH
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_SWITCH
 
 script:
   - id: !extend event_from_display  # Defined by hw_display

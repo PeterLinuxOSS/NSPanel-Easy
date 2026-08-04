@@ -29,9 +29,8 @@ dashboard_import:
 esphome:
   project:
     name: edwardtfn.Wall_Display
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PREBUILT_WALL_DISPLAY
+  build_flags:
+    - -D NSPANEL_EASY_PREBUILT_WALL_DISPLAY
 text:
   - id: !extend fw_url
     initial_value: "https://github.com/edwardtfn/NSPanel-Easy/raw/refs/tags/latest/prebuilt/wall_display.bin"

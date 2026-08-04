@@ -67,9 +67,8 @@ api:
             );
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_BUTTONS
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_BUTTONS
 
 script:
   - id: action_button

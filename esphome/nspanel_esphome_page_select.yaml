@@ -11,9 +11,8 @@ substitutions:
   TAG_PAGE_SELECT: nspanel.page.select
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_SELECT
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_SELECT
 
 script:
   - id: !extend page_change

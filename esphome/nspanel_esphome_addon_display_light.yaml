@@ -10,9 +10,8 @@ substitutions:
   TAG_ADDON_DISPLAY_LIGHT: nspanel.addon.display_light
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_ADDON_DISPLAY_LIGHT
+  build_flags:
+    - -D NSPANEL_EASY_ADDON_DISPLAY_LIGHT
 
 light:
   # Add the display as a light in Home Assistant

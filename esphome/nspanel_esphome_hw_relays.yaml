@@ -13,9 +13,8 @@ substitutions:
   TAG_HW_RELAYS: nspanel.hw.relays
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_HW_RELAYS
+  build_flags:
+    - -D NSPANEL_EASY_HW_RELAYS
 
 globals:
   ##### Relay icons #####

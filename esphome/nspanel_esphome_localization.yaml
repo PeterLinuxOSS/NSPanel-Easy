@@ -4464,9 +4464,8 @@ substitutions:
   SENTINEL_UNKNOWN: "_{_unknown_}_"
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_LOCALIZATION
+  build_flags:
+    - -D NSPANEL_EASY_LOCALIZATION
 
 globals:
   - id: mui_date_format

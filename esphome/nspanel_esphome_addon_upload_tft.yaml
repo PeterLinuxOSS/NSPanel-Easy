@@ -92,10 +92,9 @@ packages:
   button_scan_baud_rate: ${ _pkg_button_scan_baud_rate if include_button_scan_baud_rate else {} }
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_ADDON_UPLOAD_TFT
-      - -D NSPANEL_EASY_ADDON_UPLOAD_TFT_AUTOMATICALLY=${1 if upload_tft_automatically else 0}
+  build_flags:
+    - -D NSPANEL_EASY_ADDON_UPLOAD_TFT
+    - -D NSPANEL_EASY_ADDON_UPLOAD_TFT_AUTOMATICALLY=${1 if upload_tft_automatically else 0}
 
 button:
   ##### UPDATE TFT DISPLAY #####

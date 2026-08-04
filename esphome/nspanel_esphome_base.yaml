@@ -43,9 +43,8 @@ esphome:
   project:
     name: edwardtfn.NSPanel-Easy
     version: ${version}
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_BASE
+  build_flags:
+    - -D NSPANEL_EASY_BASE
 
 external_components:
   - source:
