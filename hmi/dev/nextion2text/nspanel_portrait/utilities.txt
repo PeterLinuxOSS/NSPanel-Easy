@@ -24,12 +24,52 @@ Page utilities
                 page home_page_id
             }
             vis 255,0
-            // set background image and fg color to all component
+            // Page background
             utilities.pic=pic_background_main
-            for(sys0=1;sys0<=last_component.id;sys0++)
+            // Foreground color: valid on every drawable component.
+            // `group06_line` is the last drawable one - everything after it is the timer
+            // and the `*_line_d` variables, which have neither `pco` nor `picc` and would
+            // answer 0x1A (invalid variable name).
+            for(sys0=1;sys0<=group06_line.id;sys0++)
+            {
+                b[sys0].pco=color_pco_secondary
+            }
+            // Cropped background: only text/button components expose `picc`, so the seven
+            // `*_line` sliders must be left out and each block is handled separately.
+            // Header + home block (button_back .. homeb)
+            for(sys0=1;sys0<home_line.id;sys0++)
             {
                 b[sys0].picc=pic_background_main
-                b[sys0].pco=color_pco_secondary
+            }
+            // Grid block (no line)
+            for(sys0=grid_icon.id;sys0<=gridb.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
+            }
+            // Group blocks: icon, label, value1, value2 (the line/slider is excluded)
+            for(sys0=group01_icon.id;sys0<group01_line.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
+            }
+            for(sys0=group02_icon.id;sys0<group02_line.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
+            }
+            for(sys0=group03_icon.id;sys0<group03_line.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
+            }
+            for(sys0=group04_icon.id;sys0<group04_line.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
+            }
+            for(sys0=group05_icon.id;sys0<group05_line.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
+            }
+            for(sys0=group06_icon.id;sys0<group06_line.id;sys0++)
+            {
+                b[sys0].picc=pic_background_main
             }
             title_icon.pco=color_pco_main
             vis title_icon,1

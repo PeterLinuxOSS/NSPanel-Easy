@@ -13,9 +13,8 @@ substitutions:
   TAG_PAGE_SCREENSAVER: nspanel.page.screensaver
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_SCREENSAVER
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_SCREENSAVER
 
 globals:
   - id: screensaver_background_color

@@ -10,9 +10,8 @@ substitutions:
   TAG_PAGE_POPUP_SELECT: nspanel.page.popup_select
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_POPUP_SELECT
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_POPUP_SELECT
 
 display:
   - id: !extend disp1

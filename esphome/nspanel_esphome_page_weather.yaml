@@ -31,9 +31,8 @@ globals:
     initial_value: '0'
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_WEATHER
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_WEATHER
 
 script:
   - id: !extend action_component_val

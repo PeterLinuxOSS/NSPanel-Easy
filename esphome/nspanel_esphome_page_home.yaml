@@ -12,10 +12,9 @@ substitutions:
   THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET: 48
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_HOME
-      - -D NSPANEL_EASY_USE_WEATHER
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_HOME
+    - -D NSPANEL_EASY_USE_WEATHER
 
 globals:
   - id: is_climate

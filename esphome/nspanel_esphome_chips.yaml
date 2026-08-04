@@ -13,12 +13,11 @@ substitutions:
   chips_page_screensaver: true
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_CHIPS
-      - -D NSPANEL_EASY_CHIPS_PAGE_BOOT=${1 if chips_page_boot else 0}
-      - -D NSPANEL_EASY_CHIPS_PAGE_HOME=${1 if chips_page_home else 0}
-      - -D NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER=${1 if chips_page_screensaver else 0}
+  build_flags:
+    - -D NSPANEL_EASY_CHIPS
+    - -D NSPANEL_EASY_CHIPS_PAGE_BOOT=${1 if chips_page_boot else 0}
+    - -D NSPANEL_EASY_CHIPS_PAGE_HOME=${1 if chips_page_home else 0}
+    - -D NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER=${1 if chips_page_screensaver else 0}
 
 
 globals:

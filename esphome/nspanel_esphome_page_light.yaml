@@ -35,9 +35,8 @@ display:
             }
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_LIGHT
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_LIGHT
 
 script:
   - id: !extend event_from_display

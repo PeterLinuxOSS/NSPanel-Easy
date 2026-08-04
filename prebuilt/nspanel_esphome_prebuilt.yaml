@@ -66,9 +66,8 @@ esp32_ble_server:
 
 esphome:
   name_add_mac_suffix: true
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PREBUILT
+  build_flags:
+    - -D NSPANEL_EASY_PREBUILT
 
 http_request:
 

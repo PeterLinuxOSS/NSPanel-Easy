@@ -10,9 +10,8 @@ substitutions:
   TAG_STANDARD: nspanel.standard
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_STANDARD
+  build_flags:
+    - -D NSPANEL_EASY_STANDARD
 
 packages:
   # yamllint disable rule:colons

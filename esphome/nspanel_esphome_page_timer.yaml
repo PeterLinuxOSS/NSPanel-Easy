@@ -11,9 +11,8 @@ substitutions:
   TAG_PAGE_TIMER: nspanel.page.timer
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_TIMER
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_TIMER
 
 script:
   - id: !extend event_from_display

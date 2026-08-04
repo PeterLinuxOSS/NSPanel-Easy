@@ -14,9 +14,8 @@ substitutions:
   TAG_PAGE_BUTTON: nspanel.page.button
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_BUTTON
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_BUTTON
 
 script:
   - id: !extend event_from_display  # Defined by hw_display

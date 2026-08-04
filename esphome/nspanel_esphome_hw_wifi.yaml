@@ -26,9 +26,8 @@ api:
           wait_for_wifi->execute();
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_HW_WIFI
+  build_flags:
+    - -D NSPANEL_EASY_HW_WIFI
 
 script:
   - id: !extend boot

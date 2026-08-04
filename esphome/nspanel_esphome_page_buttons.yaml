@@ -42,7 +42,7 @@ api:
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  id: %s", id.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  state: %s", ONOFF(state));
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  icon_color: %" PRIu16, icon_color_rgb565);
-            ESP_LOGV("${TAG_PAGE_BUTTONS}", "  icon_font: %i", icon_font);
+            ESP_LOGV("${TAG_PAGE_BUTTONS}", "  icon_font: %" PRId32, icon_font);
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  bri: %s", bri.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  label: %s", label.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  is_page_render: %s", YESNO(is_page_render));
@@ -67,9 +67,8 @@ api:
             );
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_BUTTONS
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_BUTTONS
 
 script:
   - id: action_button

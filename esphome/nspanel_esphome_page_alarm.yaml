@@ -122,9 +122,8 @@ api:
             ESP_LOGV("${TAG_PAGE_ALARM}", "Done!");
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_ALARM
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_ALARM
 
 nspanel_easy:
   require_disarm_before_rearm: ${require_disarm_before_rearm}
