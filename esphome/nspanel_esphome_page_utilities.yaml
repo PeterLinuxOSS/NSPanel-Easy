@@ -26,7 +26,7 @@ api:
             ESP_LOGV("${TAG_API}", "  group_id: %s", group_id.c_str());
             ESP_LOGV("${TAG_API}", "  value1: %s", value1.c_str());
             ESP_LOGV("${TAG_API}", "  value2: %s", value2.c_str());
-            ESP_LOGV("${TAG_API}", "  direction: %i", direction);
+            ESP_LOGV("${TAG_API}", "  direction: %" PRId32, direction);
             ESP_LOGV("${TAG_API}", "  constructor: %s", YESNO(constructor));
             if (group_id.empty()) {
               ESP_LOGW("${TAG_API}", "`group_id` is empty");

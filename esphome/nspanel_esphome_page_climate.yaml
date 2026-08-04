@@ -29,13 +29,13 @@ api:
         - lambda: |-
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "Action: page_climate");
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "  current_temp: %f", current_temp);
-            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  supported_features: %i", supported_features);
+            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  supported_features: %" PRId32, supported_features);
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "  target_temp: %f", target_temp);
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "  target_temp_high: %f", target_temp_high);
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "  target_temp_low: %f", target_temp_low);
-            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  temp_step: %i", temp_step);
-            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  total_steps: %i", total_steps);
-            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  temp_offset: %i", temp_offset);
+            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  temp_step: %" PRId32, temp_step);
+            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  total_steps: %" PRId32, total_steps);
+            ESP_LOGV("${TAG_PAGE_CLIMATE}", "  temp_offset: %" PRId32, temp_offset);
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "  climate_icon: %s", climate_icon.c_str());
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "  entity: %s", entity.c_str());
 
@@ -171,7 +171,7 @@ script:
           ESP_LOGV("${TAG_PAGE_CLIMATE}", "Script: set_climate");
           ESP_LOGV("${TAG_PAGE_CLIMATE}", "  current_temp: %f%s${temp_units}", current_temp,
                                                                               id(units_separator).c_str());
-          ESP_LOGV("${TAG_PAGE_CLIMATE}", "  supported_features: %i", supported_features);
+          ESP_LOGV("${TAG_PAGE_CLIMATE}", "  supported_features: %" PRIu32, supported_features);
           ESP_LOGV("${TAG_PAGE_CLIMATE}", "  target_temp: %f%s${temp_units}", target_temp, id(units_separator).c_str());
           ESP_LOGV("${TAG_PAGE_CLIMATE}", "  target_temp_high: %f%s${temp_units}", target_temp_high,
                                                                                     id(units_separator).c_str());

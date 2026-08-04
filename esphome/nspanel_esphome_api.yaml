@@ -317,7 +317,7 @@ script:
           ESP_LOGV("${TAG_API}", "Script: action_component_val");
           ESP_LOGV("${TAG_API}", "  page: %s", page.c_str());
           ESP_LOGV("${TAG_API}", "  component: %s", component.c_str());
-          ESP_LOGV("${TAG_API}", "  val: %i", val);
+          ESP_LOGV("${TAG_API}", "  val: %" PRId32, val);
           if (page == "mem") return;
           if (page.empty()) {
             disp1->set_component_value(component.c_str(), val);
