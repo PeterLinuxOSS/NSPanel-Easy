@@ -332,7 +332,7 @@ script:
           // Stop Bluetooth stack to free memory for TFT upload
           #ifdef USE_ESP32_BLE
           ESP_LOGI("${TAG_UPLOAD_TFT}", "Stopping Bluetooth stack to free memory for TFT upload");
-          ESP_LOGI("${TAG_UPLOAD_TFT}", "Free heap before: " PRIu32 " bytes, largest block: %u bytes",
+          ESP_LOGI("${TAG_UPLOAD_TFT}", "Free heap before: %" PRIu32 " bytes, largest block: %u bytes",
                                         esp_get_free_heap_size(), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
 
           // Hide Bluetooth icon on page "home"
