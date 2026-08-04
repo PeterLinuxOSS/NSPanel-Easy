@@ -61,10 +61,11 @@ script:
                                                             : "${LOCALIZATION[LANG].meridiem.pm}";
           const bool has_meridiem = (time_format_str.find("%p") != std::string::npos);
 
-          if (id(screensaver_display_time) and current_page_id == get_page_id("screensaver")) {
+          if (id(screensaver_display_time) && current_page_id == get_page_id("screensaver")) {
             std::string time_format_str_sleep = time_format_str;
             nspanel_easy::replace_all(time_format_str_sleep, "%p", meridiem_text);
-            if (display_model->current_option() == "${DISPLAY_MODES.US.TEXT}") {
+            if (id(screensaver_display_time_font) == 12 &&
+                display_model->current_option() == "${DISPLAY_MODES.US.TEXT}") {
               nspanel_easy::replace_all(time_format_str_sleep, ":", "\\r");
               nspanel_easy::replace_all(time_format_str_sleep, " ", "\\r");
             }
