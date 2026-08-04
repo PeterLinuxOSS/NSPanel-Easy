@@ -11775,9 +11775,19 @@ actions:
                           | rejectattr("entity", "eq", [])
                           | rejectattr("entity", "eq", "")
                           | list %}
-                        {% set by_entity = page_buttons | selectattr("entity", "eq", trigger_eid) | list %}
-                        {% set by_state = page_buttons | selectattr("state_entity", "defined") | selectattr("state_entity", "eq", trigger_eid) | list %}
-                        {{ (by_entity + by_state) | unique | list }}
+                        {# Buttons triggered by their main entity #}
+                        {% set by_entity = page_buttons
+                          | selectattr("entity", "eq", trigger_eid)
+                          | list %}
+                        {# Buttons triggered by their state entity, excluding the ones
+                            already matched above to avoid duplicated updates.
+                            `unique` cannot be used here as dicts are not hashable. #}
+                        {% set by_state = page_buttons
+                          | rejectattr("entity", "eq", trigger_eid)
+                          | selectattr("state_entity", "defined")
+                          | selectattr("state_entity", "eq", trigger_eid)
+                          | list %}
+                        {{ by_entity + by_state }}
                       sequence: *display_button_page_button
               - alias: Climate page
                 conditions:
