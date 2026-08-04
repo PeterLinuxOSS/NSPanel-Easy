@@ -4405,8 +4405,6 @@ blueprint:
           name: Wake-up sensors
           description: >-
             Select sensors to wake up the panel when the sensor turns `On`.
-
-            **Important:** Requires `include_action_wake_up: true` in your panel's ESPHome YAML substitutions.
           default: &selector_entity_multiple_default_empty []
           selector:
             entity:
