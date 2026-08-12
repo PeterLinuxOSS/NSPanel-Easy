@@ -11,6 +11,17 @@
 namespace esphome::nspanel_easy {
 
 /**
+ * @brief Checks whether the Bluetooth controller is fully deinitialized.
+ *
+ * ESP32BLE::disable() only requests the shutdown; the controller is torn down
+ * later, from the main loop. is_active() turns false immediately and is
+ * therefore not a valid gate for releasing the controller memory.
+ *
+ * @return true when the controller reached the IDLE state.
+ */
+bool bt_controller_is_idle();
+
+/**
  * @brief Releases the Bluetooth controller memory (BT Classic + BLE) back to the heap.
  *
  * ESP32BLE::disable() deinitializes the controller but does not return its

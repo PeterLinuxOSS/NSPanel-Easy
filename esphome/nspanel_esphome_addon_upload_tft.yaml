@@ -348,9 +348,11 @@ script:
       - wait_until:
           condition:
             - lambda: |-
-                // Wait up to 5s to the stack being disabled
+                // Wait for the controller to be fully deinitialized, not just for the
+                // component to leave the ACTIVE state — is_active() turns false as soon
+                // as disable() is requested, while the teardown happens in a later loop.
                 #ifdef USE_ESP32_BLE
-                return (esp32_ble::global_ble == nullptr || !esp32_ble::global_ble->is_active());
+                return nspanel_easy::bt_controller_is_idle();
                 #else
                 return true;
                 #endif  // USE_ESP32_BLE
