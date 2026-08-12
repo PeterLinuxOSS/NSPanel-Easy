@@ -66,6 +66,7 @@ display:
                 (component_id == hmi::home::INDR_TEMP.id or       // Indoor temperature
                 component_id == hmi::home::INDR_TEMP_ICON.id)) {  // Indoor temp icon
               detailed_entity->publish_state(id(is_embedded_thermostat) ? "${CLIMATE_EMBEDDED_SENTINEL}" : "");
+              update_flag_climate_embedded->execute();
               goto_page->execute(get_page_id("climate"));
               return;
             }
@@ -81,8 +82,12 @@ script:
           if (page != "mem") return;
           if (component == "embedded_climate") {
             id(is_embedded_thermostat) = (val != 0);
-            disp1->send_command_printf("climate_embedded=%i", id(is_embedded_thermostat) ? 1 : 0);
+            update_flag_climate_embedded->execute();
           }
+
+  - id: !extend boot_nextion  # Defined by boot
+    then:
+      - script.execute: update_flag_climate_embedded
 
   - id: change_climate_state
     mode: restart
@@ -311,4 +316,12 @@ script:
       - lambda: |-
           page_climate->stop();
           set_climate->stop();
+
+  - id: update_flag_climate_embedded
+    mode: single
+    then:
+      - lambda: |-
+          // Keeps the display's `climate_embedded` global in sync with the ESPHome side, so the
+          // `climate` page preinit accepts the page while the API is disconnected.
+          disp1->send_command_printf("climate_embedded=%i", id(is_embedded_thermostat) ? 1 : 0);
 ...

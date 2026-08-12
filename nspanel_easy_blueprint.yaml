@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.8.2)
+  name: NSPanel Easy Configuration (v9999.99.9)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -4650,7 +4650,7 @@ trigger_variables:
 
 variables:
   # Version will be following release version defined automatically when merging to main
-  blueprint_version: 2026.8.2
+  blueprint_version: 9999.99.9
 
   pages:
     current: '{{ states(currentpage) }}'
