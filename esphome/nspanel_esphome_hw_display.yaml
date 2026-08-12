@@ -221,7 +221,7 @@ script:
       - lambda: |-
           ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "Nextion:");
           ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Theme: %s", background_type->current_option().c_str());
-          ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Queue size:  %d", disp1->queue_size());
+          ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Queue size:  %zu", disp1->queue_size());
           if (disp1->is_setup())
             ESP_LOGCONFIG("${TAG_HW_DISPLAY}", "  Is setup: True");
           else {
@@ -594,7 +594,7 @@ script:
             #ifdef NSPANEL_EASY_PAGE_CLIMATE
             if (wakeup_page_id == get_page_id("climate")) {
               detailed_entity->publish_state((id(is_embedded_thermostat)) ? "embedded_climate" : "");
-              disp1->set_component_value("climate.embedded", id(is_embedded_thermostat) ? 1 : 0);
+              disp1->send_command_printf("climate_embedded=%i", id(is_embedded_thermostat) ? 1 : 0);
             }
             #endif  // NSPANEL_EASY_PAGE_CLIMATE
             if (id(theme_pending_apply)) {
