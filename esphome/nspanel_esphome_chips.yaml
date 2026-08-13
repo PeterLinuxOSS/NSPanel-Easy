@@ -39,6 +39,7 @@ script:
 
           // Update shadow state
           ChipState &the_chip = chip_states[idx];
+          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
 
           // Render immediately if on a supported page (full render — icon+color just updated)
           if (strcmp(the_chip.icon, icon.c_str()) != 0) {
