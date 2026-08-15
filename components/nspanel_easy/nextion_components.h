@@ -6,7 +6,20 @@
 #include <vector>
 #include <cstdint>
 
+namespace esphome::nextion {
+class Nextion;
+}  // namespace esphome::nextion
+
 namespace esphome::nspanel_easy {
+
+/**
+ * @brief Display used by C++ outside a lambda.
+ *
+ * ESPHome declares component pointers with internal linkage in main.cpp, so
+ * they cannot be reached with extern. The pointer is assigned once from the
+ * component's to_code().
+ */
+extern esphome::nextion::Nextion *nextion_display;
 
 /**
  * @struct HMIComponent

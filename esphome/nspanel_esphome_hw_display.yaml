@@ -130,6 +130,9 @@ globals:
     restore_value: false
     initial_value: 'false'
 
+nspanel_easy:
+  nextion_id: disp1
+
 number:
   - id: display_brightness  # Screen brightness when in use
     name: Display Brightness

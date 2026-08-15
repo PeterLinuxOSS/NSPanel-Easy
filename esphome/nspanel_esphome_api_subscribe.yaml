@@ -1,0 +1,118 @@
+#####################################################################################################
+#####                 NSPanel Easy - https://github.com/edwardtfn/NSPanel-Easy                  #####
+#####################################################################################################
+##### ESPHOME CORE - HOME ASSISTANT STATE SUBSCRIPTIONS (EXPERIMENTAL)                          #####
+##### PLEASE only make changes if it is necessary and also the required knowledge is available. #####
+##### For normal use with the Blueprint, no changes are necessary.                              #####
+#####                                                                                           #####
+##### The blueprint pushes a set of bindings once per session, closing with subscribe_end.      #####
+##### ESPHome persists them and re-subscribes on every boot, so state changes render locally    #####
+##### without an automation run.                                                                #####
+#####                                                                                           #####
+##### Bindings take effect on the following boot: APIConnection latches state_subs_at_ to -1    #####
+##### once the initial burst drains, and the blueprint can only push after the API is           #####
+##### connected. A binding change therefore schedules a restart. Should ESPHome gain runtime    #####
+##### subscriptions, both the persistence layer and the restart can be removed.                 #####
+#####################################################################################################
+---
+substitutions:
+  TAG_SUB: nspanel.sub
+  ##### Maximum number of bindings. Storage is allocated to the configured count, not this. #####
+  subscribe_max: '128'
+  ##### Seconds of quiet after the last binding before a restart is applied. #####
+  subscribe_debounce: '10s'
+  ##### Seconds without an end marker before committing the push unverified. #####
+  subscribe_timeout: '120s'
+
+esphome:
+  build_flags:
+    - -D NSPANEL_EASY_SUBSCRIBE
+    - -D NSPANEL_EASY_SUB_MAX=${subscribe_max}
+
+api:
+  homeassistant_states: true  # Required: enables USE_API_HOMEASSISTANT_STATES
+  actions:
+    ##### One binding. The blueprint sends one call per subscribable component. #####
+    - action: api_subscribe
+      variables:
+        page: string          # Target page, e.g. "chips"
+        component: string     # Target component, e.g. "chip01"
+        entity: string        # Home Assistant entity_id
+        device_class: string  # HA device_class; only consulted for the cover domain
+        icon_on: string       # Icon for the active state; empty to resolve on-device
+        icon_off: string      # Icon for the inactive state; empty to resolve on-device
+        color_on: int[]       # RGB array for the active state
+        color_off: int[]      # RGB array for the inactive state
+        inverted: bool        # Render as visible while the entity is inactive
+      then:
+        - lambda: |-
+            sub_push_binding(page.c_str(), component.c_str(), entity.c_str(), device_class.c_str(),
+                              icon_on.c_str(), icon_off.c_str(),
+                              color_on.size() == 3 ? rgbTo565(color_on) : 0,
+                              color_off.size() == 3 ? rgbTo565(color_off) : 0, inverted);
+        - script.execute: subscribe_debounce
+        - script.execute: subscribe_watchdog
+
+    ##### End marker. Sent after every binding, carrying how many were sent. #####
+    - action: api_subscribe_end
+      variables:
+        count: int
+      then:
+        - lambda: |-
+            if (sub_push_end(static_cast<uint16_t>(count))) {
+              subscribe_restart->execute();
+            }
+        - script.stop: subscribe_watchdog
+
+script:
+  ##### Collapses a burst of binding calls into a single restart decision. #####
+  - id: subscribe_debounce
+    mode: restart
+    then:
+      - delay: ${subscribe_debounce}
+
+  ##### Safety net for a push whose end marker never arrives. #####
+  - id: subscribe_watchdog
+    mode: restart
+    then:
+      - delay: ${subscribe_timeout}
+      - lambda: |-
+          if (sub_push_timeout()) {
+            subscribe_restart->execute();
+          }
+
+  ##### Waits for the push to go quiet, then restarts to activate the bindings. #####
+  - id: subscribe_restart
+    mode: restart
+    then:
+      - wait_until:
+          condition:
+            not:
+              script.is_running: subscribe_debounce
+      - lambda: |-
+          ESP_LOGI("${TAG_SUB}", "Restarting to activate new binding(s)");
+      - delay: 250ms
+      - lambda: |-
+          App.safe_reboot();
+
+  - id: !extend boot_early_routines
+    then:
+      - lambda: |-
+          // Must run before the API connects: a subscription registered after
+          // the initial burst is stored by ESPHome and never sent.
+          if (sub_load() > 0) {
+            sub_subscribe_all();
+          }
+
+  - id: !extend page_change
+    then:
+      - lambda: |-
+          // Re-render bound components from their last known state, so a page
+          // change does not need a round trip to Home Assistant.
+          sub_render_all();
+
+  - id: !extend dump_config
+    then:
+      - lambda: |-
+          sub_dump_config();
+...

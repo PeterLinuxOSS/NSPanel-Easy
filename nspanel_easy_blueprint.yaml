@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.8.3)
+  name: NSPanel Easy Configuration (v9999.99.9)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -4650,7 +4650,7 @@ trigger_variables:
 
 variables:
   # Version will be following release version defined automatically when merging to main
-  blueprint_version: 2026.8.3
+  blueprint_version: 9999.99.9
 
   pages:
     current: '{{ states(currentpage) }}'
@@ -5227,42 +5227,6 @@ triggers:
         trigger: state
         entity_id: !input entities_entity32
 
-  - triggers:  # Home page - Chips
-      - alias: Chip 01
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip01
-
-      - alias: Chip 02
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip02
-
-      - alias: Chip 03
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip03
-
-      - alias: Chip 04
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip04
-
-      - alias: Chip 05
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip05
-
-      - alias: Chip 06
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip06
-
-      - alias: Chip 07
-        id: trigger_chip_state
-        trigger: state
-        entity_id: !input chip07
-
   - triggers:  # Home page - Values
       - alias: Value 01
         id: home_values_state
@@ -5699,12 +5663,6 @@ conditions:
     }}
   - >  # Update page Home only when visible or home_page_background_update is enabled
     {{ trigger.id not in ["home_values_state"] or home_page_background_update or pages.current == pages.home }}
-  - >  # Update page Home only when visible or home_page_background_update is enabled
-    {{
-      trigger.id not in ["trigger_chip_state"] or
-      home_page_background_update or
-      pages.current in [ pages.home, pages.screensaver ]
-    }}
   - >  # Do not update values when page utilities is not visible
     {{ trigger.id != "utilities_page" or pages.current == pages.utilities }}
   - >  # Do not update values when page entities is not visible
@@ -6001,44 +5959,6 @@ actions:
             label_color_rgb: !input home_value04_label_color
             page: home
             component: value04
-
-      ##### Chips #####
-      chips:
-        - entity: !input chip01
-          inverted: !input chip01_inverted
-          icon: !input chip01_icon
-          icon_color_rgb: !input chip01_icon_color
-          component: chip01
-        - entity: !input chip02
-          inverted: !input chip02_inverted
-          icon: !input chip02_icon
-          icon_color_rgb: !input chip02_icon_color
-          component: chip02
-        - entity: !input chip03
-          inverted: !input chip03_inverted
-          icon: !input chip03_icon
-          icon_color_rgb: !input chip03_icon_color
-          component: chip03
-        - entity: !input chip04
-          inverted: !input chip04_inverted
-          icon: !input chip04_icon
-          icon_color_rgb: !input chip04_icon_color
-          component: chip04
-        - entity: !input chip05
-          inverted: !input chip05_inverted
-          icon: !input chip05_icon
-          icon_color_rgb: !input chip05_icon_color
-          component: chip05
-        - entity: !input chip06
-          inverted: !input chip06_inverted
-          icon: !input chip06_icon
-          icon_color_rgb: !input chip06_icon_color
-          component: chip06
-        - entity: !input chip07
-          inverted: !input chip07_inverted
-          icon: !input chip07_icon
-          icon_color_rgb: !input chip07_icon_color
-          component: chip07
 
       ##### Button pages #####
       buttons_pages:
@@ -6747,6 +6667,7 @@ actions:
           milliseconds: !input delay
       - variables:
           entity_id: '{{ None }}'
+          forced_icon_state: '{{ None }}'
           overlap:
             icon: '{{ None }}'
             icon_color: '{{ None }}'
@@ -6777,6 +6698,7 @@ actions:
           entity_has_value: '{{ has_value(entity_id) if entity_id_valid }}'
           entity_domain: '{{ states[entity_id].domain if entity_id_valid }}'
           entity_icon: '{{ state_attr(entity_id, "icon") | default("") if entity_id_valid }}'
+          icon_state: '{{ forced_icon_state | default(entity_state, true) }}'
           entity_icon_valid: >
             {{
               entity_icon is defined and
@@ -6977,7 +6899,7 @@ actions:
                 {%- elif entity_device_class is string and
                     entity_device_class | length > 0 and
                     entity_domain in device_class_icons -%}
-                  {%- set state_suffix = "" if entity_domain in ["button", "event", "sensor"] else ("-" + entity_state) -%}
+                  {%- set state_suffix = "" if entity_domain in ["button", "event", "sensor"] else ("-" + icon_state) -%}
                   {%- set device_class_key = entity_device_class + state_suffix -%}
                   {%- if device_class_key in device_class_icons[entity_domain] -%}
                     {{ all_icons[device_class_icons[entity_domain][device_class_key]] }}
@@ -7058,6 +6980,145 @@ actions:
 
                       # Stop here if this is initial boot as Nextion may not be ready
                       - condition: '{{ global_settings_setup }}'
+
+                      - alias: API Subscriptions
+                        sequence:
+                          - variables:
+                              api_subs_mapping:
+                                ##### Chips #####
+                                - entity: !input chip01
+                                  inverted: !input chip01_inverted
+                                  icon: !input chip01_icon
+                                  icon_color_rgb: !input chip01_icon_color
+                                  page: chips
+                                  component: chip01
+                                - entity: !input chip02
+                                  inverted: !input chip02_inverted
+                                  icon: !input chip02_icon
+                                  icon_color_rgb: !input chip02_icon_color
+                                  page: chips
+                                  component: chip02
+                                - entity: !input chip03
+                                  inverted: !input chip03_inverted
+                                  icon: !input chip03_icon
+                                  icon_color_rgb: !input chip03_icon_color
+                                  page: chips
+                                  component: chip03
+                                - entity: !input chip04
+                                  inverted: !input chip04_inverted
+                                  icon: !input chip04_icon
+                                  icon_color_rgb: !input chip04_icon_color
+                                  page: chips
+                                  component: chip04
+                                - entity: !input chip05
+                                  inverted: !input chip05_inverted
+                                  icon: !input chip05_icon
+                                  icon_color_rgb: !input chip05_icon_color
+                                  page: chips
+                                  component: chip05
+                                - entity: !input chip06
+                                  inverted: !input chip06_inverted
+                                  icon: !input chip06_icon
+                                  icon_color_rgb: !input chip06_icon_color
+                                  page: chips
+                                  component: chip06
+                                - entity: !input chip07
+                                  inverted: !input chip07_inverted
+                                  icon: !input chip07_icon
+                                  icon_color_rgb: !input chip07_icon_color
+                                  page: chips
+                                  component: chip07
+
+                              ##### API subscriptions #####
+                              # Components driven directly by ESPHome through Home Assistant state
+                              # subscriptions. The panel renders these locally, so this automation does
+                              # not trigger on their entities at all.
+                              api_subscriptions: >
+                                {{
+                                  api_subs_mapping
+                                  | selectattr("entity", "defined")
+                                  | selectattr("entity", "string")
+                                  | rejectattr("entity", "eq", "")
+                                  | selectattr("entity", "search", "^[^.]+\\.[^.]+$")
+                                  | list
+                                }}
+
+                          ###### API subscriptions ######
+                          - &push_subscriptions
+                            alias: Push API subscriptions
+                            sequence:
+                              - repeat:
+                                  for_each: '{{ api_subscriptions }}'
+                                  sequence:
+                                    - condition: '{{ repeat.item.entity.split(".") | count == 2 }}'
+                                    - variables:
+                                        entity_id: '{{ repeat.item.entity }}'
+                                        icon_color_rgb_valid: >
+                                          {{
+                                            repeat.item.icon_color_rgb is defined and
+                                            repeat.item.icon_color_rgb is list and
+                                            repeat.item.icon_color_rgb | count == 3
+                                          }}
+                                        overlap:
+                                          icon: >
+                                            {{
+                                              repeat.item.icon
+                                              if
+                                                repeat.item.icon is defined and
+                                                repeat.item.icon is string and
+                                                repeat.item.icon | length > 0 and
+                                                repeat.item.icon is match "mdi:" and
+                                                repeat.item.icon.split("mdi:")[1] in all_icons
+                                              else
+                                                None
+                                            }}
+                                          icon_color: '{{ repeat.item.icon_color_rgb if icon_color_rgb_valid else None }}'
+
+                                    # Domains whose appearance varies across the visible
+                                    # state set are resolved on-device, so send no icon
+                                    # unless the user set an explicit override.
+                                    - variables:
+                                        resolved_on_device: >
+                                          {{
+                                            entity_id.split(".")[0] in
+                                            ["alarm_control_panel", "climate", "cover", "lock", "water_heater"]
+                                          }}
+
+                                    # A chip is only ever visible in one state, so its
+                                    # icon must be resolved for that state rather than
+                                    # for whatever the entity happens to be doing now.
+                                    # Resolve both, and let the panel pick.
+                                    - variables:
+                                        forced_icon_state: 'on'
+                                    - *variable_entity
+                                    - variables:
+                                        sub_device_class: '{{ entity_device_class | default("", true) }}'
+                                        sub_icon_on: '{{ "" if resolved_on_device and not overlap_icon_valid else entity.icon }}'
+
+                                    - variables:
+                                        forced_icon_state: 'off'
+                                    - *variable_entity
+                                    - variables:
+                                        sub_icon_off: '{{ "" if resolved_on_device and not overlap_icon_valid else entity.icon }}'
+
+                                    - action: 'esphome.{{ action_prefix }}_api_subscribe'
+                                      data:
+                                        page: '{{ repeat.item.page }}'
+                                        component: '{{ repeat.item.component }}'
+                                        entity: '{{ entity_id }}'
+                                        device_class: '{{ sub_device_class }}'
+                                        icon_on: '{{ sub_icon_on }}'
+                                        icon_off: '{{ sub_icon_off }}'
+                                        color_on: '{{ repeat.item.icon_color_rgb if icon_color_rgb_valid else nextion.color.on }}'
+                                        color_off: '{{ repeat.item.icon_color_rgb if icon_color_rgb_valid else nextion.color.off }}'
+                                        inverted: '{{ repeat.item.inverted | default(false) }}'
+                                      continue_on_error: true
+                                    - *delay_default
+
+                              - action: 'esphome.{{ action_prefix }}_api_subscribe_end'
+                                data:
+                                  count: '{{ api_subscriptions | count }}'
+                                continue_on_error: true
 
                       - &variables_hardware
                         variables:
@@ -8194,90 +8255,7 @@ actions:
                                 continue_on_error: true
                               - *delay_default
 
-                          ###### Status / Chips bar ######
-                          - &update_chips_bar
-                            repeat:
-                              for_each: >
-                                {{
-                                  chips
-                                  | selectattr("entity", "defined")
-                                  | rejectattr("entity", "eq", [])
-                                  | list
-                                }}
-                              sequence:
-                                - &update_individual_chip
-                                  if: '{{ repeat.item.entity is defined and repeat.item.entity is string and repeat.item.entity.split(".") | count == 2 }}'
-                                  then:
-                                    - variables:
-                                        icon_color_rgb_valid: >
-                                          {{
-                                            repeat.item.icon_color_rgb is defined and
-                                            repeat.item.icon_color_rgb is list and
-                                            repeat.item.icon_color_rgb | count == 3
-                                          }}
-                                        entity_id: '{{ repeat.item.entity }}'
-                                        overlap:
-                                          icon: >
-                                            {{
-                                              repeat.item.icon
-                                              if
-                                                repeat.item.icon is defined and
-                                                repeat.item.icon is string and
-                                                repeat.item.icon | length > 0 and
-                                                repeat.item.icon is match "mdi:" and
-                                                repeat.item.icon.split("mdi:")[1] in all_icons
-                                              else
-                                                None
-                                            }}
-                                          icon_color: '{{ repeat.item.icon_color_rgb if icon_color_rgb_valid else None }}'
-                                    - *variable_entity
-                                    - condition: '{{ entity_has_value }}'
-                                    - variables:
-                                        entity_hvac_action: '{{ state_attr(entity_id, "hvac_action") | default("") if entity_domain == "climate" else "unknown" }}'
-                                        entity_state: >
-                                          {{
-                                            (entity_hvac_action if entity_hvac_action and entity_hvac_action not in enum.states.unknown else entity_state)
-                                            if entity_domain == "climate" else entity_state
-                                          }}
-                                        chip_visible: >
-                                          {{
-                                            (
-                                              (not repeat.item.inverted) and
-                                              (
-                                                (entity_state in enum.states.on) or
-                                                (entity_domain != "climate" and entity_domain in enum.states and entity_state in enum.states[entity_domain].on) or
-                                                (entity_domain == "climate" and entity_state in ["heating", "cooling", "drying", "fan_only"])
-                                              )
-                                            ) or
-                                            (
-                                              (repeat.item.inverted) and
-                                              (
-                                                (entity_state in enum.states.off) or
-                                                (entity_domain in enum.states and entity_state in enum.states[entity_domain].off) or
-                                                (entity_domain == "climate" and entity_state not in ["heating", "cooling", "drying", "fan_only"])
-                                              )
-                                            )
-                                          }}
-                                    - condition: '{{ entity.icon is defined and entity.icon is string and entity.icon | length > 0 }}'
-                                    - action: 'esphome.{{ action_prefix }}_icon'
-                                      data:
-                                        page: chips
-                                        id: '{{ repeat.item.component }}'
-                                        icon: '{{ entity.icon }}'
-                                        icon_color: >
-                                          {% if icon_color_rgb_valid %}
-                                            {{ repeat.item.icon_color_rgb }}
-                                          {% elif entity.icon_color is defined and
-                                                  entity.icon_color is list and
-                                                  entity.icon_color | count == 3 %}
-                                            {{ entity.icon_color }}
-                                          {% else %}
-                                            [255, 255, 255]
-                                          {% endif %}
-                                        visible: '{{ chip_visible }}'
-                                      continue_on_error: true
-                                    - *delay_default
-
+                          ###### Home page values ######
                           - repeat:
                               for_each: >
                                 {{
@@ -8668,6 +8646,7 @@ actions:
                                       | map(attribute="value") | list
                                       | select("in", ["brightness"])
                                       | list | length > 0 or
+                                    state_attr(entity_id, "brightness") is not none or
                                     state_attr(entity_id, "brightness") | int(-1) >= 0
                                   )
                                 }}
@@ -11842,22 +11821,6 @@ actions:
                   - '{{ trigger.entity_id is match "water_heater." }}'
                   - '{{ trigger.entity_id == detailed_entity_state }}'
                 sequence: *refresh_page_water_heater
-
-      - alias: Update chips bar
-        conditions:
-          - condition: trigger
-            id: trigger_chip_state
-        sequence:
-          - repeat:
-              for_each: >
-                {{
-                  chips
-                  | selectattr("entity", "defined")
-                  | selectattr("entity", "eq", trigger.entity_id)
-                  | list
-                }}
-              sequence:
-                - *update_individual_chip
 
       - alias: Update climate page
         conditions:

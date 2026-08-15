@@ -53,6 +53,8 @@ Optional packages that extend the base firmware:
 
 - [API](api.md) — custom ESPHome actions (`upload_tft`, `notification_show`,
   `rtttl_play`, `qrcode`, and more) with parameters and examples.
+- [API Subscriptions](api_subscribe.md) — drive panel components directly from
+  Home Assistant entity states, without an automation running per state change.
 - [Alarm Control Panel](alarm.md) — configure and secure alarm control from
   the panel.
 - [Customization](customization.md) — advanced examples: API encryption, custom
