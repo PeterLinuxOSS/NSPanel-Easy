@@ -253,7 +253,8 @@ inline SubEntityState evaluate_sub_state(SubDomain domain, const char *state) {
       // Receives hvac_action when that attribute holds a usable value, and the
       // hvac mode otherwise, so both vocabularies are covered here.
       static constexpr const char *ON_STATES[] = {
-          "heat", "heating", "cool", "cooling", "heat_cool", "dry", "drying", "fan", "fan_only", "auto",
+          "heat",    "heating", "cool",       "cooling",    "heat_cool", "dry",
+          "drying",  "fan",     "fan_only",   "auto",       "preheating", "defrosting",
       };
       static constexpr const char *OFF_STATES[] = {"off", "idle"};
       if (sub_state_in(state, ON_STATES)) {
@@ -422,6 +423,10 @@ inline SubAppearance resolve_sub_appearance(SubDomain domain, const char *device
         return {Icons::MDI_WATER_PERCENT, Colors::RGB565_ORANGE};
       if (strcmp(state, "fan_only") == 0 || strcmp(state, "fan") == 0)
         return {Icons::MDI_FAN, Colors::RGB565_CYAN};
+      if (strcmp(state, "preheating") == 0)
+        return {Icons::MDI_HEAT_WAVE, Colors::RGB565_DEEP_ORANGE};
+      if (strcmp(state, "defrosting") == 0)
+        return {Icons::MDI_SNOWFLAKE_MELT, Colors::RGB565_BLUE};
       if (strcmp(state, "auto") == 0)
         return {Icons::MDI_REFRESH_AUTO, Colors::RGB565_GREEN};
       if (strcmp(state, "idle") == 0)
