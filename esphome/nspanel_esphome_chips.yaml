@@ -19,7 +19,6 @@ esphome:
     - -D NSPANEL_EASY_CHIPS_PAGE_HOME=${1 if chips_page_home else 0}
     - -D NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER=${1 if chips_page_screensaver else 0}
 
-
 globals:
   # Font ID used for all chip icons. Persisted so relay chips can render
   # correctly before the blueprint reconnects after a reboot.
@@ -97,6 +96,7 @@ script:
           if (idx == UINT8_MAX) return;
 
           ChipState &the_chip = chip_states[idx];
+          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
           if (the_chip.color == color) return;
 
           the_chip.color = color;
@@ -112,6 +112,7 @@ script:
           if (idx == UINT8_MAX) return;
 
           ChipState &the_chip = chip_states[idx];
+          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
           if (strcmp(the_chip.icon, txt.c_str()) == 0) return;
 
           strncpy(the_chip.icon, txt.c_str(), sizeof(the_chip.icon) - 1);
@@ -126,6 +127,8 @@ script:
 
           const uint8_t idx = find_chip_index(component);
           if (idx == UINT8_MAX) return;
+
+          if (chip_states[idx].subscribed) return;  // Driven directly by a HA state subscription
 
           if (chip_states[idx].visible != visible) {
             chip_states[idx].visible = visible;

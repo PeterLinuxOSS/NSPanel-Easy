@@ -8,6 +8,10 @@
 #include <cstring>
 #include <string>
 
+#ifdef NSPANEL_EASY_SUBSCRIBE
+#include "api_subscriptions.h"
+#endif  // NSPANEL_EASY_SUBSCRIBE
+
 /**
  * @file chips.h
  * @brief Chip state shadow for the NSPanel status chip bar.
@@ -29,6 +33,11 @@
  *   8 — chip06
  *   9 — chip07
  *
+ * Slots 0–2 are driven locally by the relay and embedded-thermostat logic and
+ * keep their own persisted appearance, so they render without Home Assistant.
+ * Slots 3–9 may be bound to a Home Assistant subscription instead, in which
+ * case blueprint pushes for them are ignored.
+ *
  * Component names are unscoped (no page prefix) so that a single write lands
  * on whichever page (home or screensaver) is currently visible.
  */
@@ -46,9 +55,10 @@ static constexpr uint8_t CHIP_COUNT = 10;
  * without requiring a new HA push.
  */
 struct ChipState {
-  char icon[4];    ///< UTF-8 MDI codepoint (1–3 bytes + null terminator)
-  uint16_t color;  ///< RGB565 foreground color
-  bool visible;    ///< Whether the chip should be shown
+  char icon[4];     ///< UTF-8 MDI codepoint (1–3 bytes + null terminator)
+  uint16_t color;   ///< RGB565 foreground color
+  bool visible;     ///< Whether the chip should be shown
+  bool subscribed;  ///< Driven by a direct HA state subscription; ignore blueprint pushes
 };
 
 /**
@@ -96,6 +106,23 @@ inline uint8_t find_chip_index(const std::string &name) {
   }
   return UINT8_MAX;  // sentinel: not found
 }
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
+
+/**
+ * @brief Render a subscription binding onto a chip.
+ *
+ * Registered for the "chips" page in sub_resolve_renderer(). Receives an
+ * already-classified state and decides only how to draw it.
+ *
+ * @param binding The binding being rendered.
+ * @param rt Runtime state, including blueprint-supplied appearance.
+ * @param state Effective state string; hvac_action for climate when usable.
+ * @param visible Whether the chip should be shown.
+ */
+void chip_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible);
+
+#endif  // NSPANEL_EASY_SUBSCRIBE
 
 }  // namespace esphome::nspanel_easy
 
