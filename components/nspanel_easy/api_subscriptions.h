@@ -12,7 +12,7 @@
 #include "nextion_constants.h"
 
 /**
- * @file subscriptions.h
+ * @file api_subscriptions.h
  * @brief Direct Home Assistant state subscriptions for NSPanel components.
  *
  * The blueprint pushes a set of bindings (which entity drives which component)
@@ -498,7 +498,7 @@ inline SubAppearance resolve_sub_appearance(SubDomain domain, const char *device
 }
 
 //
-// Engine API. Implemented in subscriptions.cpp.
+// Engine API. Implemented in api_subscriptions.cpp.
 //
 
 /**
