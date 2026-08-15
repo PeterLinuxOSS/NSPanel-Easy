@@ -33,10 +33,6 @@
  * on/off semantics cannot drift between component types.
  */
 
-namespace esphome::nextion {
-class Nextion;
-}  // namespace esphome::nextion
-
 namespace esphome::nspanel_easy {
 
 /// @brief Persisted format version. Bump whenever SubBinding's layout changes.
@@ -155,15 +151,6 @@ struct SubRuntime {
  * @param visible Whether the component should be shown.
  */
 using SubRenderFn = void (*)(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible);
-
-/**
- * @brief Display used by renderers.
- *
- * ESPHome declares component pointers with internal linkage in main.cpp, so
- * they cannot be reached with extern. The pointer is handed over once from a
- * lambda during boot instead.
- */
-extern esphome::nextion::Nextion *nextion_display;
 
 /// @brief Live bindings, allocated once at boot to the persisted count.
 extern SubBinding *sub_bindings;

@@ -20,8 +20,6 @@ namespace esphome::nspanel_easy {
 
 static const char *const TAG = "nspanel.api.sub";
 
-esphome::nextion::Nextion *nextion_display = nullptr;
-
 SubBinding *sub_bindings = nullptr;
 SubRuntime *sub_runtime = nullptr;
 SubRenderFn *sub_renderers = nullptr;

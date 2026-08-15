@@ -6,6 +6,8 @@
 
 namespace esphome::nspanel_easy {
 
+esphome::nextion::Nextion *nextion_display = nullptr;
+
 NSPanelEasyNextionComponent extractNextionComponent(const std::string &input, const std::string &defaultPage) {
   NSPanelEasyNextionComponent result{};
   size_t dotPos = input.find(".");

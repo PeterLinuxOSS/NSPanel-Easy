@@ -6,6 +6,7 @@
 #include <string>
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
+#include "nextion_components.h"
 #include "esphome/components/nextion/nextion.h"
 #include "esphome/core/log.h"
 #endif  // NSPANEL_EASY_SUBSCRIBE
