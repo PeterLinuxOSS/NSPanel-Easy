@@ -7083,8 +7083,10 @@ actions:
                                             ["alarm_control_panel", "climate", "cover", "lock", "water_heater"]
                                           }}
 
-                                    # Resolve the icon for the state in which the
-                                    # component is shown, not for the current state.
+                                    # A chip is only ever visible in one state, so its
+                                    # icon must be resolved for that state rather than
+                                    # for whatever the entity happens to be doing now.
+                                    # Resolve both, and let the panel pick.
                                     - variables:
                                         forced_icon_state: 'on'
                                     - *variable_entity
