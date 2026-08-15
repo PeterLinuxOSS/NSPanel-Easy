@@ -5,8 +5,8 @@ This document provides details on custom actions designed for integration with H
 ## Summary
 
 - [Action Documentation](#action-documentation)
-  - [API Subscribe Action (`api_subscribe`)](#api-subscribe-actions-api_subscribe): Binds a Home Assistant entity directly to a panel component, so state changes render without an automation run.
-  - [API Subscribe End Action (`api_subscribe_end`)](#api-subscribe-actions-api_subscribe): Closes a binding push and states how many bindings were sent.
+  - [API Subscribe Action (`api_subscribe`)](#api-subscribe-actions-api_subscribe-api_subscribe_end): Binds a Home Assistant entity directly to a panel component, so state changes render without an automation run.
+  - [API Subscribe End Action (`api_subscribe_end`)](#api-subscribe-actions-api_subscribe-api_subscribe_end): Closes a binding push and states how many bindings were sent.
   - [Button Action (`button`)](#button-action-button): Configures properties and state of buttons on a specified button page.
   - [Command Action (`command`) - DEPRECATED](#command-action-command): Sends a custom command directly to the display.
   - [Component Color Action (`component_color`)](#component-color-action-component_color): Changes the foreground color of a specified component on the display.
@@ -63,8 +63,8 @@ You can look up the action names available on your Home Assistant instance under
 <!-- markdownlint-disable MD013 -->
 | Action ID | Action Name | Description |
 | --------- | ----------- | ----------- |
-| [`api_subscribe`](#api-subscribe-actions-api_subscribe) | [API Subscribe Action](#api-subscribe-actions-api_subscribe) | Binds a Home Assistant entity directly to a panel component, so state changes render without an automation run. |
-| [`api_subscribe_end`](#api-subscribe-actions-api_subscribe) | [API Subscribe End Action](#api-subscribe-actions-api_subscribe) | Closes a binding push and states how many bindings were sent. |
+| [`api_subscribe`](#api-subscribe-actions-api_subscribe-api_subscribe_end) | [API Subscribe Action](#api-subscribe-actions-api_subscribe-api_subscribe_end) | Binds a Home Assistant entity directly to a panel component, so state changes render without an automation run. |
+| [`api_subscribe_end`](#api-subscribe-actions-api_subscribe-api_subscribe_end) | [API Subscribe End Action](#api-subscribe-actions-api_subscribe-api_subscribe_end) | Closes a binding push and states how many bindings were sent. |
 | [`button`](#button-action-button) | [Button Action](#button-action-button) | Configures properties and state of buttons on a specified button page. |
 | [`command`](#command-action-command) | [Command Action](#command-action-command) | Sends a custom command directly to the display. |
 | [`component_color`](#component-color-action-component_color) | [Component Color Action](#component-color-action-component_color) | Changes the foreground color of a specified component on the display. |
