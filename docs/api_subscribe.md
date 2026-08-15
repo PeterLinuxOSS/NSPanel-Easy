@@ -55,8 +55,9 @@ stored, and arrives with every push.
 1. **Boot.** Before the API connects, the panel loads its persisted bindings and registers one
    Home Assistant state subscription per binding. Climate bindings register a second subscription
    for the `hvac_action` attribute.
-2. **Connect.** Home Assistant delivers the current state of every subscribed entity immediately.
-   The panel classifies and renders each one.
+2. **Connect.** Home Assistant delivers the current state of every subscribed
+   entity immediately. The panel classifies each state, and renders once a
+   binding push has supplied appearance.
 3. **Push.** The Blueprint sends one `api_subscribe` call per component, then closes with
    `api_subscribe_end` carrying how many it sent. Appearance is applied immediately; entity
    bindings are staged.
@@ -276,8 +277,9 @@ blinds icon in all four states.
 - **`chip_relay1`, `chip_relay2` and `chip_climate` cannot be bound.** They are driven locally by
   the relay and embedded-thermostat logic and keep working without Home Assistant. Attempting to
   bind them logs a warning and is ignored.
-- **Components stay hidden after a boot until the Blueprint reconnects.** Appearance is not
-  persisted, so the panel knows a chip's state before it knows what to draw.
+- **Components stay hidden after a boot until a binding push arrives.**
+  Appearance is not persisted, so the panel knows a component's state before it
+  knows what to draw.
 - **A binding change costs one restart.** Appearance changes, inversion changes and repeated
   identical pushes do not.
 - **The panel refuses to commit unverified pushes indefinitely.** After three consecutive pushes
@@ -300,8 +302,9 @@ Check `dump_config` for the loaded bindings:
 [C][nspanel.sub]:   chips.chip02 <- cover.garage_door
 ```
 
-If bindings are listed but nothing draws, the Blueprint has not pushed appearance in this session.
-Reload the automation.
+If bindings are listed but nothing draws, no binding push has supplied
+appearance in this session. Reload the automation, or re-run whatever registers
+your bindings.
 
 If a binding shows `[no renderer]`, the target page has no renderer — see
 [Limits and behaviour](#limits-and-behaviour).
