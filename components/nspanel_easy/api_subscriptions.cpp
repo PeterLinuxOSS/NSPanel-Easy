@@ -403,6 +403,23 @@ static void sub_push_release() {
 }
 
 bool sub_push_end(uint16_t count) {
+  // A push containing no bindings never opens, because sub_push_binding() is
+  // what starts one. The blueprint still sends the end marker when every
+  // component has been unconfigured, so treat that as an explicit empty set --
+  // otherwise the persisted bindings survive and the panel keeps subscribing to
+  // entities the user has removed.
+  if (!sub_pushing && count == 0) {
+    sub_staged = 0;
+    if (!sub_staged_differs()) {
+      ESP_LOGD(TAG, "Bindings unchanged");
+      sub_unverified = 0;
+      return false;
+    }
+    ESP_LOGI(TAG, "All bindings cleared");
+    sub_persist(true);
+    return true;
+  }  // if empty push
+
   if (!sub_pushing) {
     ESP_LOGW(TAG, "End marker received with no push in progress");
     return false;
