@@ -7039,6 +7039,7 @@ actions:
                                   | selectattr("entity", "defined")
                                   | selectattr("entity", "string")
                                   | rejectattr("entity", "eq", "")
+                                  | selectattr("entity", "search", "^[^.]+\\.[^.]+$")
                                   | list
                                 }}
 
@@ -7116,12 +7117,7 @@ actions:
 
                               - action: 'esphome.{{ action_prefix }}_api_subscribe_end'
                                 data:
-                                  count: >
-                                    {{
-                                      api_subscriptions
-                                      | selectattr("entity", "search", "\\.")
-                                      | list | count
-                                    }}
+                                  count: '{{ api_subscriptions | count }}'
                                 continue_on_error: true
 
                       - &variables_hardware
