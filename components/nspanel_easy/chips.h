@@ -98,14 +98,22 @@ extern bool is_chips_page;
  * @param name Unscoped Nextion component name (e.g. "chip01").
  * @return Index into chip_states[] / CHIP_NAMES[], or UINT8_MAX if not found.
  */
-inline uint8_t find_chip_index(const std::string &name) {
+inline uint8_t find_chip_index(const char *name) {
   for (uint8_t i = 0; i < CHIP_COUNT; ++i) {
-    if (name == CHIP_NAMES[i]) {
+    if (strcmp(name, CHIP_NAMES[i]) == 0) {
       return i;
     }
   }
   return UINT8_MAX;  // sentinel: not found
 }
+
+/**
+ * @brief Find the chip index for a given component name.
+ *
+ * @param name Unscoped Nextion component name (e.g. "chip01").
+ * @return Index into chip_states[] / CHIP_NAMES[], or UINT8_MAX if not found.
+ */
+inline uint8_t find_chip_index(const std::string &name) { return find_chip_index(name.c_str()); }
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
 

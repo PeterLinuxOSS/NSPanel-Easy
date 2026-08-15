@@ -4,6 +4,8 @@
 
 #include "api_subscriptions.h"
 
+#include <cinttypes>
+
 #include <esp_heap_caps.h>
 
 #include "esphome/components/api/api_server.h"
@@ -193,13 +195,14 @@ uint16_t sub_load() {
     ESP_LOGD(TAG, "No persisted bindings");
     return 0;
   }
-  sub_unverified = header.unverified;
-
   if (header.version != SUB_FORMAT_VERSION) {
     ESP_LOGW(TAG, "Persisted bindings use format %" PRIu8 ", expected %" PRIu8 "; discarding", header.version,
              SUB_FORMAT_VERSION);
+    sub_unverified = 0;
     return 0;
   }
+
+  sub_unverified = header.unverified;
 
   if (header.count == 0 || header.count > SUB_MAX) {
     ESP_LOGW(TAG, "Persisted binding count out of range (%" PRIu16 "), ignoring", header.count);
