@@ -89,12 +89,12 @@ enum SubEntityState : uint8_t {
  * once and pushes it, and ESPHome only toggles visibility.
  */
 enum SubDomain : uint8_t {
-  SUB_DOMAIN_GENERIC = 0,    ///< Appearance supplied by the blueprint
-  SUB_DOMAIN_ALARM,          ///< alarm_control_panel
-  SUB_DOMAIN_CLIMATE,        ///< climate; also subscribes to the hvac_action attribute
-  SUB_DOMAIN_COVER,          ///< cover; device_class dependent
-  SUB_DOMAIN_LOCK,           ///< lock
-  SUB_DOMAIN_WATER_HEATER,   ///< water_heater
+  SUB_DOMAIN_GENERIC = 0,   ///< Appearance supplied by the blueprint
+  SUB_DOMAIN_ALARM,         ///< alarm_control_panel
+  SUB_DOMAIN_CLIMATE,       ///< climate; also subscribes to the hvac_action attribute
+  SUB_DOMAIN_COVER,         ///< cover; device_class dependent
+  SUB_DOMAIN_LOCK,          ///< lock
+  SUB_DOMAIN_WATER_HEATER,  ///< water_heater
 };
 
 /// @brief Icon and colour for a component in a given state.
@@ -216,8 +216,10 @@ inline SubDomain parse_sub_domain(const char *entity_id) {
     SubDomain domain;
   };
   static constexpr DomainEntry DOMAINS[] = {
-      {"alarm_control_panel", SUB_DOMAIN_ALARM}, {"climate", SUB_DOMAIN_CLIMATE},
-      {"cover", SUB_DOMAIN_COVER},               {"lock", SUB_DOMAIN_LOCK},
+      {"alarm_control_panel", SUB_DOMAIN_ALARM},
+      {"climate", SUB_DOMAIN_CLIMATE},
+      {"cover", SUB_DOMAIN_COVER},
+      {"lock", SUB_DOMAIN_LOCK},
       {"water_heater", SUB_DOMAIN_WATER_HEATER},
   };
   for (const DomainEntry &entry : DOMAINS) {
@@ -247,8 +249,8 @@ inline SubEntityState evaluate_sub_state(SubDomain domain, const char *state) {
   switch (domain) {
     case SUB_DOMAIN_ALARM: {
       static constexpr const char *ON_STATES[] = {
-          "armed_home", "armed_away", "armed_night", "armed_vacation", "armed_custom_bypass", "armed_bypass",
-          "triggered",
+          "armed_home",          "armed_away",   "armed_night", "armed_vacation",
+          "armed_custom_bypass", "armed_bypass", "triggered",
       };
       static constexpr const char *TRANSITIONAL_STATES[] = {"arming", "pending", "disarming"};
       if (sub_state_in(state, ON_STATES)) {
