@@ -5,7 +5,8 @@ This document provides details on custom actions designed for integration with H
 ## Summary
 
 - [Action Documentation](#action-documentation)
-  - [API Subscribe Action (`api_subscribe`)](#api-subscribe-actions-api_subscribe-api_subscribe_end): Binds a Home Assistant entity directly to a panel component, so state changes render without an automation run.
+  - [API Subscribe Action (`api_subscribe`)](#api-subscribe-actions-api_subscribe-api_subscribe_end):
+    Binds a Home Assistant entity directly to a panel component, so state changes render without an automation run.
   - [API Subscribe End Action (`api_subscribe_end`)](#api-subscribe-actions-api_subscribe-api_subscribe_end): Closes a binding push and states how many bindings were sent.
   - [Button Action (`button`)](#button-action-button): Configures properties and state of buttons on a specified button page.
   - [Command Action (`command`) - DEPRECATED](#command-action-command): Sends a custom command directly to the display.
