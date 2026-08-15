@@ -47,9 +47,8 @@ void chip_sub_render(const SubBinding &binding, const SubRuntime &rt, const char
     // An icon pushed by the blueprint wins; otherwise resolve from the domain
     // and state, which is what the multi-state domains rely on.
     if (icon[0] == '\0') {
-      const SubAppearance look =
-          resolve_sub_appearance(static_cast<SubDomain>(binding.domain), binding.device_class, state, rt.color_on,
-                                  rt.color_off);
+      const SubAppearance look = resolve_sub_appearance(static_cast<SubDomain>(binding.domain), binding.device_class,
+                                                        state, rt.color_on, rt.color_off);
       if (look.icon != nullptr) {
         icon = look.icon;
         color = look.color;

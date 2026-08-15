@@ -199,7 +199,7 @@ uint16_t sub_load() {
 
   if (header.version != SUB_FORMAT_VERSION) {
     ESP_LOGW(TAG, "Persisted bindings use format %" PRIu8 ", expected %" PRIu8 "; discarding", header.version,
-              SUB_FORMAT_VERSION);
+             SUB_FORMAT_VERSION);
     return 0;
   }
 
@@ -285,15 +285,14 @@ void sub_subscribe_all() {
   }  // for each binding
 
   ESP_LOGI(TAG, "%" PRIu16 " binding(s) subscribed | heap cost=%d B", sub_count,
-            static_cast<int>(heap_before - heap_caps_get_free_size(MALLOC_CAP_INTERNAL)));
+           static_cast<int>(heap_before - heap_caps_get_free_size(MALLOC_CAP_INTERNAL)));
 #else   // USE_API_HOMEASSISTANT_STATES
   ESP_LOGE(TAG, "api: homeassistant_states is not enabled; no subscription is possible");
 #endif  // USE_API_HOMEASSISTANT_STATES
 }
 
 void sub_push_binding(const char *page, const char *component, const char *entity, const char *device_class,
-                      const char *icon_on, const char *icon_off, uint16_t color_on, uint16_t color_off,
-                      bool inverted) {
+                      const char *icon_on, const char *icon_off, uint16_t color_on, uint16_t color_off, bool inverted) {
   if (!sub_target_allowed(page, component)) {
     ESP_LOGW(TAG, "%s.%s is driven locally and cannot be bound", page, component);
     return;
@@ -387,8 +386,8 @@ static bool sub_staged_differs() {
   for (uint16_t idx = 0; idx < sub_staged; ++idx) {
     if (!sub_binding_equal(sub_staging[idx], sub_bindings[idx])) {
       ESP_LOGV(TAG, "Binding %" PRIu16 " changed: '%s' %s.%s -> '%s' %s.%s", idx, sub_bindings[idx].entity,
-                sub_bindings[idx].page, sub_bindings[idx].component, sub_staging[idx].entity, sub_staging[idx].page,
-                sub_staging[idx].component);
+               sub_bindings[idx].page, sub_bindings[idx].component, sub_staging[idx].entity, sub_staging[idx].page,
+               sub_staging[idx].component);
       return true;
     }
   }
