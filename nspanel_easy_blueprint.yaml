@@ -6730,8 +6730,17 @@ actions:
           entity_state_is_unknown: '{{ ((not entity_state_is_on) and (not entity_state_is_off)) if entity_id_valid }}'
           entity_icon_color_tmp: >
             {%- if entity_id_valid -%}
-              {%- set default_color = overlap.icon_color if overlap_icon_color_valid else nextion.color.on -%}
-              {{ default_color if (not entity_state_is_off and not entity_state_is_unknown) else nextion.color.off }}
+              {%- set entity_color_attr = state_attr(entity_id, "color") | default("") -%}
+              {%- if entity_color_attr is string and entity_color_attr is match "#[0-9a-fA-F]{6}$" -%}
+                {%- set own_color = [entity_color_attr[1:3] | int(base=16), entity_color_attr[3:5] | int(base=16), entity_color_attr[5:7] | int(base=16)] -%}
+              {%- elif entity_color_attr is list and entity_color_attr | count == 3 -%}
+                {%- set own_color = entity_color_attr -%}
+              {%- else -%}
+                {%- set own_color = none -%}
+              {%- endif -%}
+              {%- set default_color = own_color if own_color is not none else (overlap.icon_color if overlap_icon_color_valid else nextion.color.on) -%}
+              {%- set has_explicit_color = own_color is not none or overlap_icon_color_valid -%}
+              {{ default_color if (entity_state_is_on or (has_explicit_color and not entity_state_is_off and entity_state not in enum.states.unknown)) else nextion.color.off }}
             {%- else -%}
               {{ overlap.icon_color if overlap_icon_color_valid else [0, 0, 0] }}
             {%- endif -%}
