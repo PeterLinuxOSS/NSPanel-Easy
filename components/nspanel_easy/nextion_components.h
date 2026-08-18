@@ -2,13 +2,17 @@
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 namespace esphome::nextion {
 class Nextion;
 }  // namespace esphome::nextion
+
+namespace esphome::text_sensor {
+class TextSensor;
+}  // namespace esphome::text_sensor
 
 namespace esphome::nspanel_easy {
 
@@ -20,6 +24,15 @@ namespace esphome::nspanel_easy {
  * component's to_code().
  */
 extern esphome::nextion::Nextion *nextion_display;
+
+/**
+ * @brief Sensor holding the entity_id currently shown on a detailed page.
+ *
+ * Empty whenever no detailed page is open, since it is cleared on every page
+ * change. Assigned once from the component's to_code(), for the same reason as
+ * nextion_display.
+ */
+extern esphome::text_sensor::TextSensor *detailed_entity_sensor;
 
 /**
  * @struct HMIComponent

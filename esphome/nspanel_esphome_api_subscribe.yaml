@@ -16,18 +16,16 @@
 #####################################################################################################
 ---
 substitutions:
-  TAG_SUB: nspanel.sub
-  ##### Maximum number of bindings. Storage is allocated to the configured count, not this. #####
-  subscribe_max: '128'
-  ##### Seconds of quiet after the last binding before a restart is applied. #####
-  subscribe_debounce: '10s'
-  ##### Seconds without an end marker before committing the push unverified. #####
-  subscribe_timeout: '120s'
+  TAG_SUB: nspanel.api.sub
+
+  api_subscribe_max: '128'               # Maximum number of bindings. Storage is allocated to the configured count, not this.
+  api_subscribe_debounce: '10s'          # Seconds of quiet after the last binding before a restart is applied.
+  api_subscribe_timeout: '120s'          # Seconds without an end marker before committing the push unverified.
 
 esphome:
   build_flags:
     - -D NSPANEL_EASY_SUBSCRIBE
-    - -D NSPANEL_EASY_SUB_MAX=${subscribe_max}
+    - -D NSPANEL_EASY_SUB_MAX=${api_subscribe_max}
 
 api:
   homeassistant_states: true  # Required: enables USE_API_HOMEASSISTANT_STATES
@@ -50,8 +48,8 @@ api:
                               icon_on.c_str(), icon_off.c_str(),
                               color_on.size() == 3 ? rgbTo565(color_on) : 0,
                               color_off.size() == 3 ? rgbTo565(color_off) : 0, inverted);
-        - script.execute: subscribe_debounce
-        - script.execute: subscribe_watchdog
+        - script.execute: api_subscribe_debounce
+        - script.execute: api_subscribe_watchdog
 
     ##### End marker. Sent after every binding, carrying how many were sent. #####
     - action: api_subscribe_end
@@ -60,35 +58,35 @@ api:
       then:
         - lambda: |-
             if (sub_push_end(static_cast<uint16_t>(count))) {
-              subscribe_restart->execute();
+              api_subscribe_restart->execute();
             }
-        - script.stop: subscribe_watchdog
+        - script.stop: api_subscribe_watchdog
 
 script:
   ##### Collapses a burst of binding calls into a single restart decision. #####
-  - id: subscribe_debounce
+  - id: api_subscribe_debounce
     mode: restart
     then:
-      - delay: ${subscribe_debounce}
+      - delay: ${api_subscribe_debounce}
 
   ##### Safety net for a push whose end marker never arrives. #####
-  - id: subscribe_watchdog
+  - id: api_subscribe_watchdog
     mode: restart
     then:
-      - delay: ${subscribe_timeout}
+      - delay: ${api_subscribe_timeout}
       - lambda: |-
           if (sub_push_timeout()) {
-            subscribe_restart->execute();
+            api_subscribe_restart->execute();
           }
 
   ##### Waits for the push to go quiet, then restarts to activate the bindings. #####
-  - id: subscribe_restart
+  - id: api_subscribe_restart
     mode: restart
     then:
       - wait_until:
           condition:
             not:
-              script.is_running: subscribe_debounce
+              script.is_running: api_subscribe_debounce
       - lambda: |-
           ESP_LOGI("${TAG_SUB}", "Restarting to activate new binding(s)");
       - delay: 250ms

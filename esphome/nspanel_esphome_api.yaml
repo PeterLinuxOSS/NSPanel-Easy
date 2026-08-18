@@ -186,11 +186,11 @@ api:
             ESP_LOGV("${TAG_API}", "  page: '%s'", page.c_str());
 
             const bool is_chip_target = (page == "chips");
-            const bool is_home_page = (page == "home");
-            const bool is_current_page = (page == current_page->state) || (is_chip_target && is_chips_page);
+            const bool target_is_home_page = (page == "home");
+            const bool target_is_current_page = (page == current_page->state) || (is_chip_target && is_chips_page);
 
             // Only process if home page (global) OR current page
-            if (!is_home_page && !is_current_page && !is_current_page) {
+            if (!target_is_home_page && !target_is_current_page) {
               ESP_LOGV("${TAG_API}", "Skipping: Not current page");
               return;
             }
@@ -215,8 +215,8 @@ api:
               icon.c_str(),
               icon_color.size() == 3 ? rgbTo565(icon_color) : -1,
               visible,
-              is_home_page,
-              is_current_page
+              target_is_home_page,
+              target_is_current_page
             );
 
 esphome:
@@ -355,12 +355,12 @@ script:
                                                                               extractNextionComponent(component, page);
           const std::string component_page = nextion_component.page;
           const char* target_id = nextion_component.component_id;
-          const bool is_home_page = (component_page == "home");
+          const bool target_is_home_page = (component_page == "home");
           const bool is_current_page = (component_page == current_page->state);
 
           // Always update the home page persistent visibility variable,
           // regardless of which page is currently active
-          if (is_home_page &&
+          if (target_is_home_page &&
               strcmp(target_id, "indr_temp_icon") != 0 &&
               strcmp(target_id, "value01_icon")   != 0 &&
               strcmp(target_id, "value02_icon")   != 0 &&
@@ -374,7 +374,7 @@ script:
             return;
           }
 
-          if (!is_home_page)
+          if (!target_is_home_page)
             ESP_LOGW("${TAG_API}", "Not the current page (%s vs %s)", page.c_str(), current_page->state.c_str());
 
   - id: action_icon
@@ -386,8 +386,8 @@ script:
       icon: string          # The icon code
       icon_color: int32_t   # -1 if no color should be set, otherwise the decimal RGB565 color
       visible: bool         # Set to true to show the component, or false to hide it.
-      is_home_page: bool
-      is_current_page: bool
+      target_is_home_page: bool
+      target_is_current_page: bool
     then:
       - lambda: |-
           if (page == "chips") return;  // This is handled elsewhere
@@ -400,7 +400,7 @@ script:
           const char* target_id;
           char full_id[30];  // 14 + 1 (dot) + 14 + 1 (null) = 30
 
-          if (is_current_page) {
+          if (target_is_current_page) {
             // Use short format for current page: "id"
             target_id = component.component_id;
             action_component_visibility->execute(component.page, component.component_id, visible);

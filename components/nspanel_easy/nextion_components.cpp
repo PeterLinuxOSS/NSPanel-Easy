@@ -7,6 +7,7 @@
 namespace esphome::nspanel_easy {
 
 esphome::nextion::Nextion *nextion_display = nullptr;
+esphome::text_sensor::TextSensor *detailed_entity_sensor = nullptr;
 
 NSPanelEasyNextionComponent extractNextionComponent(const std::string &input, const std::string &defaultPage) {
   NSPanelEasyNextionComponent result{};

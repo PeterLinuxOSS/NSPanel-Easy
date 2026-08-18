@@ -4449,6 +4449,52 @@ blueprint:
               min: 0
               max: 5000
               unit_of_measurement: milliseconds
+    entity_details_pages_settings:
+      name: Entity details pages
+      icon: mdi:card-account-details-outline
+      collapsed: true
+      input:
+        entity_details_pages_debounce:
+          name: Entity details pages - Debounce
+          description: >
+            Minimum interval (msec) between two redraws of an open entity details page.
+            After each redraw the automation waits this long before watching for the next
+            change, so a rapidly-changing entity (a dimming light, a running media player)
+            cannot redraw the page faster than this. Lower values feel more responsive but
+            send more commands to the panel over a serial link that is easily saturated;
+            higher values reduce panel load at the cost of a visible lag.
+          default: 1000
+          selector:
+            number:
+              min: 250
+              max: 10000
+              unit_of_measurement: milliseconds
+        entity_details_pages_update_interval:
+          name: Entity details pages - Fallback update interval
+          description: >
+            How long (seconds) to wait for a change before redrawing an open entity details
+            page anyway. Redraws are normally driven by the entity itself, so this only acts
+            as a safety net for updates that arrive without a state change. Lower values
+            mean more redundant redraws; higher values mean a missed update can stay on
+            screen for longer.
+          default: 60
+          selector:
+            number:
+              min: 5
+              max: 900
+              unit_of_measurement: seconds
+        entity_details_pages_max_refreshes:
+          name: Entity details pages - Maximum refreshes
+          description: >
+            Safety limit on how many times an open entity details page can be redrawn before
+            the refresh loop gives up. The loop normally ends when the page is closed; this
+            only stops it running forever if the panel stops reporting which page it is
+            showing. There is no need to change this under normal use.
+          default: 3600
+          selector:
+            number:
+              min: 10
+              max: 100000
     advanced_settings:
       name: Advanced settings
       icon: mdi:cogs
@@ -5268,56 +5314,6 @@ triggers:
         for:
           seconds: 1
 
-  - triggers:  # Home page - Custom buttons
-      - alias: Custom button 01
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input home_custom_button01
-
-      - alias: Custom button 02
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input home_custom_button02
-
-      - alias: Custom button 03
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input home_custom_button03
-
-      - alias: Custom button 04
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input home_custom_button04
-
-      - alias: Custom button 05
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input home_custom_button05
-
-      - alias: Custom button 06
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input home_custom_button06
-
-      - alias: Custom button 07
-        id: home_custom_buttons
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input alarm  # Name kept to keep compatibility with older versions
-
   - triggers:  # Climate page
       - alias: Climate entity
         id: climate_state
@@ -5693,22 +5689,6 @@ conditions:
       trigger.id != "indoortemp_state" or
       ((home_page_background_update or pages.current == pages.home ) and not embedded_indoor_temperature)
     }}
-  - condition: or  # Do not update component if state haven't changed (ignore attributes changed) - event based triggers
-    conditions:
-      - '{{ trigger.id != "home_custom_buttons" }}'
-      - condition: and
-        conditions:
-          - '{{ home_page_background_update or pages.current == pages.home }}'
-          - '{{ trigger.event is defined and trigger.event.data is defined }}'
-          - '{{ trigger.event.data.entity_id is defined }}'
-          - '{{ trigger.event.data.entity_id is not match "media_player." }}'
-      - condition: and
-        conditions:
-          - '{{ home_page_background_update or pages.current == pages.home }}'
-          - '{{ trigger.event is defined and trigger.event.data is defined }}'
-          - '{{ trigger.event.data.new_state is defined and trigger.event.data.new_state.state is defined }}'
-          - '{{ trigger.event.data.old_state is defined and trigger.event.data.old_state.state is defined }}'
-          - '{{ trigger.event.data.new_state.state != trigger.event.data.old_state.state }}'
 # yamllint enable rule:line-length
 
 actions:
@@ -6679,8 +6659,8 @@ actions:
             {{
               entity_id is defined and
               entity_id is string and
-              entity_id | length > 0 and
-              "." in entity_id and
+              entity_id | length > 2 and
+              entity_id.split(".") | count == 2 and
               states[entity_id] is not none
             }}
           overlap_icon_valid: >
@@ -6984,7 +6964,7 @@ actions:
                       - alias: API Subscriptions
                         sequence:
                           - variables:
-                              api_subs_mapping:
+                              chips:
                                 ##### Chips #####
                                 - entity: !input chip01
                                   inverted: !input chip01_inverted
@@ -7033,6 +7013,18 @@ actions:
                               # Components driven directly by ESPHome through Home Assistant state
                               # subscriptions. The panel renders these locally, so this automation does
                               # not trigger on their entities at all.
+                              api_subs_mapping: >
+                                {{
+                                  (
+                                    chips
+                                    | map('combine', {'page': 'chips'})
+                                    | list
+                                  ) + (
+                                    home_page.custom_buttons
+                                    | map('combine', {'page': 'home'})
+                                    | list
+                                  )
+                                }}
                               api_subscriptions: >
                                 {{
                                   api_subs_mapping
@@ -8008,6 +8000,28 @@ actions:
                 sequence:
                   - variables:
                       page_constructor: true
+                      entity_id: &variable_entity_id_from_trigger >
+                        {{
+                          nspanel_event.entity
+                          if nspanel_event is defined and nspanel_event.entity is defined and nspanel_event.entity is string and nspanel_event.entity | length > 1
+                          else (
+                            trigger.entity_id
+                            if trigger.entity_id is defined
+                            else (
+                              trigger.event.data.entity_id
+                              if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.entity_id is defined
+                              else ""
+                            )
+                          )
+                        }}
+                      entity_id_valid: *variable_entity_id_valid
+                      original_state:
+                        page: '{{ nspanel_event.page }}'
+                        entity_id: '{{ entity_id }}'
+                        entity_id_valid: '{{ entity_id_valid }}'
+                        entity_domain: '{{ entity_id.split(".")[0] if entity_id_valid else "" }}'
+                        entity_id_from_detailed_entity_sensor: '{{ states(detailed_entity) if detailed_entity | length > 0 else "" }}'
+
                   - choose:
                       - alias: Home page
                         conditions: '{{ nspanel_event.page == pages.home }}'
@@ -8161,56 +8175,6 @@ actions:
                                   txt_list:
                                     - '{{ indoor_temp_trimmed }}'
                                 continue_on_error: true
-
-                          ###### Custom buttons ######
-                          - repeat:
-                              for_each: '{{ home_page.custom_buttons | list }}'
-                              sequence: &display_home_page_custom_buttons
-                                - variables:
-                                    custom_button_entity_id_is_valid: '{{ repeat.item.entity is defined and repeat.item.entity is string and repeat.item.entity.split(".") | count == 2 }}'
-                                - condition: '{{ custom_button_entity_id_is_valid or page_constructor }}'
-                                - if: '{{ custom_button_entity_id_is_valid }}'
-                                  then:
-                                    - variables:
-                                        entity_id: '{{ repeat.item.entity }}'
-                                        overlap:
-                                          icon: >
-                                            {{
-                                              repeat.item.icon
-                                              if
-                                                repeat.item.icon is defined and
-                                                repeat.item.icon is string and
-                                                repeat.item.icon | length > 0 and
-                                                repeat.item.icon is match "mdi:" and
-                                                repeat.item.icon.split("mdi:")[1] in all_icons
-                                              else
-                                                None
-                                            }}
-                                    - *variable_entity
-                                    - action: 'esphome.{{ action_prefix }}_icon'
-                                      data:
-                                        page: home
-                                        id: '{{ repeat.item.component }}'
-                                        icon: '{{ entity.icon if entity.icon is defined else all_icons.blank }}'
-                                        icon_color: >
-                                          {{
-                                            entity.icon_color
-                                            if entity.icon_color is defined and entity.icon_color is list and entity.icon_color | count == 3
-                                            else [0, 0, 0]
-                                          }}
-                                        visible: true
-                                      continue_on_error: true
-                                  else:
-                                    - action: 'esphome.{{ action_prefix }}_icon'
-                                      data:
-                                        page: home
-                                        id: '{{ repeat.item.component }}'
-                                        icon: '{{ all_icons.blank }}'
-                                        icon_color: '{{ [0, 0, 0] }}'
-                                        visible: false
-                                      continue_on_error: true
-                                - *delay_default
-
 
                           ###### Climate chip ######
                           - &update_home_page_climate_chip
@@ -8379,7 +8343,7 @@ actions:
                                           continue_on_error: true
                                     - *delay_default
 
-                      - alias: Button pages
+                      - alias: Buttons pages
                         conditions: '{{ nspanel_event.page in pages.buttonpages }}'
                         sequence: &refresh_page_buttonpage
                           - &variables_page_buttons
@@ -8583,21 +8547,8 @@ actions:
                         sequence: &refresh_page_light
                           - &get_entity_id_from_event_or_trigger
                             variables:
-                              entity_id: >
-                                {{
-                                  nspanel_event.entity
-                                  if nspanel_event is defined and nspanel_event.entity is defined and nspanel_event.entity is string and nspanel_event.entity | length > 1
-                                  else (
-                                    trigger.entity_id
-                                    if trigger.entity_id is defined
-                                    else (
-                                      trigger.event.data.entity_id
-                                      if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.entity_id is defined
-                                      else ""
-                                    )
-                                  )
-                                }}
-                              entity_id_valid: *variable_entity_id_valid
+                              entity_id: '{{ original_state.entity_id }}'
+                              entity_id_valid: '{{ original_state.entity_id_valid }}'
                           - *variable_entity
                           - &entity_details_title_with_icon
                             alias: Fill title of entity details page
@@ -10840,6 +10791,116 @@ actions:
                                 - 'tick.en=1'
                             continue_on_error: true
 
+                  - condition:
+                      - '{{ original_state.entity_id_valid }}'
+                      - '{{ nspanel_event.page in pages.detailed_entity }}'
+                  - alias: Wait for the panel state sensors to catch up
+                    wait_template: &condition_is_currentpage_sensor_updated >
+                      {{
+                        states(currentpage) == original_state.page and
+                        states(detailed_entity) == original_state.entity_id
+                      }}
+                    timeout:
+                      milliseconds: 2000
+                    continue_on_timeout: true
+                  - condition: *condition_is_currentpage_sensor_updated
+                  - variables:
+                      page_constructor: false
+                      entity_details_pages_debounce: !input entity_details_pages_debounce
+                      entity_details_pages_update_interval: !input entity_details_pages_update_interval
+                      entity_details_pages_max_refreshes: !input entity_details_pages_max_refreshes
+                  - alias: Entity details pages refresh
+                    repeat:
+                      while: &conditions_entity_details_pages_loop >
+                        {{
+                          repeat.index <= entity_details_pages_max_refreshes and
+                          original_state.entity_id_valid and
+                          original_state.entity_id == (states(detailed_entity) if detailed_entity | length > 0 else '') and
+                          original_state.page in pages.detailed_entity and
+                          original_state.page == states(currentpage)
+                        }}
+                      sequence:
+                        - variables:
+                            entity_initial_stamp: >
+                              {{
+                                states[original_state.entity_id].last_updated | string
+                                if states[original_state.entity_id] is not none
+                                else ''
+                              }}
+                            current_page_from_sensor: '{{ states(currentpage) }}'
+                            entity_id: '{{ original_state.entity_id }}'
+                            entity_id_valid: '{{ original_state.entity_id_valid }}'
+                            entity_domain: '{{ original_state.entity_domain }}'
+                        - delay:
+                            milliseconds: '{{ entity_details_pages_debounce }}'
+                        - wait_template: >
+                            {{
+                              original_state.page != states(currentpage) or
+                              states(detailed_entity) != original_state.entity_id or
+                              (
+                                states[original_state.entity_id].last_updated | string
+                                if states[original_state.entity_id] is not none
+                                else ''
+                              ) != entity_initial_stamp
+                            }}
+                          timeout:
+                            seconds: '{{ entity_details_pages_update_interval }}'
+                          continue_on_timeout: true
+                        - condition: *conditions_entity_details_pages_loop
+                        - variables:
+                            current_page_from_sensor: '{{ states(currentpage) }}'
+                        - choose:
+                            - alias: Alarm page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.alarm }}'
+                                - '{{ original_state.entity_domain in ["alarm_control_panel"] }}'
+                              sequence: *refresh_page_alarm
+                            - alias: Button page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.button }}'
+                                - '{{ original_state.entity_domain in ["button", "input_button"] }}'
+                              sequence: *refresh_page_button
+                            - alias: Climate page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.climate }}'
+                                - '{{ original_state.entity_domain in ["climate"] }}'
+                              sequence: *refresh_page_climate
+                            - alias: Cover settings page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.cover }}'
+                                - '{{ original_state.entity_domain in ["cover"] }}'
+                              sequence: *refresh_page_cover
+                            - alias: Fan page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.fan }}'
+                                - '{{ original_state.entity_domain in ["fan"] }}'
+                              sequence: *refresh_page_fan
+                            - alias: Light settings page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.light }}'
+                                - '{{ original_state.entity_domain in ["light"] }}'
+                              sequence: *refresh_page_light
+                            - alias: Media player page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.media_player }}'
+                                - '{{ original_state.entity_domain in ["media_player"] }}'
+                              sequence: *refresh_page_media_player
+                            - alias: Switch page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.switch }}'
+                                - '{{ original_state.entity_domain in ["switch", "input_boolean"] }}'
+                              sequence: *refresh_page_switch
+                            - alias: Timer page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.timer }}'
+                                - '{{ original_state.entity_domain in ["timer"] }}'
+                              sequence: *refresh_page_timer
+                            - alias: Water Heater page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.water_heater }}'
+                                - '{{ original_state.entity_domain in ["water_heater"] }}'
+                              sequence: *refresh_page_water_heater
+
               - alias: Button click
                 conditions:
                   - '{{ nspanel_event.type == "button_click" }}'
@@ -11724,19 +11785,6 @@ actions:
           - variables:
               detailed_entity_state: '{{ states(detailed_entity) if detailed_entity | length > 0 else "" }}'
           - choose:
-              - alias: Alarm page
-                conditions:
-                  - '{{ pages.current == pages.alarm }}'
-                  - '{{ trigger.entity_id is match "alarm_control_panel." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_alarm
-              - alias: Button page
-                conditions:
-                  - '{{ pages.current == pages.button }}'
-                  - '{{ trigger.entity_id.split(".") | count == 2 }}'
-                  - '{{ trigger.entity_id.split(".")[0] in ["button", "input_button"] }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_button
               - alias: Buttons pages
                 conditions:
                   - '{{ pages.current in pages.buttonpages }}'
@@ -11766,61 +11814,6 @@ actions:
                           | list %}
                         {{ by_entity + by_state }}
                       sequence: *display_button_page_button
-              - alias: Climate page
-                conditions:
-                  - '{{ pages.current == pages.climate }}'
-                  - '{{ trigger.entity_id is match "climate." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_climate
-              - alias: Cover settings page
-                conditions:
-                  - '{{ pages.current == pages.cover }}'
-                  - '{{ trigger.entity_id is match "cover." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_cover
-              - alias: Fan page
-                conditions:
-                  - '{{ pages.current == pages.fan }}'
-                  - '{{ trigger.entity_id is match "fan." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_fan
-              - alias: Light settings page
-                conditions:
-                  - '{{ pages.current == pages.light }}'
-                  - '{{ trigger.entity_id is match "light." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_light
-              - alias: Media player page
-                conditions:
-                  - '{{ pages.current == pages.media_player }}'
-                  - '{{ trigger.entity_id is match "media_player." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_media_player
-              - alias: Select page
-                conditions:
-                  - '{{ pages.current == pages.select or pages.current == pages.popup_select }}'
-                  - '{{ trigger.entity_id is match "(input_)?select\\." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_select
-              - alias: Switch page
-                conditions:
-                  - '{{ pages.current == pages.switch }}'
-                  - '{{ trigger.entity_id.split(".") | count == 2 }}'
-                  - '{{ trigger.entity_id.split(".")[0] in ["switch", "input_boolean"] }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_switch
-              - alias: Timer page
-                conditions:
-                  - '{{ pages.current == pages.timer }}'
-                  - '{{ trigger.entity_id is match "timer." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_timer
-              - alias: Water Heater page
-                conditions:
-                  - '{{ pages.current == pages.water_heater }}'
-                  - '{{ trigger.entity_id is match "water_heater." }}'
-                  - '{{ trigger.entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_water_heater
 
       - alias: Update climate page
         conditions:
@@ -11942,74 +11935,6 @@ actions:
                     }}
                   val: '{{ 1 if button_state_new else 0 }}'
                 continue_on_error: true
-
-      - alias: Update home page - Custom buttons
-        conditions:
-          - condition: trigger
-            id:
-              - home_custom_buttons
-        sequence:
-          - variables:
-              trigger_entity_id: '{{ trigger.entity_id if trigger.entity_id is defined else trigger.event.data.entity_id }}'
-              detailed_entity_state: '{{ states(detailed_entity) if detailed_entity | length > 0 else "" }}'
-          - choose:
-              - alias: "Home page"
-                conditions:
-                  - '{{ pages.current in pages.home }}'
-                sequence:
-                  - repeat:
-                      for_each: '{{ home_page.custom_buttons | selectattr("entity", "defined") | selectattr("entity", "eq", trigger_entity_id) | list }}'
-                      sequence: *display_home_page_custom_buttons
-              - alias: 'Light settings page'
-                conditions:
-                  - '{{ pages.current == pages.light }}'
-                  - '{{ trigger_entity_id is match "light." }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_light
-              - alias: 'Cover settings page'
-                conditions:
-                  - '{{ pages.current == pages.cover }}'
-                  - '{{ trigger_entity_id is match "cover." }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_cover
-              - alias: 'Climate page'
-                conditions:
-                  - '{{ pages.current == pages.climate }}'
-                  - '{{ trigger_entity_id is match "climate." }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_climate
-              - alias: 'Fan page'
-                conditions:
-                  - '{{ pages.current == pages.fan }}'
-                  - '{{ trigger_entity_id is match "fan." }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_fan
-              - alias: 'Media player page'
-                conditions:
-                  - '{{ pages.current == pages.media_player }}'
-                  - '{{ trigger_entity_id is match "media_player." }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_media_player
-              - alias: Switch page
-                conditions:
-                  - '{{ pages.current == pages.switch }}'
-                  - '{{ trigger_entity_id.split(".") | count == 2 }}'
-                  - '{{ trigger_entity_id.split(".")[0] in ["switch", "input_boolean"] }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_switch
-              - alias: Button page
-                conditions:
-                  - '{{ pages.current == pages.button }}'
-                  - '{{ trigger_entity_id.split(".") | count == 2 }}'
-                  - '{{ trigger_entity_id.split(".")[0] in ["button", "input_button"] }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_button
-              - alias: 'Alarm page'
-                conditions:
-                  - '{{ pages.current == pages.alarm }}'
-                  - '{{ trigger_entity_id is match "alarm_control_panel." }}'
-                  - '{{ trigger_entity_id == detailed_entity_state }}'
-                sequence: *refresh_page_alarm
 
       - alias: Update home page - Entities
         conditions:
