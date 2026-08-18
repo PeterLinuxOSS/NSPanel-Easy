@@ -156,7 +156,7 @@ SubRenderFn sub_resolve_renderer(const char *page) {
     const char *page;
     SubRenderFn render;
   };
-static constexpr PageEntry PAGES[] = {
+  static constexpr PageEntry PAGES[] = {
 #ifdef NSPANEL_EASY_CHIPS
       {"chips", &chip_sub_render},
 #endif  // NSPANEL_EASY_CHIPS

@@ -26,7 +26,6 @@ namespace esphome::nspanel_easy {
 
 extern bool is_home_page;
 
-
 /// @brief Number of custom button slots on the home page (button01..button08).
 static constexpr uint8_t HOME_BUTTON_COUNT = 8;
 
