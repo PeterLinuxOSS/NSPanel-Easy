@@ -10815,8 +10815,6 @@ actions:
                   - condition: *condition_is_currentpage_sensor_updated
                   - variables:
                       page_constructor: false
-                      entity_details_pages_debounce: !input entity_details_pages_debounce
-                      entity_details_pages_update_interval: !input entity_details_pages_update_interval
                       entity_details_pages_max_refreshes: !input entity_details_pages_max_refreshes
                   - alias: Entity details pages refresh
                     repeat:
@@ -10841,7 +10839,7 @@ actions:
                             entity_id_valid: '{{ original_state.entity_id_valid }}'
                             entity_domain: '{{ original_state.entity_domain }}'
                         - delay:
-                            milliseconds: '{{ entity_details_pages_debounce }}'
+                            milliseconds: !input entity_details_pages_debounce
                         - wait_template: >
                             {{
                               original_state.page != states(currentpage) or
@@ -10853,7 +10851,7 @@ actions:
                               ) != entity_initial_stamp
                             }}
                           timeout:
-                            seconds: '{{ entity_details_pages_update_interval }}'
+                            seconds: !input entity_details_pages_update_interval
                           continue_on_timeout: true
                         - condition: *conditions_entity_details_pages_loop
                         - variables:
