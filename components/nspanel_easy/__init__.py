@@ -16,7 +16,7 @@ Supported configuration keys
 
 from esphome import automation
 from esphome import pins
-from esphome.components import nextion
+from esphome.components import nextion, text_sensor
 from esphome.components.esp32 import add_idf_sdkconfig_option
 from esphome.const import (CONF_ID, CONF_TRIGGER_ID)
 from esphome.core import CORE, coroutine_with_priority
@@ -30,6 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 
 nspanel_easy_ns = cg.esphome_ns.namespace('nspanel_easy')
 
+CONF_DETAILED_ENTITY_ID = "detailed_entity_id"
 CONF_NEXTION_ID = "nextion_id"
 CONF_ON_DUMP_CONFIG = "on_dump_config"
 CONF_ON_SETUP = "on_setup"
@@ -43,6 +44,7 @@ DumpConfigTrigger = nspanel_easy_ns.class_("DumpConfigTrigger", automation.Trigg
 
 CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_ID, default="nspanel_easy_component"): cv.declare_id(NSPanelEasyComponent),
+    cv.Required(CONF_DETAILED_ENTITY_ID): cv.use_id(text_sensor.TextSensor),
     cv.Required(CONF_NEXTION_ID): cv.use_id(nextion.Nextion),
     cv.Optional(CONF_ON_SETUP): automation.validate_automation(
         {
@@ -87,6 +89,9 @@ async def to_code(config):
     for conf in config.get(CONF_ON_DUMP_CONFIG, []):
         trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
         await automation.build_automation(trigger, [], conf)
+
+    detailed = await cg.get_variable(config[CONF_DETAILED_ENTITY_ID])
+    cg.add(cg.RawStatement(f"esphome::nspanel_easy::detailed_entity_sensor = {detailed};"))
 
     disp = await cg.get_variable(config[CONF_NEXTION_ID])
     cg.add(cg.RawStatement(f"esphome::nspanel_easy::nextion_display = {disp};"))

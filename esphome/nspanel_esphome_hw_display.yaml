@@ -131,6 +131,7 @@ globals:
     initial_value: 'false'
 
 nspanel_easy:
+  detailed_entity_id: detailed_entity
   nextion_id: disp1
 
 number:

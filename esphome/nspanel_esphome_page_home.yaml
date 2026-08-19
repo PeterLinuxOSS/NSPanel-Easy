@@ -104,12 +104,11 @@ script:
   - id: !extend action_icon
     then:
       - lambda: |-
-          if (!is_home_page) return;
+          if (!target_is_home_page) return;
 
           // Only applies to home page buttons (button01..button08) on new design
           if (!display_easy) return;
-          if (!is_home_page) return;
-          if (!is_current_page) return;  // cirs only affects the visible page
+          if (!target_is_current_page) return;  // cirs only affects the visible page
 
           // Extract the numeric suffix from component_id, e.g. "button01" -> 1
           // Expected format: "button%02u" — prefix is exactly 6 chars ("button")
@@ -184,15 +183,21 @@ script:
   - id: !extend page_change
     then:
       - lambda: |-
-          if (new_page_id != get_page_id("home")) return;
+          is_home_page = (new_page_id == get_page_id("home"));
+          if (!is_home_page) return;
           page_home->execute();
 
   - id: page_home
     mode: single
     then:
-    # Extended by:
-    # - hw_relays
-    # - hw_wifi
+      # Extended by:
+      # - hw_relays
+      # - hw_wifi
+      - lambda: |-
+          // Repaint home page custom buttons (only when using subscriptions)
+          #ifdef NSPANEL_EASY_SUBSCRIBE
+          home_button_repaint();
+          #endif  // NSPANEL_EASY_SUBSCRIBE
 
   - id: page_home_weather_pic
     mode: restart

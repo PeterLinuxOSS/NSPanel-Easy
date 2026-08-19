@@ -3,6 +3,8 @@
 #ifdef NSPANEL_EASY_SUBSCRIBE
 
 #include "api_subscriptions.h"
+#include "base.h"
+#include "nextion_components.h"
 
 #include <cinttypes>
 
@@ -17,6 +19,9 @@
 #ifdef NSPANEL_EASY_CHIPS
 #include "chips.h"
 #endif  // NSPANEL_EASY_CHIPS
+#ifdef NSPANEL_EASY_PAGE_HOME
+#include "page_home.h"
+#endif  // NSPANEL_EASY_PAGE_HOME
 
 namespace esphome::nspanel_easy {
 
@@ -155,6 +160,9 @@ SubRenderFn sub_resolve_renderer(const char *page) {
 #ifdef NSPANEL_EASY_CHIPS
       {"chips", &chip_sub_render},
 #endif  // NSPANEL_EASY_CHIPS
+#ifdef NSPANEL_EASY_PAGE_HOME
+      {"home", &home_button_sub_render},
+#endif  // NSPANEL_EASY_PAGE_HOME
   };
   for (const PageEntry &entry : PAGES) {
     if (strcmp(page, entry.page) == 0) {

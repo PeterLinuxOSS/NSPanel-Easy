@@ -4,17 +4,73 @@
 
 #ifdef NSPANEL_EASY_PAGE_HOME
 
+#include <cstdint>
+#include <cstring>
+
 #include "nextion_components.h"
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
+#include "api_subscriptions.h"
+#endif  // NSPANEL_EASY_SUBSCRIBE
 
 /**
  * @file page_home.h
- * @brief Nextion component definitions for the Home page.
+ * @brief Home page custom buttons.
  *
- * This file contains all component constants specific to the Home page
- * of the NSPanel interface.
+ * Unlike chips, a bound custom button is always visible: it renders icon_on or
+ * icon_off according to the entity's state rather than appearing and
+ * disappearing. Unbound slots are left entirely to the blueprint.
  */
 
 namespace esphome::nspanel_easy {
+
+extern bool is_home_page;
+
+/// @brief Number of custom button slots on the home page (button01..button08).
+static constexpr uint8_t HOME_BUTTON_COUNT = 8;
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
+
+/**
+ * @brief Last rendered appearance of a home custom button.
+ *
+ * Lets a state change skip redundant Nextion writes, and lets the page be
+ * repainted on entry without a round trip to Home Assistant.
+ */
+struct HomeButtonState {
+  char icon[4];    ///< UTF-8 MDI codepoint (1-3 bytes + null terminator)
+  uint16_t color;  ///< RGB565 foreground color
+  bool bound;      ///< Driven by a subscription; the blueprint does not own it
+  bool shown;      ///< Whether the component has been made visible
+};
+static_assert(sizeof(HomeButtonState::icon) >= 4, "Icons are BMP private-use codepoints: 3 bytes + null");
+
+/// @brief Shadow state array; one entry per custom button slot.
+extern HomeButtonState home_button_states[HOME_BUTTON_COUNT];
+
+/**
+ * @brief Render a subscription binding onto a home custom button.
+ *
+ * Registered for the "home" page in sub_resolve_renderer(). Receives an
+ * already-classified state and decides only how to draw it.
+ *
+ * @param binding The binding being rendered.
+ * @param rt Runtime state, including blueprint-supplied appearance.
+ * @param state Effective state string; hvac_action for climate when usable.
+ * @param visible Unused: a bound custom button is always shown.
+ */
+void home_button_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible);
+
+/**
+ * @brief Repaint every bound custom button from its shadow state.
+ *
+ * Called when the home page is entered, since the Nextion side does not retain
+ * what was drawn on a page that has been left.
+ */
+void home_button_repaint();
+
+#endif  // NSPANEL_EASY_SUBSCRIBE
+
 namespace hmi::home {
 
 /**
