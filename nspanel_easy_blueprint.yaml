@@ -10818,6 +10818,7 @@ actions:
                             continue_on_error: true
 
                   - condition:
+                      - '{{ detailed_entity | length > 0 }}'
                       - '{{ original_state.entity_id_valid }}'
                       - '{{ nspanel_event.page in pages.detailed_entity }}'
                   - alias: Wait for the panel state sensors to catch up
