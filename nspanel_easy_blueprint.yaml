@@ -4493,8 +4493,8 @@ blueprint:
           default: 3600
           selector:
             number:
-              min: 10
-              max: 100000
+              min: 1
+              max: 10000
     advanced_settings:
       name: Advanced settings
       icon: mdi:cogs
