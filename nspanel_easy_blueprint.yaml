@@ -4495,6 +4495,21 @@ blueprint:
             number:
               min: 1
               max: 10000
+        entity_details_pages_sync_timeout:
+          name: Entity details pages - Synchronisation timeout
+          description: >
+            How long (msec) to wait for the panel to report which page and entity it is
+            showing, before giving up on refreshing that page. The panel reports this a
+            moment after the page opens, and the refresh cannot start until it arrives.
+            Raise this if details pages sometimes do not update on a busy network or a
+            heavily loaded Home Assistant instance. There is no need to change it under
+            normal use.
+          default: 2000
+          selector:
+            number:
+              min: 100
+              max: 10000
+              unit_of_measurement: milliseconds
     advanced_settings:
       name: Advanced settings
       icon: mdi:cogs
@@ -10812,7 +10827,7 @@ actions:
                         states(detailed_entity) == original_state.entity_id
                       }}
                     timeout:
-                      milliseconds: 2000
+                      milliseconds: !input entity_details_pages_sync_timeout
                     continue_on_timeout: true
                   - condition: *condition_is_currentpage_sensor_updated
                   - variables:
