@@ -195,7 +195,7 @@ script:
       # - hw_relays
       # - hw_wifi
       - lambda: |-
-          // Repaing home page custom buttons (only when using subscriptions)
+          // Repaint home page custom buttons (only when using subscriptions)
           #ifdef NSPANEL_EASY_SUBSCRIBE
           home_button_repaint();
           #endif  // NSPANEL_EASY_SUBSCRIBE
