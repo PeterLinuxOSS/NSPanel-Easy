@@ -141,7 +141,7 @@ void home_button_repaint() {
     nextion_display->set_component_text(component, button.icon);
     nextion_display->set_component_font_color(component, button.color);
     nextion_display->set_component_visibility(component, true);
-    button.shown = true
+    button.shown = true;
   }  // for each custom button slot
 }
 
