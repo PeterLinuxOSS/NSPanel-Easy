@@ -4760,6 +4760,7 @@ variables:
       - fan
       - light
       - media_player
+      - select
       - switch
       - timer
       - water_heater
