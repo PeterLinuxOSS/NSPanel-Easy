@@ -43,6 +43,7 @@ struct HomeButtonState {
   bool bound;      ///< Driven by a subscription; the blueprint does not own it
   bool shown;      ///< Whether the component has been made visible
 };
+static_assert(sizeof(HomeButtonState::icon) >= 4, "Icons are BMP private-use codepoints: 3 bytes + null");
 
 /// @brief Shadow state array; one entry per custom button slot.
 extern HomeButtonState home_button_states[HOME_BUTTON_COUNT];

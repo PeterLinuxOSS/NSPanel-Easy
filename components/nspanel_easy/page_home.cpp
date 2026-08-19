@@ -88,6 +88,10 @@ void home_button_sub_render(const SubBinding &binding, const SubRuntime &rt, con
     ESP_LOGW(TAG, "%s has no icon", binding.component);
     return;
   }
+  if (strlen(icon) >= sizeof(button.icon)) {
+    ESP_LOGW(TAG, "%s icon does not fit (%zu bytes); skipping", binding.component, strlen(icon));
+    return;
+  }
 
   const bool icon_changed = (strcmp(button.icon, icon) != 0);
   if (icon_changed) {
