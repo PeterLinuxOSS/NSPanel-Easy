@@ -8044,7 +8044,6 @@ actions:
                         entity_id: '{{ entity_id }}'
                         entity_id_valid: '{{ entity_id_valid }}'
                         entity_domain: '{{ entity_id.split(".")[0] if entity_id_valid else "" }}'
-                        entity_id_from_detailed_entity_sensor: '{{ states(detailed_entity) if detailed_entity | length > 0 else "" }}'
 
                   - choose:
                       - alias: Home page
