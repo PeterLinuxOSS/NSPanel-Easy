@@ -8831,7 +8831,7 @@ actions:
                                 continue_on_error: true
                               - *delay_default
 
-                          - condition: '{{ trigger.id == "nspanel_event" }}'  # Page constructor
+                          - condition: '{{ page_constructor }}'  # Page constructor
                           - variables:
                               entity_device_class_raw: >-
                                 {{
@@ -10680,7 +10680,7 @@ actions:
                                 }}
 
                           ##### Construction-only: push options + context + mode + title #####
-                          - if: '{{ nspanel_event is defined and nspanel_event.type == "page_changed" }}'
+                          - if: '{{ page_constructor }}'
                             then:
                               - variables:
                                   options_raw_attr: '{{ state_attr(entity_id, "options") }}'
