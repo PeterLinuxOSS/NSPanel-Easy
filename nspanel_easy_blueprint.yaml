@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v9999.99.9)
+  name: NSPanel Easy Configuration (v2026.8.5)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -4711,7 +4711,7 @@ trigger_variables:
 
 variables:
   # Version will be following release version defined automatically when merging to main
-  blueprint_version: 9999.99.9
+  blueprint_version: 2026.8.5
 
   pages:
     current: '{{ states(currentpage) }}'
@@ -8831,7 +8831,7 @@ actions:
                                 continue_on_error: true
                               - *delay_default
 
-                          - condition: '{{ trigger.id == "nspanel_event" }}'  # Page constructor
+                          - condition: '{{ page_constructor }}'  # Page constructor
                           - variables:
                               entity_device_class_raw: >-
                                 {{
@@ -10680,7 +10680,7 @@ actions:
                                 }}
 
                           ##### Construction-only: push options + context + mode + title #####
-                          - if: '{{ nspanel_event is defined and nspanel_event.type == "page_changed" }}'
+                          - if: '{{ page_constructor }}'
                             then:
                               - variables:
                                   options_raw_attr: '{{ state_attr(entity_id, "options") }}'
@@ -10912,7 +10912,7 @@ actions:
                             - alias: Select page
                               conditions:
                                 - '{{ current_page_from_sensor == pages.select }}'
-                                - '{{ original_state.entity_domain in ["select"] }}'
+                                - '{{ original_state.entity_domain in ["select", "input_select"] }}'
                               sequence: *refresh_page_select
                             - alias: Switch page
                               conditions:
