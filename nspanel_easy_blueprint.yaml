@@ -10836,7 +10836,6 @@ actions:
                                 if states[original_state.entity_id] is not none
                                 else ''
                               }}
-                            current_page_from_sensor: '{{ states(currentpage) }}'
                             entity_id: '{{ original_state.entity_id }}'
                             entity_id_valid: '{{ original_state.entity_id_valid }}'
                             entity_domain: '{{ original_state.entity_domain }}'
