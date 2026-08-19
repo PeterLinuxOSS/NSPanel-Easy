@@ -9263,6 +9263,7 @@ actions:
                               friendly_name_raw: '{{ state_attr(climate_entity, "friendly_name") }}'
                               friendly_name: '{{ friendly_name_raw if friendly_name_raw and friendly_name_raw is string else "" }}'
                           - if:
+                              - '{{ page_constructor }}'
                               - '{{ not embedded_climate }}'
                               - '{{ nspanel_event is defined }}'
                               - '{{ nspanel_event.page is defined }}'
@@ -9611,6 +9612,7 @@ actions:
                               friendly_name_raw: '{{ state_attr(water_heater_entity, "friendly_name") }}'
                               friendly_name: '{{ friendly_name_raw if friendly_name_raw and friendly_name_raw is string else "" }}'
                           - if:
+                              - '{{ page_constructor }}'
                               - '{{ nspanel_event is defined }}'
                               - '{{ nspanel_event.page is defined }}'
                               - '{{ nspanel_event.page == pages.water_heater }}'
