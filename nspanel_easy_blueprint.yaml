@@ -10892,6 +10892,11 @@ actions:
                                 - '{{ current_page_from_sensor == pages.media_player }}'
                                 - '{{ original_state.entity_domain in ["media_player"] }}'
                               sequence: *refresh_page_media_player
+                            - alias: Select page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.select }}'
+                                - '{{ original_state.entity_domain in ["select"] }}'
+                              sequence: *refresh_page_select
                             - alias: Switch page
                               conditions:
                                 - '{{ current_page_from_sensor == pages.switch }}'
