@@ -4760,6 +4760,7 @@ variables:
       - fan
       - light
       - media_player
+      - select
       - switch
       - timer
       - water_heater
@@ -10911,7 +10912,7 @@ actions:
                             - alias: Select page
                               conditions:
                                 - '{{ current_page_from_sensor == pages.select }}'
-                                - '{{ original_state.entity_domain in ["select"] }}'
+                                - '{{ original_state.entity_domain in ["select", "input_select"] }}'
                               sequence: *refresh_page_select
                             - alias: Switch page
                               conditions:
