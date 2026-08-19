@@ -36,7 +36,7 @@
 namespace esphome::nspanel_easy {
 
 /// @brief Persisted format version. Bump whenever SubBinding's layout changes.
-static constexpr uint8_t SUB_FORMAT_VERSION = 1;
+static constexpr uint8_t SUB_FORMAT_VERSION = 2;  // 2: chunk size reduced from 16 to 4
 
 /// @brief Upper bound on bindings; storage is allocated to the configured count, not this.
 #ifndef NSPANEL_EASY_SUB_MAX
@@ -44,8 +44,16 @@ static constexpr uint8_t SUB_FORMAT_VERSION = 1;
 #endif  // NSPANEL_EASY_SUB_MAX
 static constexpr uint16_t SUB_MAX = NSPANEL_EASY_SUB_MAX;
 
-/// @brief Bindings per persisted NVS chunk. Keeps the sync() compare-copy spike small.
-static constexpr uint16_t SUB_CHUNK_SIZE = 16;
+/**
+ * @brief Bindings per persisted NVS chunk.
+ *
+ * Deliberately small. NVS stores each preference as a single blob and needs
+ * room for the new copy before releasing the old, so a large blob can fail with
+ * ESP_ERR_NVS_NOT_ENOUGH_SPACE on a partition that is merely fragmented rather
+ * than full. At 4 bindings a chunk is under 512 bytes, which fits comfortably
+ * inside one NVS page; at 16 it was roughly 1.8 KB.
+ */
+static constexpr uint16_t SUB_CHUNK_SIZE = 4;
 
 /// @brief Number of NVS chunks needed to hold SUB_MAX bindings.
 static constexpr uint16_t SUB_CHUNK_COUNT = (SUB_MAX + SUB_CHUNK_SIZE - 1) / SUB_CHUNK_SIZE;
@@ -564,7 +572,7 @@ bool sub_push_timeout();
  *
  * @param verified Whether the push was confirmed by a matching end marker.
  */
-void sub_persist(bool verified);
+bool sub_persist(bool verified);
 
 /// @brief Re-render every binding from its last known state.
 void sub_render_all();
