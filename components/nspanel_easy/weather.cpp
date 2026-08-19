@@ -7,8 +7,8 @@
 namespace esphome::nspanel_easy {
 
 SunInfo sun_info = {
-    .is_up = true,            // Safe daytime default before first blueprint update or SNTP sync
-    .coord_received = false,  // Coordinates not yet received - time proxy active
+    .is_up = true,          // Safe daytime default before the first time sync
+    .coords_valid = false,  // Coordinates not yet applied - time proxy active
 };
 
 uint8_t weather_condition_index = 0;  // Defaults to fallback until first blueprint update

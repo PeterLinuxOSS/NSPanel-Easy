@@ -28,6 +28,10 @@ HomeButtonState home_button_states[HOME_BUTTON_COUNT] = {};
 /**
  * @brief Parse the slot index out of a custom button component name.
  *
+ * Used by home_sub_render() as a probe: a component that is not a custom button
+ * is an ordinary outcome here, so no warning is emitted. The dispatcher warns
+ * once, after every target has been tried.
+ *
  * @param component Component name, expected as "button%02u".
  * @return Zero-based index into home_button_states[], or UINT8_MAX if invalid.
  */
@@ -48,16 +52,19 @@ static uint8_t parse_home_button_index(const char *component) {
   return static_cast<uint8_t>(number - 1);
 }
 
-void home_button_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible) {
-  const uint8_t idx = parse_home_button_index(binding.component);
-  if (idx == UINT8_MAX) {
-    ESP_LOGW(TAG, "'%s' is not a home custom button", binding.component);
-    return;
-  }
-  if (nextion_display == nullptr) {
-    return;  // Boot has not handed the display over yet
-  }
-
+/**
+ * @brief Render a subscription binding onto a home custom button.
+ *
+ * Unlike a chip, a bound custom button is always visible: it renders the active
+ * or the inactive appearance according to the classified state rather than
+ * appearing and disappearing.
+ *
+ * @param binding The binding being rendered.
+ * @param rt Runtime state, including blueprint-supplied appearance.
+ * @param state Effective state string; hvac_action for climate when usable.
+ * @param idx Zero-based slot index, already validated by the caller.
+ */
+static void home_button_render(const SubBinding &binding, const SubRuntime &rt, const char *state, uint8_t idx) {
   HomeButtonState &button = home_button_states[idx];
   button.bound = true;  // Blocks blueprint pushes for this slot
 
@@ -89,15 +96,17 @@ void home_button_sub_render(const SubBinding &binding, const SubRuntime &rt, con
     ESP_LOGW(TAG, "%s has no icon", binding.component);
     return;
   }
-  if (strlen(icon) >= sizeof(button.icon)) {
-    ESP_LOGW(TAG, "%s icon does not fit (%zu bytes); skipping", binding.component, strlen(icon));
+  const size_t icon_len = strlen(icon);
+  if (icon_len >= sizeof(button.icon)) {
+    // A truncated copy would leave the strcmp below permanently unequal, so the
+    // renderer would write to the Nextion on every state change.
+    ESP_LOGW(TAG, "%s icon does not fit (%zu bytes); skipping", binding.component, icon_len);
     return;
   }
 
   const bool icon_changed = (strcmp(button.icon, icon) != 0);
   if (icon_changed) {
-    strncpy(button.icon, icon, sizeof(button.icon) - 1);
-    button.icon[sizeof(button.icon) - 1] = '\0';
+    memcpy(button.icon, icon, icon_len + 1);  // Length checked above, so the null terminator fits
   }
 
   const bool color_changed = (button.color != color);
@@ -121,6 +130,64 @@ void home_button_sub_render(const SubBinding &binding, const SubRuntime &rt, con
     button.shown = true;
     nextion_display->set_component_visibility(binding.component, true);
   }
+}
+
+#ifdef NSPANEL_EASY_USE_WEATHER
+
+void home_weather_resolve() {
+  if (nextion_display == nullptr) {
+    return;  // Boot has not handed the display over yet
+  }
+
+  // is_new_device is always false: the "Easy" TFT project is abandoned.
+  const WeatherPicVariant &variant =
+      select_weather_variant(get_weather_pics(weather_condition_index), false, current_theme != ThemeMode::LIGHT);
+  const uint16_t pic = sun_info.is_up ? variant.sun_up : variant.sun_down;
+
+  // Index 0 resolves to a blank picture in both themes, so an unknown or
+  // not-yet-received condition needs no visibility handling of its own.
+  ESP_LOGD(TAG, "Update weather pic: %" PRIu16 " (condition %" PRIu8 ", sun up: %s)", pic, weather_condition_index,
+           YESNO(sun_info.is_up));
+  nextion_display->set_component_pic(hmi::home::WEATHER.name, static_cast<uint8_t>(pic));
+}
+
+/**
+ * @brief Render a subscription binding onto the home weather picture.
+ *
+ * The picture depends on the condition, the sun elevation and the active theme,
+ * so the condition is stored and the shared resolver does the rest. The same
+ * resolver runs on theme changes and on sunrise/sunset.
+ *
+ * @param state Raw weather condition string from Home Assistant.
+ */
+static void home_weather_render(const char *state) {
+  const uint8_t index = get_weather_index(state);
+  if (index == weather_condition_index) {
+    return;  // Nothing changed; avoid a redundant Nextion write
+  }
+  weather_condition_index = index;
+  home_weather_resolve();
+}
+
+#endif  // NSPANEL_EASY_USE_WEATHER
+
+void home_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible) {
+  if (nextion_display == nullptr) {
+    return;  // Boot has not handed the display over yet
+  }
+
+  const uint8_t idx = parse_home_button_index(binding.component);
+  if (idx != UINT8_MAX) {
+    home_button_render(binding, rt, state, idx);
+    return;
+  }
+#ifdef NSPANEL_EASY_USE_WEATHER
+  if (strcmp(binding.component, "weather") == 0) {
+    home_weather_render(state);
+    return;
+  }
+#endif  // NSPANEL_EASY_USE_WEATHER
+  ESP_LOGW(TAG, "'%s' is not a subscribable home component", binding.component);
 }
 
 void home_button_repaint() {

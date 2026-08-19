@@ -161,7 +161,7 @@ SubRenderFn sub_resolve_renderer(const char *page) {
       {"chips", &chip_sub_render},
 #endif  // NSPANEL_EASY_CHIPS
 #ifdef NSPANEL_EASY_PAGE_HOME
-      {"home", &home_button_sub_render},
+      {"home", &home_sub_render},
 #endif  // NSPANEL_EASY_PAGE_HOME
   };
   for (const PageEntry &entry : PAGES) {
