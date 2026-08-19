@@ -108,7 +108,6 @@ script:
 
           // Only applies to home page buttons (button01..button08) on new design
           if (!display_easy) return;
-          if (!target_is_home_page) return;
           if (!target_is_current_page) return;  // cirs only affects the visible page
 
           // Extract the numeric suffix from component_id, e.g. "button01" -> 1
