@@ -6,6 +6,7 @@
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
 #include <cctype>
+#include <cinttypes>
 #include <cstdio>
 
 #include "esphome/components/nextion/nextion.h"
@@ -127,9 +128,12 @@ void home_button_repaint() {
     ESP_LOGE(TAG, "Missing Nextion display pointer");
     return;
   }
+  if (!is_home_page) {
+    return;  // Unscoped names resolve against the visible page only
+  }
   char component[9] = {};  // "buttonNN" + null terminator
   for (uint8_t idx = 0; idx < HOME_BUTTON_COUNT; ++idx) {
-    const HomeButtonState &button = home_button_states[idx];
+    HomeButtonState &button = home_button_states[idx];
     if (!button.bound || button.icon[0] == '\0') {
       continue;  // Unbound slots stay with whatever the blueprint drew
     }
@@ -137,6 +141,7 @@ void home_button_repaint() {
     nextion_display->set_component_text(component, button.icon);
     nextion_display->set_component_font_color(component, button.color);
     nextion_display->set_component_visibility(component, true);
+    button.shown = true
   }  // for each custom button slot
 }
 
