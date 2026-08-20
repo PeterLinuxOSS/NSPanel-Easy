@@ -571,7 +571,12 @@ bool sub_push_end(uint16_t count);
 bool sub_push_timeout();
 
 /**
- * @brief Persist the staged set and clear the unverified-commit counter.
+ * @brief Persist the staged set.
+ *
+ * Written in three phases -- empty header, chunks, real header -- so that a
+ * failure part-way through leaves the stored set empty rather than a mixture of
+ * old and new chunks. The unverified-commit counter only advances once the
+ * header has reached NVS.
  *
  * @param verified Whether the push was confirmed by a matching end marker.
  * @return true when every chunk and the header reached NVS.

@@ -363,6 +363,17 @@ void sub_push_binding(const char *page, const char *component, const char *entit
 }
 
 bool sub_persist(bool verified) {
+  // Three-phase write. Chunk keys are reused, so a failure partway through the
+  // loop would leave some chunks new and some old while the header still
+  // described the old set -- a reboot would then load a mixture. Publishing an
+  // empty header first means any later failure leaves the panel with no
+  // bindings: visibly wrong, but never silently inconsistent.
+  const SubHeader invalid{SUB_FORMAT_VERSION, 0, sub_unverified};
+  if (!sub_header_pref().save(&invalid) || !global_preferences->sync()) {
+    ESP_LOGE(TAG, "Could not invalidate the stored header; leaving the saved set untouched");
+    return false;  // Nothing was written, so the previous set is still coherent
+  }
+
   const uint16_t chunks = (sub_staged + SUB_CHUNK_SIZE - 1) / SUB_CHUNK_SIZE;
   bool ok = true;
 
@@ -381,7 +392,7 @@ bool sub_persist(bool verified) {
       global_preferences->sync();
       if (!sub_chunk_pref(chunk).save(&data)) {
         ok = false;
-        break;  // Further chunks would leave the persisted set inconsistent
+        break;  // The header stays empty, so the partial set is never loaded
       }
     }
   }  // for each chunk
@@ -396,6 +407,9 @@ bool sub_persist(bool verified) {
   if (!global_preferences->sync()) {
     ok = false;
   } else if (ok) {
+    // Only once the header has actually reached NVS: a counter advanced for a
+    // commit that never landed would eventually trip SUB_MAX_UNVERIFIED_COMMITS
+    // and start refusing valid pushes.
     sub_unverified = committed_unverified;
   }
 
@@ -404,8 +418,9 @@ bool sub_persist(bool verified) {
     // is an unrecoverable boot loop. The panel keeps the previously loaded
     // bindings instead: wrong, but stable and diagnosable.
     ESP_LOGE(TAG,
-             "Could not persist %" PRIu16 " binding(s); the panel will keep using the previously saved set. "
-             "This usually means the NVS partition is full or fragmented; a factory reset of the panel clears it.",
+             "Could not persist %" PRIu16 " binding(s); the stored set is now empty and the panel will "
+             "subscribe to nothing after the next reboot. This usually means the NVS partition is full or "
+             "fragmented; a factory reset of the panel clears it.",
              sub_staged);
     return false;
   }
