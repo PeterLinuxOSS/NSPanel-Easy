@@ -63,6 +63,8 @@ stored, and arrives with every push.
    bindings are staged.
 4. **Commit.** If the staged set differs from the persisted one, the panel saves it and restarts.
    If it matches, nothing happens — which is the normal case on every reconnect.
+   If the save fails, the panel does **not** restart: it keeps the bindings it loaded at boot.
+   A restart on a set that was never saved would reload the old bindings and repeat indefinitely.
 5. **Steady state.** Home Assistant pushes state changes. The panel renders them. No automation
    runs.
 
@@ -326,3 +328,11 @@ previous bindings are still in effect. Check whether any `api_subscribe` call is
 Three consecutive pushes arrived without an end marker. Verify that the automation is calling
 `api_subscribe_end` after the last binding. The panel keeps running its last good set until this is
 resolved.
+
+### `Could not persist` in the log
+
+The bindings could not be written to NVS, so the panel is still running the set it loaded at boot
+and your changes have not taken effect. The NVS partition is full or fragmented; a factory reset of
+the panel clears it. The entry counts in `dump_config` show whether the partition is genuinely too
+small, which happens on panels first flashed with much older firmware — those need to be flashed
+over USB once.

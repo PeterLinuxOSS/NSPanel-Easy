@@ -551,8 +551,10 @@ void sub_push_binding(const char *page, const char *component, const char *entit
  *
  * @param count Number of bindings the blueprint sent. A mismatch discards the
  *              push and leaves the persisted set untouched.
- * @return true when the staged set differs from the persisted one and a restart
- *         is required.
+ * @return true when the staged set differs from the persisted one, was saved
+ *         successfully, and a restart is therefore required. false when nothing
+ *         changed, the push was rejected, or the save failed -- restarting on an
+ *         unpersisted set would reload the old bindings and loop forever.
  */
 bool sub_push_end(uint16_t count);
 
@@ -563,7 +565,8 @@ bool sub_push_end(uint16_t count);
  * SUB_MAX_UNVERIFIED_COMMITS consecutive unverified commits, so a systematically
  * failing push cannot produce a boot loop.
  *
- * @return true when a restart is required.
+ * @return true when the set was saved and a restart is required. See
+ *         sub_push_end() for why a failed save must not restart.
  */
 bool sub_push_timeout();
 
@@ -571,6 +574,7 @@ bool sub_push_timeout();
  * @brief Persist the staged set and clear the unverified-commit counter.
  *
  * @param verified Whether the push was confirmed by a matching end marker.
+ * @return true when every chunk and the header reached NVS.
  */
 bool sub_persist(bool verified);
 
