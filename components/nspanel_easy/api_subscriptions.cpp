@@ -386,17 +386,17 @@ bool sub_persist(bool verified) {
     }
   }  // for each chunk
 
+  uint8_t committed_unverified = sub_unverified;
   if (ok) {
-    const uint8_t unverified = verified ? 0 : static_cast<uint8_t>(sub_unverified + 1);
-    const SubHeader header{SUB_FORMAT_VERSION, sub_staged, unverified};
+    committed_unverified = verified ? 0 : static_cast<uint8_t>(sub_unverified + 1);
+    const SubHeader header{SUB_FORMAT_VERSION, sub_staged, committed_unverified};
     ok = sub_header_pref().save(&header);
-    if (ok) {
-      sub_unverified = unverified;
-    }
   }
 
   if (!global_preferences->sync()) {
     ok = false;
+  } else if (ok) {
+    sub_unverified = committed_unverified;
   }
 
   if (!ok) {
