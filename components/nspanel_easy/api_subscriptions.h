@@ -36,7 +36,7 @@
 namespace esphome::nspanel_easy {
 
 /// @brief Persisted format version. Bump whenever SubBinding's layout changes.
-static constexpr uint8_t SUB_FORMAT_VERSION = 1;
+static constexpr uint8_t SUB_FORMAT_VERSION = 2;  // 2: chunk size reduced from 16 to 4
 
 /// @brief Upper bound on bindings; storage is allocated to the configured count, not this.
 #ifndef NSPANEL_EASY_SUB_MAX
@@ -44,8 +44,16 @@ static constexpr uint8_t SUB_FORMAT_VERSION = 1;
 #endif  // NSPANEL_EASY_SUB_MAX
 static constexpr uint16_t SUB_MAX = NSPANEL_EASY_SUB_MAX;
 
-/// @brief Bindings per persisted NVS chunk. Keeps the sync() compare-copy spike small.
-static constexpr uint16_t SUB_CHUNK_SIZE = 16;
+/**
+ * @brief Bindings per persisted NVS chunk.
+ *
+ * Deliberately small. NVS stores each preference as a single blob and needs
+ * room for the new copy before releasing the old, so a large blob can fail with
+ * ESP_ERR_NVS_NOT_ENOUGH_SPACE on a partition that is merely fragmented rather
+ * than full. At 4 bindings a chunk is under 512 bytes, which fits comfortably
+ * inside one NVS page; at 16 it was roughly 1.8 KB.
+ */
+static constexpr uint16_t SUB_CHUNK_SIZE = 4;
 
 /// @brief Number of NVS chunks needed to hold SUB_MAX bindings.
 static constexpr uint16_t SUB_CHUNK_COUNT = (SUB_MAX + SUB_CHUNK_SIZE - 1) / SUB_CHUNK_SIZE;
@@ -543,8 +551,10 @@ void sub_push_binding(const char *page, const char *component, const char *entit
  *
  * @param count Number of bindings the blueprint sent. A mismatch discards the
  *              push and leaves the persisted set untouched.
- * @return true when the staged set differs from the persisted one and a restart
- *         is required.
+ * @return true when the staged set differs from the persisted one, was saved
+ *         successfully, and a restart is therefore required. false when nothing
+ *         changed, the push was rejected, or the save failed -- restarting on an
+ *         unpersisted set would reload the old bindings and loop forever.
  */
 bool sub_push_end(uint16_t count);
 
@@ -555,16 +565,23 @@ bool sub_push_end(uint16_t count);
  * SUB_MAX_UNVERIFIED_COMMITS consecutive unverified commits, so a systematically
  * failing push cannot produce a boot loop.
  *
- * @return true when a restart is required.
+ * @return true when the set was saved and a restart is required. See
+ *         sub_push_end() for why a failed save must not restart.
  */
 bool sub_push_timeout();
 
 /**
- * @brief Persist the staged set and clear the unverified-commit counter.
+ * @brief Persist the staged set.
+ *
+ * Written in three phases -- empty header, chunks, real header -- so that a
+ * failure part-way through leaves the stored set empty rather than a mixture of
+ * old and new chunks. The unverified-commit counter only advances once the
+ * header has reached NVS.
  *
  * @param verified Whether the push was confirmed by a matching end marker.
+ * @return true when every chunk and the header reached NVS.
  */
-void sub_persist(bool verified);
+bool sub_persist(bool verified);
 
 /// @brief Re-render every binding from its last known state.
 void sub_render_all();

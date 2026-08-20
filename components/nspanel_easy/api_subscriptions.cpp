@@ -9,6 +9,7 @@
 #include <cinttypes>
 
 #include <esp_heap_caps.h>
+#include <nvs.h>
 
 #include "esphome/components/api/api_server.h"
 #include "esphome/core/application.h"
@@ -82,7 +83,6 @@ static ESPPreferenceObject sub_header_pref() {
  * @brief Preference handle for one binding chunk.
  *
  * Chunking keeps the compare-before-write copy in ESP32Preferences::is_changed()
- * small: one chunk is under 2 KB, where a single blob would be roughly 14 KB.
  *
  * @param chunk Chunk index.
  * @return Preference object for SubChunk.
@@ -362,8 +362,21 @@ void sub_push_binding(const char *page, const char *component, const char *entit
   }  // for each live binding
 }
 
-void sub_persist(bool verified) {
+bool sub_persist(bool verified) {
+  // Three-phase write. Chunk keys are reused, so a failure partway through the
+  // loop would leave some chunks new and some old while the header still
+  // described the old set -- a reboot would then load a mixture. Publishing an
+  // empty header first means any later failure leaves the panel with no
+  // bindings: visibly wrong, but never silently inconsistent.
+  const SubHeader invalid{SUB_FORMAT_VERSION, 0, sub_unverified};
+  if (!sub_header_pref().save(&invalid) || !global_preferences->sync()) {
+    ESP_LOGE(TAG, "Could not invalidate the stored header; leaving the saved set untouched");
+    return false;  // Nothing was written, so the previous set is still coherent
+  }
+
   const uint16_t chunks = (sub_staged + SUB_CHUNK_SIZE - 1) / SUB_CHUNK_SIZE;
+  bool ok = true;
+
   for (uint16_t chunk = 0; chunk < chunks; ++chunk) {
     SubChunk data{};
     for (uint16_t slot = 0; slot < SUB_CHUNK_SIZE; ++slot) {
@@ -372,15 +385,48 @@ void sub_persist(bool verified) {
         data.bindings[slot] = sub_staging[idx];
       }
     }
-    sub_chunk_pref(chunk).save(&data);
+    if (!sub_chunk_pref(chunk).save(&data)) {
+      ESP_LOGW(TAG, "Chunk %" PRIu16 " failed to save; retrying after a sync", chunk);
+      // A sync flushes pending writes, which can release space that a rewrite
+      // of an existing key needs before the old copy can be dropped.
+      global_preferences->sync();
+      if (!sub_chunk_pref(chunk).save(&data)) {
+        ok = false;
+        break;  // The header stays empty, so the partial set is never loaded
+      }
+    }
   }  // for each chunk
 
-  sub_unverified = verified ? 0 : static_cast<uint8_t>(sub_unverified + 1);
-  SubHeader header{SUB_FORMAT_VERSION, sub_staged, sub_unverified};
-  sub_header_pref().save(&header);
-  global_preferences->sync();
+  uint8_t committed_unverified = sub_unverified;
+  if (ok) {
+    committed_unverified = verified ? 0 : static_cast<uint8_t>(sub_unverified + 1);
+    const SubHeader header{SUB_FORMAT_VERSION, sub_staged, committed_unverified};
+    ok = sub_header_pref().save(&header);
+  }
+
+  if (!global_preferences->sync()) {
+    ok = false;
+  } else if (ok) {
+    // Only once the header has actually reached NVS: a counter advanced for a
+    // commit that never landed would eventually trip SUB_MAX_UNVERIFIED_COMMITS
+    // and start refusing valid pushes.
+    sub_unverified = committed_unverified;
+  }
+
+  if (!ok) {
+    // Never schedule a restart here. A restart on a write that cannot succeed
+    // is an unrecoverable boot loop. The panel keeps the previously loaded
+    // bindings instead: wrong, but stable and diagnosable.
+    ESP_LOGE(TAG,
+             "Could not persist %" PRIu16 " binding(s); the stored set is now empty and the panel will "
+             "subscribe to nothing after the next reboot. This usually means the NVS partition is full or "
+             "fragmented; a factory reset of the panel clears it.",
+             sub_staged);
+    return false;
+  }
 
   ESP_LOGI(TAG, "Persisted %" PRIu16 " binding(s)%s", sub_staged, verified ? "" : " (unverified)");
+  return true;
 }
 
 /**
@@ -427,8 +473,7 @@ bool sub_push_end(uint16_t count) {
       return false;
     }
     ESP_LOGI(TAG, "All bindings cleared");
-    sub_persist(true);
-    return true;
+    return sub_persist(true);
   }  // if empty push
 
   if (!sub_pushing) {
@@ -449,9 +494,9 @@ bool sub_push_end(uint16_t count) {
     return false;
   }
 
-  sub_persist(true);
+  const bool persisted = sub_persist(true);
   sub_push_release();
-  return true;
+  return persisted;
 }
 
 bool sub_push_timeout() {
@@ -475,9 +520,9 @@ bool sub_push_timeout() {
   }
 
   ESP_LOGW(TAG, "No end marker; committing %" PRIu16 " binding(s) unverified", sub_staged);
-  sub_persist(false);
+  const bool persisted = sub_persist(false);
   sub_push_release();
-  return true;
+  return persisted;
 }
 
 void sub_render_all() {
@@ -496,6 +541,11 @@ void sub_dump_config() {
     const SubBinding &binding = sub_bindings[idx];
     ESP_LOGCONFIG(TAG, "  %s.%s <- %s%s%s", binding.page, binding.component, binding.entity,
                   binding.inverted ? " (inverted)" : "", sub_renderers[idx] == nullptr ? " [no renderer]" : "");
+  }
+  nvs_stats_t nvs{};
+  if (nvs_get_stats(nullptr, &nvs) == ESP_OK) {
+    ESP_LOGCONFIG(TAG, "  NVS entries: %zu used, %zu free of %zu", nvs.used_entries, nvs.free_entries,
+                  nvs.total_entries);
   }
 }
 
