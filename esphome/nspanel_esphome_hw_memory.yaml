@@ -21,8 +21,11 @@ substitutions:
   MEMORY_DUMP_DETAILS_: ${ 1 if memory_dump_details else 0 }
 
 button:
-  - platform: factory_reset
+  - id: bt_factory_reset
     name: Factory reset
+    platform: factory_reset
+    disabled_by_default: true
+    internal: false
 
 esp32:
   framework:
