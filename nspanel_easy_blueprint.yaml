@@ -4389,7 +4389,7 @@ blueprint:
                   value: '6'
                 - label: 112px
                   value: '11'
-                - label: 192px
+                - label: 188px
                   value: '12'
         screensaver_display_time_font_color:
           name: Screen saver - Display time font color
