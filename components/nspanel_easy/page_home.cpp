@@ -5,14 +5,18 @@
 #include "page_home.h"
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
+
 #include <cctype>
 #include <cinttypes>
 #include <cstdio>
 
 #include "esphome/components/nextion/nextion.h"
+#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
 #include "nextion_components.h"
+#include "text.h"
+
 #endif  // NSPANEL_EASY_SUBSCRIBE
 
 namespace esphome::nspanel_easy {
@@ -24,6 +28,17 @@ bool is_home_page = false;
 static const char *const TAG = "nspanel.page.home.sub";
 
 HomeButtonState home_button_states[HOME_BUTTON_COUNT] = {};
+
+bool indoor_temp_bound = false;
+bool indoor_temp_valid = false;
+std::function<void()> indoor_temp_fallback;
+
+/// @brief Last rendered text for each subscribed temperature component.
+static char indoor_temp_text[TEMP_TEXT_LEN] = {};
+static char outdoor_temp_text[TEMP_TEXT_LEN] = {};
+
+/// @brief Whether the outdoor temperature component is currently shown.
+static bool outdoor_temp_shown = false;
 
 /**
  * @brief Parse the slot index out of a custom button component name.
@@ -171,6 +186,120 @@ static void home_weather_render(const char *state) {
 
 #endif  // NSPANEL_EASY_USE_WEATHER
 
+/**
+ * @brief Format a temperature the way every other page in the project does.
+ *
+ * Fahrenheit renders without decimals, Celsius with one, matching
+ * display_embedded_temp() and the climate page. The value is rendered exactly
+ * as Home Assistant reported it: no unit conversion is attempted, since a
+ * subscribed entity carries no reliable native unit.
+ *
+ * @param value Temperature as reported by Home Assistant.
+ * @param out Destination buffer.
+ * @param size Size of the destination buffer.
+ */
+static void format_temperature(float value, char *out, size_t size) {
+  char buffer[TEMP_TEXT_LEN];
+  const char *separator = (units_separator_str != nullptr) ? units_separator_str->c_str() : "";
+#if NSPANEL_EASY_HW_TEMPERATURE_IS_FAHRENHEIT
+  snprintf(buffer, sizeof(buffer), "%.0f%s\u00b0F", value, separator);
+#else   // Celsius
+  snprintf(buffer, sizeof(buffer), "%.1f%s\u00b0C", value, separator);
+#endif  // NSPANEL_EASY_HW_TEMPERATURE_IS_FAHRENHEIT
+
+  // Guarded indexing: an empty separator would be undefined behaviour here.
+  const char decimal =
+      (decimal_separator_str == nullptr || decimal_separator_str->empty()) ? '.' : (*decimal_separator_str)[0];
+  const std::string adjusted = adjustDecimalSeparator(buffer, decimal);
+  strncpy(out, adjusted.c_str(), size - 1);
+  out[size - 1] = '\0';
+}
+
+/**
+ * @brief Render a subscription binding onto the indoor temperature.
+ *
+ * The subscription owns the component only while it has a usable number. When
+ * the bound entity has no value, display_embedded_temp() takes back over and
+ * shows the panel's own sensor, so the component is never left blank and needs
+ * no visibility handling of its own.
+ *
+ * @param state Raw state string, or the current_temperature attribute for climate.
+ */
+static void home_indoor_temp_render(const char *state) {
+  indoor_temp_bound = true;
+
+  const auto value = parse_number<float>(state);
+  if (!value.has_value()) {
+    // Unavailable, unknown, empty or simply not a number. Hand the component
+    // back rather than waiting for the next embedded sensor publication, which
+    // can be minutes away.
+    if (indoor_temp_valid) {
+      indoor_temp_valid = false;
+      indoor_temp_text[0] = '\0';
+      ESP_LOGD(TAG, "Indoor temperature unavailable; falling back to the embedded sensor");
+      if (indoor_temp_fallback) {
+        indoor_temp_fallback();
+      }
+    }
+    return;
+  }
+
+  indoor_temp_valid = true;
+  char text[TEMP_TEXT_LEN];
+  format_temperature(*value, text, sizeof(text));
+  if (strcmp(indoor_temp_text, text) == 0) {
+    return;  // Nothing changed; avoid a redundant Nextion write
+  }
+  strncpy(indoor_temp_text, text, sizeof(indoor_temp_text) - 1);
+  indoor_temp_text[sizeof(indoor_temp_text) - 1] = '\0';
+
+  if (!is_home_page) {
+    return;  // Shadow is up to date; the repaint on entry will draw it
+  }
+  nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
+}
+
+/**
+ * @brief Render a subscription binding onto the outdoor temperature.
+ *
+ * Shown while the bound entity reports a usable number, hidden otherwise. There
+ * is no local fallback for this component, so hiding it is the only sensible
+ * response to an unavailable entity.
+ *
+ * @param state Raw state string, or the temperature attribute for weather.
+ */
+static void home_outdoor_temp_render(const char *state) {
+  const auto value = parse_number<float>(state);
+  const bool visible = value.has_value();
+
+  if (visible) {
+    char text[TEMP_TEXT_LEN];
+    format_temperature(*value, text, sizeof(text));
+    if (strcmp(outdoor_temp_text, text) != 0) {
+      strncpy(outdoor_temp_text, text, sizeof(outdoor_temp_text) - 1);
+      outdoor_temp_text[sizeof(outdoor_temp_text) - 1] = '\0';
+      if (is_home_page) {
+        nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
+      }
+    }
+  } else {
+    outdoor_temp_text[0] = '\0';
+  }
+
+  if (visible == outdoor_temp_shown) {
+    return;  // Visibility unchanged
+  }
+  outdoor_temp_shown = visible;
+
+  // The TFT keeps its own visibility variable per home component and applies it
+  // on page entry, so writing only the vis command would be undone on the next
+  // page change.
+  nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
+  if (is_home_page) {
+    nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, visible);
+  }
+}
+
 void home_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible) {
   if (nextion_display == nullptr) {
     return;  // Boot has not handed the display over yet
@@ -187,6 +316,14 @@ void home_sub_render(const SubBinding &binding, const SubRuntime &rt, const char
     return;
   }
 #endif  // NSPANEL_EASY_USE_WEATHER
+  if (strcmp(binding.component, "indr_temp") == 0) {
+    home_indoor_temp_render(state);
+    return;
+  }
+  if (strcmp(binding.component, "outdoor_temp") == 0) {
+    home_outdoor_temp_render(state);
+    return;
+  }
   ESP_LOGW(TAG, "'%s' is not a subscribable home component", binding.component);
 }
 
@@ -198,6 +335,7 @@ void home_button_repaint() {
   if (!is_home_page) {
     return;  // Unscoped names resolve against the visible page only
   }
+
   char component[9] = {};  // "buttonNN" + null terminator
   for (uint8_t idx = 0; idx < HOME_BUTTON_COUNT; ++idx) {
     HomeButtonState &button = home_button_states[idx];
@@ -210,6 +348,16 @@ void home_button_repaint() {
     nextion_display->set_component_visibility(component, true);
     button.shown = true;
   }  // for each custom button slot
+
+  // Temperatures are repainted from the same shadow, for the same reason: the
+  // Nextion does not retain what was drawn on a page that has been left.
+  if (indoor_temp_bound && indoor_temp_valid && indoor_temp_text[0] != '\0') {
+    nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
+  }
+  if (outdoor_temp_shown && outdoor_temp_text[0] != '\0') {
+    nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
+    nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, true);
+  }
 }
 
 #endif  // NSPANEL_EASY_SUBSCRIBE

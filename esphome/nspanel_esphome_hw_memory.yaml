@@ -20,6 +20,13 @@ substitutions:
   memory_dump_details: false
   MEMORY_DUMP_DETAILS_: ${ 1 if memory_dump_details else 0 }
 
+button:
+  - id: bt_factory_reset
+    name: Factory reset
+    platform: factory_reset
+    disabled_by_default: true
+    internal: false
+
 esp32:
   framework:
     advanced:
@@ -28,6 +35,10 @@ esp32:
 esphome:
   build_flags:
     - -D NSPANEL_EASY_HW_MEMORY
+
+factory_reset:
+  resets_required: 10
+  max_delay: 10s
 
 nspanel_easy:
   psram_clk_pin: ${GPIO_PSRAM_CLK_PIN}

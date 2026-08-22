@@ -29,11 +29,6 @@ globals:
     restore_value: true
     initial_value: 'true'
 
-  - id: temperature_unit
-    type: std::string
-    restore_value: true
-    initial_value: '"${temp_units}"'
-
 number:
   - id: temperature_correction  # Temperature correction
     name: Temperature Correction
@@ -62,14 +57,6 @@ number:
             #endif
 
 script:
-  - id: !extend action_component_text
-    then:
-      - lambda: |-
-          if (page != "mem") return;
-          if (component == "temp_unit") {
-            id(temperature_unit) = (txt == "°F") ? "°F" : "°C";
-          }
-
   - id: !extend action_component_val
     then:
       - lambda: |-
@@ -78,11 +65,22 @@ script:
             id(embedded_indoor_temp) = (val>0);
           }
 
+  - id: !extend boot_nextion
+    then:
+      - lambda: |-
+          // Only when using subscriptions
+          #if defined(NSPANEL_EASY_PAGE_HOME) && defined(NSPANEL_EASY_SUBSCRIBE)
+          indoor_temp_fallback = []() { display_embedded_temp->execute(); };
+          #endif  // NSPANEL_EASY_PAGE_HOME && NSPANEL_EASY_SUBSCRIBE
+
   - id: display_embedded_temp  # Show panel's temperature if selected, or API or Wi-Fi are out
     mode: single
     then:
       - lambda: |-
           if (system_flags.tft_upload_active) return;
+          #if defined(NSPANEL_EASY_PAGE_HOME) && defined(NSPANEL_EASY_SUBSCRIBE)
+          if (indoor_temp_bound && indoor_temp_valid) return;  // The subscription owns this component
+          #endif  // NSPANEL_EASY_PAGE_HOME && NSPANEL_EASY_SUBSCRIBE
           if (!id(embedded_indoor_temp) and
               api_server->is_connected_with_state_subscription() and
               wifi_component->is_connected() and

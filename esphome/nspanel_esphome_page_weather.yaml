@@ -9,6 +9,7 @@
 substitutions:
   TAG_PAGE_WEATHER: nspanel.page.weather
   SECONDS_PER_DAY: 86400
+  THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET: 48
 
 display:
   - id: !extend disp1

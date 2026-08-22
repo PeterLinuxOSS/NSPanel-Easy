@@ -236,6 +236,27 @@ blueprint:
           default: false
           selector:
             boolean:
+        sun_zone:
+          name: Sun position - Zone
+          description: >-
+            The zone whose coordinates the panel uses to work out sunrise and sunset,
+            which decides whether day or night weather icons are shown on the Home page.
+
+            Leave this empty to use your home zone. Set it only when the panel is
+            somewhere else, such as a holiday home.
+
+            The coordinates are read once and stored on the panel, so it keeps showing
+            the correct icons even while Home Assistant is unreachable. Until they are
+            available the panel treats 06:00-18:00 as daytime.
+
+            *Only one entity may be selected.*
+          default: &selector_entity_single_default_empty []
+          selector:
+            entity:
+              multiple: &selector_entity_single_multiple false
+              filter:
+                domain:
+                  - zone
     weather_temperature:
       name: Weather and temperature
       icon: mdi:weather-partly-snowy-rainy
@@ -250,10 +271,10 @@ blueprint:
             This will be used for weather information on Home page and all the weather pages.
 
             *Only one entity may be selected.*
-          default: &selector_entity_single_default_empty []
+          default: *selector_entity_single_default_empty
           selector:
             entity:
-              multiple: &selector_entity_single_multiple false
+              multiple: *selector_entity_single_multiple
               filter:
                 domain:
                   - weather
@@ -4389,7 +4410,7 @@ blueprint:
                   value: '6'
                 - label: 112px
                   value: '11'
-                - label: 192px
+                - label: 188px
                   value: '12'
         screensaver_display_time_font_color:
           name: Screen saver - Display time font color
@@ -5641,32 +5662,6 @@ triggers:
         for:
           seconds: 1
 
-  - triggers:  # Home page - Weather and temperatures
-      - alias: Outdoor temperature
-        id: outdoortemp_state
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input outdoortemp
-
-      - alias: Indoor temperature
-        id: indoortemp_state
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input indoortemp
-
-      - alias: Weather conditions
-        id: weather_state_change
-        trigger: event
-        event_type: state_changed
-        event_data:
-          entity_id: !input weather_entity
-      - alias: The Sun
-        id: sun_state_change
-        trigger: template
-        value_template: '{{ sun_is_up }}'
-
 # yamllint disable rule:line-length
 conditions:
   - >  # Trigger is coming from panel's event or Device Name is available
@@ -5699,11 +5694,6 @@ conditions:
         detailed_entity | length > 0 and
         trigger.entity_id == states(detailed_entity)
       )
-    }}
-  - >  # Don't update indoor temp when embedded temp is used
-    {{
-      trigger.id != "indoortemp_state" or
-      ((home_page_background_update or pages.current == pages.home ) and not embedded_indoor_temperature)
     }}
 # yamllint enable rule:line-length
 
@@ -6422,23 +6412,6 @@ actions:
             page: entitypage04
             component: value08
 
-      ##### WEATHER ####
-      weather_entity_tmp: !input weather_entity
-      temperature_units: !input temperature_unit
-
-      weather_entity: >
-        {% if weather_entity_tmp is string and weather_entity_tmp | length > 0 %} {{ weather_entity_tmp }}
-        {% elif states.weather | list | count > 0 %} {{ states.weather | map(attribute="entity_id") | list | first }}
-        {% endif %}
-
-      weather_entity_uom: '{{ state_attr(weather_entity, "temperature_unit") }}'
-
-      weather_temp_units: >
-        {{
-          weather_entity_uom if weather_entity_uom is string and weather_entity_uom | length > 0
-          else temperature_units
-        }}
-
       ##### Climate page #####
       page_climate:
         buttons:
@@ -6986,53 +6959,118 @@ actions:
                       # Stop here if this is initial boot as Nextion may not be ready
                       - condition: '{{ global_settings_setup }}'
 
-                      - alias: API Subscriptions
+                      - alias: Sun position
                         sequence:
                           - variables:
-                              chips:
-                                ##### Chips #####
-                                - entity: !input chip01
-                                  inverted: !input chip01_inverted
-                                  icon: !input chip01_icon
-                                  icon_color_rgb: !input chip01_icon_color
-                                  page: chips
-                                  component: chip01
-                                - entity: !input chip02
-                                  inverted: !input chip02_inverted
-                                  icon: !input chip02_icon
-                                  icon_color_rgb: !input chip02_icon_color
-                                  page: chips
-                                  component: chip02
-                                - entity: !input chip03
-                                  inverted: !input chip03_inverted
-                                  icon: !input chip03_icon
-                                  icon_color_rgb: !input chip03_icon_color
-                                  page: chips
-                                  component: chip03
-                                - entity: !input chip04
-                                  inverted: !input chip04_inverted
-                                  icon: !input chip04_icon
-                                  icon_color_rgb: !input chip04_icon_color
-                                  page: chips
-                                  component: chip04
-                                - entity: !input chip05
-                                  inverted: !input chip05_inverted
-                                  icon: !input chip05_icon
-                                  icon_color_rgb: !input chip05_icon_color
-                                  page: chips
-                                  component: chip05
-                                - entity: !input chip06
-                                  inverted: !input chip06_inverted
-                                  icon: !input chip06_icon
-                                  icon_color_rgb: !input chip06_icon_color
-                                  page: chips
-                                  component: chip06
-                                - entity: !input chip07
-                                  inverted: !input chip07_inverted
-                                  icon: !input chip07_icon
-                                  icon_color_rgb: !input chip07_icon_color
-                                  page: chips
-                                  component: chip07
+                              sun_zone_tmp: !input sun_zone
+
+                              sun_zone_entity: >
+                                {%- if sun_zone_tmp is string and sun_zone_tmp | length > 0 -%}
+                                  {{ sun_zone_tmp }}
+                                {%- elif sun_zone_tmp is list and sun_zone_tmp | count > 0 and sun_zone_tmp[0] is string -%}
+                                  {{ sun_zone_tmp[0] }}
+                                {%- elif states.zone.home is not none -%}
+                                  zone.home
+                                {%- elif states.zone | list | count > 0 -%}
+                                  {{ states.zone | map(attribute="entity_id") | list | first }}
+                                {%- endif -%}
+
+                              sun_latitude: '{{ state_attr(sun_zone_entity, "latitude") if sun_zone_entity | length > 0 }}'
+                              sun_longitude: '{{ state_attr(sun_zone_entity, "longitude") if sun_zone_entity | length > 0 }}'
+                          - alias: Send Sun position
+                            if: '{{ sun_latitude | is_number and sun_longitude | is_number }}'
+                            then:
+                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                data:
+                                  page: mem
+                                  id: sun_coordinates
+                                  txt_list:
+                                    - '{{ sun_latitude }}'
+                                    - '{{ sun_longitude }}'
+                                continue_on_error: true
+                              - *delay_default
+
+                      - alias: API Subscriptions
+                        sequence:
+                          - variables: &variables_weather_entity_from_input
+                              weather_entity_tmp: !input weather_entity
+                              weather_entity: >
+                                {%- if weather_entity_tmp is string and weather_entity_tmp | length > 0 -%} {{ weather_entity_tmp }}
+                                {%- elif states.weather | list | count > 0 -%} {{ states.weather | map(attribute="entity_id") | list | first }}
+                                {%- endif -%}
+
+                          - variables: &variables_temperature_entities_from_input
+                              outdoortemp_tmp: !input outdoortemp
+
+                              outdoor_temp_entity: >
+                                {%- if outdoortemp_tmp is string and outdoortemp_tmp | length > 0 -%} {{ outdoortemp_tmp }}
+                                {%- elif outdoortemp_tmp is list and outdoortemp_tmp | count > 0 and outdoortemp_tmp[0] is string -%} {{ outdoortemp_tmp[0] }}
+                                {%- else -%} {{ weather_entity }}
+                                {%- endif -%}
+
+                              indoortemp_tmp: !input indoortemp
+                              home_indoor_temp_visible_tmp: !input home_indoor_temp_visible
+
+                              indoor_temp_entity: >
+                                {%- if not home_indoor_temp_visible_tmp -%}
+                                {%- elif indoortemp_tmp is string and indoortemp_tmp | length > 0 -%} {{ indoortemp_tmp }}
+                                {%- elif indoortemp_tmp is list and indoortemp_tmp | count > 0 and indoortemp_tmp[0] is string -%} {{ indoortemp_tmp[0] }}
+                                {%- endif -%}
+                          - variables:
+                              subs_lists:
+                                chips:
+                                  - entity: !input chip01
+                                    inverted: !input chip01_inverted
+                                    icon: !input chip01_icon
+                                    icon_color_rgb: !input chip01_icon_color
+                                    page: chips
+                                    component: chip01
+                                  - entity: !input chip02
+                                    inverted: !input chip02_inverted
+                                    icon: !input chip02_icon
+                                    icon_color_rgb: !input chip02_icon_color
+                                    page: chips
+                                    component: chip02
+                                  - entity: !input chip03
+                                    inverted: !input chip03_inverted
+                                    icon: !input chip03_icon
+                                    icon_color_rgb: !input chip03_icon_color
+                                    page: chips
+                                    component: chip03
+                                  - entity: !input chip04
+                                    inverted: !input chip04_inverted
+                                    icon: !input chip04_icon
+                                    icon_color_rgb: !input chip04_icon_color
+                                    page: chips
+                                    component: chip04
+                                  - entity: !input chip05
+                                    inverted: !input chip05_inverted
+                                    icon: !input chip05_icon
+                                    icon_color_rgb: !input chip05_icon_color
+                                    page: chips
+                                    component: chip05
+                                  - entity: !input chip06
+                                    inverted: !input chip06_inverted
+                                    icon: !input chip06_icon
+                                    icon_color_rgb: !input chip06_icon_color
+                                    page: chips
+                                    component: chip06
+                                  - entity: !input chip07
+                                    inverted: !input chip07_inverted
+                                    icon: !input chip07_icon
+                                    icon_color_rgb: !input chip07_icon_color
+                                    page: chips
+                                    component: chip07
+                                weather:
+                                  - entity: '{{ weather_entity }}'  # Weather picture
+                                    page: home
+                                    component: weather
+                                  - entity: '{{ outdoor_temp_entity }}'  # Outdoor temperature
+                                    page: home
+                                    component: outdoor_temp
+                                  - entity: '{{ indoor_temp_entity }}'  # Indoor temperature
+                                    page: home
+                                    component: indr_temp
 
                               ##### API subscriptions #####
                               # Components driven directly by ESPHome through Home Assistant state
@@ -7041,8 +7079,12 @@ actions:
                               api_subs_mapping: >
                                 {{
                                   (
-                                    chips
+                                    subs_lists.chips
                                     | map('combine', {'page': 'chips'})
+                                    | list
+                                  ) + (
+                                    subs_lists.weather
+                                    | map('combine', {'page': 'home'})
                                     | list
                                   ) + (
                                     home_page.custom_buttons
@@ -7346,7 +7388,7 @@ actions:
                             continue_on_error: true
                           - *delay_boot
 
-                      - alias: Home page - outdoor_temp
+                      - alias: Home page - outdoor_temp - color
                         sequence:
                           - action: 'esphome.{{ action_prefix }}_component_color'
                             data:
@@ -7356,33 +7398,13 @@ actions:
                             continue_on_error: true
                           - *delay_boot
 
-                      - alias: Home page - indr_temp
+                      - alias: Home page - indr_temp - color
                         sequence:
                           - action: 'esphome.{{ action_prefix }}_component_color'
                             data:
                               page: home
                               id: indr_temp
                               color: !input home_indoor_temp_label_color
-                            continue_on_error: true
-                          - *delay_boot
-                          - action: 'esphome.{{ action_prefix }}_component_text_list'
-                            data:
-                              page: home
-                              id: indr_temp_icon
-                              txt_list:
-                                - >
-                                  {{
-                                    all_icons[home_indoor_temp_icon.split("mdi:")[1]]
-                                    if home_indoor_temp_icon.split("mdi:") | count == 2 and home_indoor_temp_icon.split("mdi:")[1] in all_icons
-                                    else all_icons.thermometer
-                                  }}
-                            continue_on_error: true
-                          - *delay_boot
-                          - action: 'esphome.{{ action_prefix }}_component_color'
-                            data:
-                              page: home
-                              id: indr_temp_icon
-                              color: !input home_indoor_temp_icon_color
                             continue_on_error: true
                           - *delay_boot
 
@@ -8050,156 +8072,6 @@ actions:
                       - alias: Home page
                         conditions: '{{ nspanel_event.page == pages.home }}'
                         sequence: &refresh_page_home
-                          ##### Weather Icon Home Page #####
-                          - &refresh-page_home-weather_pic
-                            action: 'esphome.{{ action_prefix }}_component_val'
-                            data:
-                              page: mem
-                              id: weather_pic
-                              val: >-
-                                {{
-                                  nextion.pic.weather[
-                                    states(weather_entity) | default("unavailable")
-                                    if weather_entity is string and has_value(weather_entity)
-                                    else "unavailable"
-                                  ] | default(1)
-                                }}
-                            continue_on_error: true
-                          - *delay_default
-
-                          ##### NSPanel Outdoor Temp #####
-                          - &refresh-page_home-outdoor_temp
-                            alias: Home page - Outdoor temp
-                            continue_on_error: true
-                            sequence:
-                              - variables:
-                                  outdoortemp_tmp: !input outdoortemp
-                                  outdoor_temp_entity: >
-                                    {% if outdoortemp_tmp is defined
-                                        and outdoortemp_tmp is list
-                                        and (outdoortemp_tmp | count > 0)
-                                        and (outdoortemp_tmp[0] is string) %}
-                                      {{ outdoortemp_tmp[0] }}
-                                    {% elif outdoortemp_tmp is defined
-                                        and outdoortemp_tmp is string
-                                        and outdoortemp_tmp | length > 0 %}
-                                      {{ outdoortemp_tmp }}
-                                    {% else %}
-                                      {{ "" }}
-                                    {% endif %}
-
-                                  outdoor_temp_entity_valid: >
-                                    {{
-                                      outdoor_temp_entity is string and
-                                      outdoor_temp_entity is match "sensor."
-                                    }}
-
-                                  outdoor_temp: >-
-                                    {%- if outdoor_temp_entity_valid and has_value(outdoor_temp_entity) -%}
-                                      {%- set with_units = states(outdoor_temp_entity, rounded=True, with_unit=True) -%}
-                                      {%- set without_units = states(outdoor_temp_entity, rounded=True, with_unit=False) -%}
-                                      {%- if with_units == without_units or not is_number(without_units) -%}
-                                        {{ with_units }}
-                                      {%- else -%}
-                                        {%- set unit = with_units.split(without_units)[1] | trim -%}
-                                        {{ without_units ~ units_separator ~ unit }}
-                                      {%- endif -%}
-                                    {%- elif weather_entity is string and
-                                              weather_entity.split(".") | count == 2 and
-                                              weather_entity.split(".")[0] == "weather" -%}
-                                      {%- set temp_from_weather = state_attr(weather_entity, "temperature") -%}
-                                      {%- if is_number(temp_from_weather) -%}
-                                        {{
-                                          (
-                                            (temp_from_weather | float)
-                                            | round(0 if weather_temp_units in ["F", "f", "°F", "°f"] else 1)
-                                          ) ~ units_separator ~ weather_temp_units
-                                        }}
-                                      {%- else -%}
-                                        {{ "" }}
-                                      {%- endif -%}
-                                    {%- else -%}
-                                      {{ "" }}
-                                    {%- endif -%}
-
-                                  outdoor_temp_trimmed: >-
-                                    {%- if compact_unit_display -%}
-                                      {{ outdoor_temp | trim }}
-                                    {%- else -%}
-                                      {{ outdoor_temp | regex_replace('\s+', ' ') | trim }}
-                                    {%- endif -%}
-
-                              - condition: "{{ outdoor_temp_trimmed != '' }}"
-                              - action: 'esphome.{{ action_prefix }}_component_text_list'
-                                data:
-                                  page: home
-                                  id: outdoor_temp
-                                  txt_list:
-                                    - '{{ outdoor_temp_trimmed }}'
-                                continue_on_error: true
-                              - *delay_default
-
-                          - &refresh_page_home_indoor_temp
-                            alias: Home page - Indoor temperature
-                            sequence:
-                              - variables:
-                                  home_indoor_temp_visible: !input home_indoor_temp_visible
-                              - if: '{{ page_constructor }}'
-                                then:
-                                  - action: 'esphome.{{ action_prefix }}_components_visibility'
-                                    data:
-                                      page: home
-                                      ids:
-                                        - indr_temp
-                                        - indr_temp_icon
-                                      visible: >-
-                                        {{
-                                          home_indoor_temp_visible
-                                          if home_indoor_temp_visible is defined
-                                          else false
-                                        }}
-                                    continue_on_error: true
-                                  - *delay_default
-                              - condition:
-                                  - '{{ home_indoor_temp_visible is defined and home_indoor_temp_visible }}'
-                                  - '{{ not embedded_indoor_temperature }}'
-                                  - '{{ has_value(indoor_temperature_sensor) }}'
-                              - variables:
-                                  indoor_temp: >-
-                                    {%- if indoor_temperature_sensor.split(".")[0] == "climate" -%}
-                                      {%- set current_temp = state_attr(indoor_temperature_sensor, "current_temperature") -%}
-                                      {%- if is_number(current_temp) -%}
-                                        {%- set unit = state_attr(indoor_temperature_sensor, "temperature_unit") -%}
-                                        {%- set unit = unit if unit is string and unit | length > 0 else temperature_units -%}
-                                        {{ current_temp | round(1) ~ units_separator ~ unit }}
-                                      {%- else -%}
-                                        {{ "" }}
-                                      {%- endif -%}
-                                    {%- else -%}
-                                      {%- set with_units = states(indoor_temperature_sensor, rounded=True, with_unit=True) -%}
-                                      {%- set without_units = states(indoor_temperature_sensor, rounded=True, with_unit=False) -%}
-                                      {%- if with_units == without_units or not is_number(without_units) -%}
-                                        {{ with_units }}
-                                      {%- else -%}
-                                        {%- set unit = with_units.split(without_units)[1] | trim -%}
-                                        {{ without_units ~ units_separator ~ unit }}
-                                      {%- endif -%}
-                                    {%- endif -%}
-                                  indoor_temp_trimmed: >-
-                                    {%- if compact_unit_display -%}
-                                      {{ indoor_temp | trim }}
-                                    {%- else -%}
-                                      {{ indoor_temp | regex_replace('\s+', ' ') | trim }}
-                                    {%- endif -%}
-                              - condition: '{{ indoor_temp_trimmed != "" }}'
-                              - action: 'esphome.{{ action_prefix }}_component_text_list'
-                                data:
-                                  page: home
-                                  id: indr_temp
-                                  txt_list:
-                                    - '{{ indoor_temp_trimmed }}'
-                                continue_on_error: true
-
                           ###### Climate chip ######
                           - &update_home_page_climate_chip
                             if: '{{ (not embedded_climate) and climate is string and climate is match "climate." }}'
@@ -8456,6 +8328,7 @@ actions:
                                                   and trigger.entity_id in [repeat.item.entity, state_entity_id])
                                             }}
                                           {% endif %}
+                                        temperature_units: !input temperature_unit
                                         btn_bri_txt: >  # Buttons value (brightness, temperature, etc.)
                                           {% if not has_value(entity_id) %} 0
                                           {% elif entity_domain == "light" and entity_state == "on" %}
@@ -9943,6 +9816,7 @@ actions:
                       - alias: Weather pages  ## PAGE WEATHER (WEATHER01 to WEATHER05)
                         conditions: '{{ nspanel_event.page in pages.weatherpages }}'
                         sequence:
+                          - variables: *variables_weather_entity_from_input
                           - variables:
                               weather_attribution: '{{ state_attr(weather_entity, "attribution") if weather_entity is string }}'
                               weather_units:
@@ -10426,6 +10300,14 @@ actions:
 
                                   ##### Display temperature min/max when available
                                   - variables:
+                                      temperature_units: !input temperature_unit
+                                      weather_entity_uom: '{{ state_attr(weather_entity, "temperature_unit") }}'
+
+                                      weather_temp_units: >
+                                        {{
+                                          weather_entity_uom if weather_entity_uom is string and weather_entity_uom | length > 0
+                                          else temperature_units
+                                        }}
                                       temperature_string: >
                                         {{ (temp_min | round(0) ~ units_separator ~ weather_temp_units) if is_number(temp_min) }}
                                         {{ "/" if is_number(temp_min) and is_number(temp_max) and temp_min != temp_max }}
@@ -11980,35 +11862,6 @@ actions:
                 }}
               sequence:
                 - *display_value
-
-      - alias: Update home page - Indoor temp
-        conditions:
-          - condition: trigger
-            id:
-              - indoortemp_state
-          - '{{ is_number(trigger.event.data.new_state.state) }}'
-        sequence:
-          - *refresh_page_home_indoor_temp
-
-      - alias: Update home page - Outdoor temp
-        conditions:
-          - condition: trigger
-            id: outdoortemp_state
-          - '{{ is_number(trigger.event.data.new_state.state) }}'
-        sequence:
-          - *refresh-page_home-outdoor_temp
-
-      - alias: Update home page - Weather
-        conditions:
-          - '{{ pages.current == pages.home }}'
-          - >
-            {{
-              (trigger.id == "weather_state_change" and trigger.event.data.new_state.state not in enum.states.unknown) or
-              (trigger.id == "sun_state_change" and trigger.to_state.state not in enum.states.unknown)
-            }}
-        sequence:
-          - *refresh-page_home-outdoor_temp
-          - *refresh-page_home-weather_pic
 
       - alias: Update QR code
         conditions:

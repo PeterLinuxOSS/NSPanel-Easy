@@ -140,7 +140,7 @@ script:
           const std::string& sep = id(mui_decimal_separator);
           const char dec_sep = sep.empty() ? '.' : sep[0];
           const char dec_separator_str[2] = {dec_sep, '\0'};
-          disp1->set_component_text("temp_unit", (id(units_separator) + id(temperature_unit)).c_str());
+          disp1->set_component_text("temp_unit", (id(units_separator) + "${temp_units}").c_str());
           disp1->set_component_text("dec_separator", dec_separator_str);
 
   - id: !extend page_change
@@ -200,7 +200,7 @@ script:
           disp1->send_command_printf("slider_low.maxval=%i",    total_steps);
           disp1->set_component_value("temp_offset",             temp_offset);
           disp1->set_component_value("temp_step",               temp_step);
-          disp1->set_component_text("temp_unit",                (id(units_separator) + id(temperature_unit)).c_str());
+          disp1->set_component_text("temp_unit",                (id(units_separator) + "${temp_units}").c_str());
           const std::string& sep = id(mui_decimal_separator);
           const char dec_sep = sep.empty() ? '.' : sep[0];
           const char dec_separator_str[2] = {dec_sep, '\0'};

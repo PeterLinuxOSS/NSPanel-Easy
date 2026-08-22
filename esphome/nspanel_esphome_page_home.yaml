@@ -12,7 +12,6 @@ substitutions:
   ## Change only in your      ##
   ## local yaml substitutions ##
   TAG_PAGE_HOME: nspanel.page.home
-  THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET: 48
   SUN_DEFAULT_LATITUDE: '0'
   SUN_DEFAULT_LONGITUDE: '0'
   ##############################
@@ -38,11 +37,6 @@ globals:
     type: float
     restore_value: true
     initial_value: 'NAN'
-
-  - id: weather_pic
-    type: uint8_t
-    restore_value: true
-    initial_value: '1'
 
   ##### Date/time formats #####
   - id: home_date_color
@@ -77,19 +71,21 @@ script:
             return;
           }
 
-  - id: !extend action_component_text
+  - id: !extend action_component_text_list
     then:
       - lambda: |-
           if (page != "mem") return;
-          if (component == "sun_latitude") {
-            const auto value = parse_number<float>(txt);
-            id(sun_latitude) = value.has_value() ? *value : NAN;
-            sun_coordinates_apply->execute();
-            return;
-          }
-          if (component == "sun_longitude") {
-            const auto value = parse_number<float>(txt);
-            id(sun_longitude) = value.has_value() ? *value : NAN;
+          if (component == "sun_coordinates") {
+            // Latitude and longitude arrive together so they are always applied
+            // as a pair, never half-updated.
+            if (txt_list.size() != 2) {
+              ESP_LOGE("${TAG_PAGE_HOME}", "Expected 2 sun coordinates, got %zu", txt_list.size());
+              return;
+            }
+            const auto latitude = parse_number<float>(txt_list[0]);
+            const auto longitude = parse_number<float>(txt_list[1]);
+            id(sun_latitude) = latitude.has_value() ? *latitude : NAN;
+            id(sun_longitude) = longitude.has_value() ? *longitude : NAN;
             sun_coordinates_apply->execute();
             return;
           }
@@ -125,7 +121,7 @@ script:
       - lambda: |-
           if (!target_is_home_page) return;
 
-          // Only applies to home page buttons (button01..button08) on new design
+          // Only applies to home page buttons (button01..button07) on new design
           if (!display_easy) return;
           if (!target_is_current_page) return;  // cirs only affects the visible page
 
@@ -147,7 +143,7 @@ script:
           }
           const uint8_t button_id = static_cast<uint8_t>(std::stoi(suffix));
 
-          // Validate extracted index range [1..8]
+          // Validate extracted index range [1..7]
           if (button_id < 1u || button_id > BUTTON_COUNT) {
             ESP_LOGW("${TAG_PAGE_HOME}", "Button id %" PRIu8 " out of range [1..%" PRIu8 "]",
                       button_id, BUTTON_COUNT);
@@ -218,29 +214,10 @@ script:
           home_button_repaint();
           #endif  // NSPANEL_EASY_SUBSCRIBE
 
-  - id: page_home_weather_resolve
-    mode: restart
-    then:
-      - lambda: |-
-          // is_new_device is always false: the "Easy" TFT project is abandoned.
-          const WeatherPicVariant &variant = select_weather_variant(
-              get_weather_pics(weather_condition_index), false, current_theme != ThemeMode::LIGHT);
-          id(weather_pic) = static_cast<uint8_t>(sun_info.is_up ? variant.sun_up : variant.sun_down);
-      - script.execute: page_home_weather_pic
-
-  - id: page_home_weather_pic
-    mode: restart
-    then:
-      - lambda: |-
-          ESP_LOGD("${TAG_PAGE_HOME}", "Update weather pic: %" PRIu8, id(weather_pic));
-          disp1->set_component_pic(hmi::home::WEATHER.name, id(weather_pic));
-
   - id: !extend stop_all
     then:
       - lambda: |-
           page_home->stop();  // Page home is an exception to the stop_page_constructor, as it can be constructed in the background
-          page_home_weather_pic->stop();
-          page_home_weather_resolve->stop();
           sun_coordinates_apply->stop();
           sun_state_update->stop();
 
@@ -270,7 +247,9 @@ script:
             if (!now.is_valid()) return;  // Keep the safe daytime default
             sun_info.is_up = (now.hour >= 6 && now.hour < 18);
           }
-      - script.execute: page_home_weather_resolve
+          #ifdef NSPANEL_EASY_SUBSCRIBE
+          home_weather_resolve();
+          #endif  // NSPANEL_EASY_SUBSCRIBE
 
 sun:
   id: sun_component
