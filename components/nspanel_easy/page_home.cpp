@@ -38,7 +38,7 @@ static char indoor_temp_text[TEMP_TEXT_LEN] = {};
 static char outdoor_temp_text[TEMP_TEXT_LEN] = {};
 
 /// @brief Whether the outdoor temperature component is currently shown.
-static bool outdoor_temp_shown = false;
+static Visibility outdoor_temp_shown = Visibility::UNKNOWN;
 
 /**
  * @brief Parse the slot index out of a custom button component name.
@@ -286,14 +286,14 @@ static void home_outdoor_temp_render(const char *state) {
     outdoor_temp_text[0] = '\0';
   }
 
-  if (visible == outdoor_temp_shown) {
+  const Visibility wanted = visible ? Visibility::SHOWN : Visibility::HIDDEN;
+  if (outdoor_temp_shown == wanted) {
     return;  // Visibility unchanged
   }
-  outdoor_temp_shown = visible;
+  outdoor_temp_shown = wanted;
 
-  // The TFT keeps its own visibility variable per home component and applies it
-  // on page entry, so writing only the vis command would be undone on the next
-  // page change.
+  // The TFT restores visibility from vis_<component> on page entry, so the
+  // variable is always written; the vis command only reaches a visible page.
   nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
   if (is_home_page) {
     nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, visible);
@@ -354,9 +354,8 @@ void home_button_repaint() {
   if (indoor_temp_bound && indoor_temp_valid && indoor_temp_text[0] != '\0') {
     nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
   }
-  if (outdoor_temp_shown && outdoor_temp_text[0] != '\0') {
+  if (outdoor_temp_shown == Visibility::SHOWN && outdoor_temp_text[0] != '\0') {
     nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
-    nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, true);
   }
 }
 

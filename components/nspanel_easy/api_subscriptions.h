@@ -35,6 +35,13 @@
 
 namespace esphome::nspanel_easy {
 
+/// @brief Tracked visibility of a component whose initial state is not known.
+enum class Visibility : uint8_t {
+  UNKNOWN,  ///< Never resolved; the next update must write, whatever it decides
+  HIDDEN,
+  SHOWN,
+};
+
 /// @brief Persisted format version. Bump whenever SubBinding's layout changes.
 static constexpr uint8_t SUB_FORMAT_VERSION = 2;  // 2: chunk size reduced from 16 to 4
 

@@ -7,7 +7,7 @@ Program.s
     int climate_embedded=0
     int light_features_mask=0
     // page home visibility items
-    int vis_indr_temp=0
+    int vis_indr_temp=0, vis_outdoor_temp=0
     int vis_bt_icon=0
     int vis_bt_utilities=0, vis_bt_notific=0, vis_bt_qrcode=0, vis_bt_entities=0
     int vis_button01=0, vis_button02=0, vis_button03=0, vis_button04=0, vis_button05=0, vis_button06=0, vis_button07=0
