@@ -354,8 +354,16 @@ void home_button_repaint() {
   if (indoor_temp_bound && indoor_temp_valid && indoor_temp_text[0] != '\0') {
     nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
   }
-  if (outdoor_temp_shown == Visibility::SHOWN && outdoor_temp_text[0] != '\0') {
-    nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
+  if (outdoor_temp_shown != Visibility::UNKNOWN) {
+    // Re-asserted rather than assumed: a TFT reset without an ESPHome restart
+    // returns vis_outdoor_temp to its default while this shadow still holds the
+    // last value, and the renderer would then suppress every further write.
+    const bool visible = (outdoor_temp_shown == Visibility::SHOWN);
+    nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
+    nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, visible);
+    if (visible && outdoor_temp_text[0] != '\0') {
+      nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
+    }
   }
 }
 
