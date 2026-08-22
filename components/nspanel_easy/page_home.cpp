@@ -296,7 +296,7 @@ static void home_outdoor_temp_render(const char *state) {
   // variable is always written; the vis command only reaches a visible page.
   nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
   if (is_home_page) {
-    nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, visible);
+    nextion_display->set_component_visibility("outdoor_temp", visible);
   }
 }
 
@@ -360,7 +360,7 @@ void home_button_repaint() {
     // last value, and the renderer would then suppress every further write.
     const bool visible = (outdoor_temp_shown == Visibility::SHOWN);
     nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
-    nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, visible);
+    nextion_display->set_component_visibility("outdoor_temp", visible);
     if (visible && outdoor_temp_text[0] != '\0') {
       nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
     }
