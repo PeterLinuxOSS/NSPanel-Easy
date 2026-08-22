@@ -9,7 +9,7 @@
 substitutions:
   TAG_PAGE_WEATHER: nspanel.page.weather
   SECONDS_PER_DAY: 86400
-  THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET: 48
+  THEME_LIGHT_PIC_WEATHER_OFFSET: 48
 
 display:
   - id: !extend disp1
@@ -98,7 +98,7 @@ script:
       - lambda: |-
           if ( current_page_id >= get_page_id("weather01") and current_page_id <= get_page_id("weather05")) {
             const uint8_t weather_icon_corrected = id(weather_icon) +
-                                ((current_theme == ThemeMode::LIGHT) ? ${THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET} : 0);
+                                ((current_theme == ThemeMode::LIGHT) ? ${THEME_LIGHT_PIC_WEATHER_OFFSET} : 0);
             ESP_LOGD("${TAG_PAGE_WEATHER}", "Update weather icon: %" PRIu8, weather_icon_corrected);
             disp1->set_component_pic("weather_icon", weather_icon_corrected);
           }

@@ -16,7 +16,8 @@ Supported configuration keys
 
 from esphome import automation
 from esphome import pins
-from esphome.components import globals, nextion, text_sensor
+from esphome.components import globals as globals_component
+from esphome.components import nextion, text_sensor
 from esphome.components.esp32 import add_idf_sdkconfig_option
 from esphome.const import (CONF_ID, CONF_TRIGGER_ID)
 from esphome.core import CORE, coroutine_with_priority
@@ -46,7 +47,7 @@ DumpConfigTrigger = nspanel_easy_ns.class_("DumpConfigTrigger", automation.Trigg
 
 CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_ID, default="nspanel_easy_component"): cv.declare_id(NSPanelEasyComponent),
-    cv.Required(CONF_DECIMAL_SEPARATOR_ID): cv.use_id(globals.GlobalsComponent),
+    cv.Required(CONF_DECIMAL_SEPARATOR_ID): cv.use_id(globals_component.GlobalsComponent),
     cv.Required(CONF_DETAILED_ENTITY_ID): cv.use_id(text_sensor.TextSensor),
     cv.Required(CONF_NEXTION_ID): cv.use_id(nextion.Nextion),
     cv.Optional(CONF_ON_SETUP): automation.validate_automation(
@@ -59,7 +60,7 @@ CONFIG_SCHEMA = cv.Schema({
             cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(DumpConfigTrigger),
         },
     ),
-    cv.Required(CONF_UNITS_SEPARATOR_ID): cv.use_id(globals.GlobalsComponent),
+    cv.Required(CONF_UNITS_SEPARATOR_ID): cv.use_id(globals_component.GlobalsComponent),
     cv.Optional(PSRAM_CLK_PIN): pins.internal_gpio_output_pin_number,
     cv.Optional(PSRAM_CS_PIN): pins.internal_gpio_output_pin_number,
     cv.Optional(REQUIRE_DISARM_BEFORE_REARM): cv.boolean,
