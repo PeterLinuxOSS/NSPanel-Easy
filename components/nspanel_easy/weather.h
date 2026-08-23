@@ -36,17 +36,17 @@ namespace esphome::nspanel_easy {
 /**
  * @brief Tracks sun elevation state and coordinate availability.
  *
- * When @p coord_received is @c false, @p is_up is derived from the local
- * time as a rough proxy (06:00-18:00 = above horizon) until the blueprint
- * sends valid coordinates and the ESPHome @c sun component takes over via
- * its @c on_sunrise and @c on_sunset triggers.
+ * When @p coords_valid is @c false, @p is_up is derived from the local time as
+ * a rough proxy (06:00-18:00 = above horizon). Once coordinates have been
+ * received and applied to the ESPHome @c sun component, elevation is computed
+ * properly and the @c on_sunrise / @c on_sunset triggers drive the updates.
  *
- * Both fields are intentionally kept together so callers can check
- * @p coord_received and @p is_up in a single struct access.
+ * @p coords_valid is never persisted on its own: it is recomputed from the
+ * restored coordinates every time they are applied, so the two cannot disagree.
  */
 struct SunInfo {
-  bool is_up;           ///< true when the sun is above the horizon
-  bool coord_received;  ///< true once valid coordinates have been received from the blueprint
+  bool is_up;         ///< true when the sun is above the horizon
+  bool coords_valid;  ///< true once valid coordinates have been applied to the sun component
 };
 
 extern SunInfo sun_info;  ///< Global sun elevation state for the weather engine

@@ -86,6 +86,9 @@ number:
       then:
         - script.execute: timer_dim
 
+nspanel_easy:
+  decimal_separator_id: mui_decimal_separator
+
 script:  # Scripts
   - id: !extend action_component_text
     then:

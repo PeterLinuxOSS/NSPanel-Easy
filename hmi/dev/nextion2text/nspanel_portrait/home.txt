@@ -30,6 +30,8 @@ Page home
             // indoor temp
             vis indr_temp,vis_indr_temp
             vis indr_temp_icon,vis_indr_temp
+            // outdoor temp
+            vis outdoor_temp,vis_outdoor_temp
             // buttons
             vis bt_utilities,vis_bt_utilities
             vis bt_notific,vis_bt_notific

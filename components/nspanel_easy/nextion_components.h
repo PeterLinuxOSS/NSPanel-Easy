@@ -35,6 +35,18 @@ extern esphome::nextion::Nextion *nextion_display;
 extern esphome::text_sensor::TextSensor *detailed_entity_sensor;
 
 /**
+ * @brief Decimal separator used when formatting numbers, e.g. "." or ",".
+ *
+ * Points at the live value of the ESPHome global that owns it, so it reflects
+ * the current setting including the value restored from NVS at boot. Null until
+ * the component's to_code() has handed it over.
+ */
+extern const std::string *decimal_separator_str;
+
+/// @brief Separator between a number and its unit; often empty.
+extern const std::string *units_separator_str;
+
+/**
  * @struct HMIComponent
  * @brief Associates an HMI component name with its ID.
  *

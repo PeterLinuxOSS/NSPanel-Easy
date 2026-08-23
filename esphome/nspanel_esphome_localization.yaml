@@ -4486,6 +4486,9 @@ globals:
     initial_value: '"${units_separator}"'
     max_restore_data_length: 5
 
+nspanel_easy:
+  units_separator_id: units_separator
+
 script:
   - id: !extend action_component_text
     then:

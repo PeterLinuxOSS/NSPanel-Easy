@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <functional>
 
 #include "nextion_components.h"
 
@@ -13,21 +14,37 @@
 #include "api_subscriptions.h"
 #endif  // NSPANEL_EASY_SUBSCRIBE
 
+#ifdef NSPANEL_EASY_HW_DISPLAY
+#include "hw_display.h"
+#endif  // NSPANEL_EASY_HW_DISPLAY
+
+#ifdef NSPANEL_EASY_USE_WEATHER
+#include "weather.h"
+#endif  // NSPANEL_EASY_USE_WEATHER
+
 /**
  * @file page_home.h
- * @brief Home page custom buttons.
+ * @brief Subscription-driven home page components.
  *
- * Unlike chips, a bound custom button is always visible: it renders icon_on or
- * icon_off according to the entity's state rather than appearing and
- * disappearing. Unbound slots are left entirely to the blueprint.
+ * Custom buttons: unlike chips, a bound custom button is always visible. It
+ * renders icon_on or icon_off according to the entity's state rather than
+ * appearing and disappearing. Unbound slots are left entirely to the blueprint.
+ *
+ * Weather picture: resolved from the condition, the sun elevation and the
+ * active theme. Index 0 of the condition table is blank in both themes, so an
+ * unknown or not-yet-received condition needs no visibility handling.
+ *
+ * Temperatures: rendered exactly as Home Assistant reports them, with no unit
+ * conversion. Indoor falls back to the panel's own sensor when the bound entity
+ * has no value; outdoor is hidden, having no local equivalent.
  */
 
 namespace esphome::nspanel_easy {
 
 extern bool is_home_page;
 
-/// @brief Number of custom button slots on the home page (button01..button08).
-static constexpr uint8_t HOME_BUTTON_COUNT = 8;
+/// @brief Number of custom button slots on the home page (button01..button07).
+static constexpr uint8_t HOME_BUTTON_COUNT = 7;
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
 
@@ -48,26 +65,69 @@ static_assert(sizeof(HomeButtonState::icon) >= 4, "Icons are BMP private-use cod
 /// @brief Shadow state array; one entry per custom button slot.
 extern HomeButtonState home_button_states[HOME_BUTTON_COUNT];
 
+/// @brief Buffer size for a formatted temperature, e.g. "-12,3 \u00b0C".
+static constexpr size_t TEMP_TEXT_LEN = 15;
+
 /**
- * @brief Render a subscription binding onto a home custom button.
+ * @brief Whether a subscription targets the indoor temperature component.
  *
- * Registered for the "home" page in sub_resolve_renderer(). Receives an
+ * Read by display_embedded_temp(), which must not write the component while the
+ * subscription owns it.
+ */
+extern bool indoor_temp_bound;
+
+/// @brief Whether the bound indoor entity last reported a usable number.
+extern bool indoor_temp_valid;
+
+/**
+ * @brief Invoked when a bound indoor temperature stops being usable.
+ *
+ * Assigned from hw_temperature.yaml, where display_embedded_temp() is visible.
+ * Without it the embedded sensor would only take back over on its next
+ * publication, which can be minutes away.
+ */
+extern std::function<void()> indoor_temp_fallback;
+
+/**
+ * @brief Render a subscription binding onto its home page component.
+ *
+ * Registered for the "home" page in sub_resolve_renderer(), so every binding
+ * targeting this page arrives here. Dispatches on the component name, since
+ * renderers are resolved per page rather than per component. Receives an
  * already-classified state and decides only how to draw it.
  *
  * @param binding The binding being rendered.
  * @param rt Runtime state, including blueprint-supplied appearance.
  * @param state Effective state string; hvac_action for climate when usable.
- * @param visible Unused: a bound custom button is always shown.
+ * @param visible Unused: home page targets manage their own visibility.
  */
-void home_button_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible);
+void home_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible);
 
 /**
- * @brief Repaint every bound custom button from its shadow state.
+ * @brief Repaint every bound home component from its shadow state.
  *
  * Called when the home page is entered, since the Nextion side does not retain
- * what was drawn on a page that has been left.
+ * what was drawn on a page that has been left. Covers the custom buttons and
+ * both temperatures; the weather picture is repainted by home_weather_resolve().
  */
 void home_button_repaint();
+
+#ifdef NSPANEL_EASY_USE_WEATHER
+
+/**
+ * @brief Resolve and draw the home weather picture.
+ *
+ * Combines the stored condition index, the sun elevation and the active theme
+ * into a single picture ID. Call after anything those three depend on changes:
+ * a new condition from the subscription, a theme change, sunrise or sunset, and
+ * once the sun coordinates have been applied.
+ *
+ * Safe to call before the display pointer has been handed over; it returns
+ * without drawing in that case.
+ */
+void home_weather_resolve();
+
+#endif  // NSPANEL_EASY_USE_WEATHER
 
 #endif  // NSPANEL_EASY_SUBSCRIBE
 

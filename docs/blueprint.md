@@ -76,7 +76,7 @@ If the value of the sensor needs to be corrected, this can be done via the tempe
 | --- | --- | --- |
 | Home page - Entity State 01-04 (Optional) | Up to four HA entities can be displayed on the home screen. | ![home_page_entity_state_01_04.jpg](pics/home_page_entity_state_01_04.jpg) |
 | Home page - Chips 01-07 (optional) | Used to display icons of HA binary entities on the home screen. The icon is displayed when the entity is on/open/true/active. Otherwise, no icon is displayed. | ![chip](pics/home_page_chips.jpg) |
-| Custom button 01-06 (Optional) | 7 custom buttons that can be assigned to different entities from your Home Assistant. The behavior of these buttons will depend on the entity's domain, such as light, media player, etc. | ![home_page_custom_buttons.jpg](pics/home_page_custom_buttons.jpg) |
+| Custom button 01-07 (Optional) | 7 custom buttons that can be assigned to different entities from your Home Assistant. The behavior of these buttons will depend on the entity's domain, such as light, media player, etc. | ![home_page_custom_buttons.jpg](pics/home_page_custom_buttons.jpg) |
 
 ## Alarm Control Panel
 

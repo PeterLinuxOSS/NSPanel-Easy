@@ -119,7 +119,8 @@ static void sub_copy(char *dest, size_t size, const char *src) {
  * @return true when both would subscribe identically.
  */
 static bool sub_binding_equal(const SubBinding &a, const SubBinding &b) {
-  return strcmp(a.entity, b.entity) == 0 && strcmp(a.page, b.page) == 0 && strcmp(a.component, b.component) == 0;
+  return strcmp(a.entity, b.entity) == 0 && strcmp(a.page, b.page) == 0 && strcmp(a.component, b.component) == 0 &&
+         strcmp(a.attribute, b.attribute) == 0;
 }
 
 /**
@@ -144,7 +145,8 @@ static void sub_apply(uint16_t idx) {
   rt.last_state = evaluate_sub_state(domain, effective);
   const bool visible = sub_visible(rt.last_state, binding.inverted);
 
-  ESP_LOGV(TAG, "%s.%s: '%s' => vis=%s", binding.page, binding.component, effective, YESNO(visible));
+  ESP_LOGV(TAG, "%s.%s%s%s: '%s' => vis=%s", binding.page, binding.component, binding.attribute[0] != '\0' ? "." : "",
+           binding.attribute, effective, YESNO(visible));
 
   if (sub_renderers[idx] != nullptr) {
     sub_renderers[idx](binding, rt, effective, visible);
@@ -161,7 +163,7 @@ SubRenderFn sub_resolve_renderer(const char *page) {
       {"chips", &chip_sub_render},
 #endif  // NSPANEL_EASY_CHIPS
 #ifdef NSPANEL_EASY_PAGE_HOME
-      {"home", &home_button_sub_render},
+      {"home", &home_sub_render},
 #endif  // NSPANEL_EASY_PAGE_HOME
   };
   for (const PageEntry &entry : PAGES) {
@@ -265,11 +267,18 @@ void sub_subscribe_all() {
       continue;
     }
 
+    // A binding may name an attribute to read in place of the state; it lands
+    // in rt.state and reaches the renderer through the usual path.
+    const char *attribute = (binding.attribute[0] != '\0') ? binding.attribute : nullptr;
+
+    ESP_LOGV(TAG, "Subscribing %s.%s to %s attr='%s'", binding.page, binding.component, binding.entity,
+             attribute != nullptr ? attribute : "(state)");
+
     // The const char* overload stores the pointer without copying, so
     // binding.entity must outlive the subscription. It does: sub_bindings is
     // allocated once here and never resized, and a binding change restarts.
     api::global_api_server->subscribe_home_assistant_state(
-        binding.entity, nullptr, std::function<void(StringRef)>([idx](StringRef state) {
+        binding.entity, attribute, std::function<void(StringRef)>([idx](StringRef state) {
           SubRuntime &rt = sub_runtime[idx];
           if (strncmp(rt.state, state.c_str(), sizeof(rt.state)) == 0) {
             return;  // Unchanged; nothing to recompute
@@ -280,7 +289,7 @@ void sub_subscribe_all() {
 
     // Climate visibility follows hvac_action when available, so the attribute
     // needs a subscription of its own.
-    if (binding.domain == SUB_DOMAIN_CLIMATE) {
+    if (binding.domain == SUB_DOMAIN_CLIMATE && attribute == nullptr) {
       api::global_api_server->subscribe_home_assistant_state(
           binding.entity, SUB_HVAC_ACTION, std::function<void(StringRef)>([idx](StringRef action) {
             SubRuntime &rt = sub_runtime[idx];
@@ -301,7 +310,8 @@ void sub_subscribe_all() {
 }
 
 void sub_push_binding(const char *page, const char *component, const char *entity, const char *device_class,
-                      const char *icon_on, const char *icon_off, uint16_t color_on, uint16_t color_off, bool inverted) {
+                      const char *attribute, const char *icon_on, const char *icon_off, uint16_t color_on,
+                      uint16_t color_off, bool inverted) {
   if (!sub_target_allowed(page, component)) {
     ESP_LOGW(TAG, "%s.%s is driven locally and cannot be bound", page, component);
     return;
@@ -331,6 +341,7 @@ void sub_push_binding(const char *page, const char *component, const char *entit
   sub_copy(staged.entity, sizeof(staged.entity), entity);
   sub_copy(staged.page, sizeof(staged.page), page);
   sub_copy(staged.component, sizeof(staged.component), component);
+  sub_copy(staged.attribute, sizeof(staged.attribute), attribute);
   sub_copy(staged.device_class, sizeof(staged.device_class), device_class);
   staged.domain = static_cast<uint8_t>(parse_sub_domain(staged.entity));
   staged.inverted = inverted;
@@ -539,7 +550,11 @@ void sub_dump_config() {
   }
   for (uint16_t idx = 0; idx < sub_count; ++idx) {
     const SubBinding &binding = sub_bindings[idx];
-    ESP_LOGCONFIG(TAG, "  %s.%s <- %s%s%s", binding.page, binding.component, binding.entity,
+    char attribute[SUB_ATTR_LEN + 3] = {};  // " (" + name + ")" + null
+    if (binding.attribute[0] != '\0') {
+      snprintf(attribute, sizeof(attribute), " (%s)", binding.attribute);
+    }
+    ESP_LOGCONFIG(TAG, "  %s.%s <- %s%s%s%s", binding.page, binding.component, binding.entity, attribute,
                   binding.inverted ? " (inverted)" : "", sub_renderers[idx] == nullptr ? " [no renderer]" : "");
   }
   nvs_stats_t nvs{};

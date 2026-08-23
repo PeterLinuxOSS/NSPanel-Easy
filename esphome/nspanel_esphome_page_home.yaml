@@ -8,8 +8,13 @@
 
 ---
 substitutions:
+  ##############################
+  ## Change only in your      ##
+  ## local yaml substitutions ##
   TAG_PAGE_HOME: nspanel.page.home
-  THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET: 48
+  SUN_DEFAULT_LATITUDE: '0'
+  SUN_DEFAULT_LONGITUDE: '0'
+  ##############################
 
 esphome:
   build_flags:
@@ -22,10 +27,16 @@ globals:
     restore_value: true
     initial_value: 'true'
 
-  - id: weather_pic
-    type: uint8_t
+  ##### Sun position #####
+  - id: sun_latitude
+    type: float
     restore_value: true
-    initial_value: '1'
+    initial_value: 'NAN'
+
+  - id: sun_longitude
+    type: float
+    restore_value: true
+    initial_value: 'NAN'
 
   ##### Date/time formats #####
   - id: home_date_color
@@ -60,13 +71,22 @@ script:
             return;
           }
 
-  - id: !extend action_component_text
+  - id: !extend action_component_text_list
     then:
       - lambda: |-
           if (page != "mem") return;
-          if (component == "weather_state") {
-            weather_condition_index = get_weather_index(txt.c_str());
-            page_home_weather_update->execute();
+          if (component == "sun_coordinates") {
+            // Latitude and longitude arrive together so they are always applied
+            // as a pair, never half-updated.
+            if (txt_list.size() != 2) {
+              ESP_LOGE("${TAG_PAGE_HOME}", "Expected 2 sun coordinates, got %zu", txt_list.size());
+              return;
+            }
+            const auto latitude = parse_number<float>(txt_list[0]);
+            const auto longitude = parse_number<float>(txt_list[1]);
+            id(sun_latitude) = latitude.has_value() ? *latitude : NAN;
+            id(sun_longitude) = longitude.has_value() ? *longitude : NAN;
+            sun_coordinates_apply->execute();
             return;
           }
 
@@ -95,25 +115,20 @@ script:
             disp1->set_component_font(hmi::home::OUTDOOR_TEMP.name, static_cast<uint8_t>(val));
             return;
           }
-          if (component == "weather_pic") {  // Weather picture (theme-based)
-            id(weather_pic) = static_cast<uint8_t>(val);
-            page_home_weather_pic->execute();
-            return;
-          }
 
   - id: !extend action_icon
     then:
       - lambda: |-
           if (!target_is_home_page) return;
 
-          // Only applies to home page buttons (button01..button08) on new design
+          // Only applies to home page buttons (button01..button07) on new design
           if (!display_easy) return;
           if (!target_is_current_page) return;  // cirs only affects the visible page
 
           // Extract the numeric suffix from component_id, e.g. "button01" -> 1
           // Expected format: "button%02u" — prefix is exactly 6 chars ("button")
           constexpr uint8_t BUTTON_PREFIX_LEN = 6u;  // strlen("button")
-          constexpr uint8_t BUTTON_COUNT      = 8u;
+          constexpr uint8_t BUTTON_COUNT      = 7u;
 
           if (component_id.length() != BUTTON_PREFIX_LEN + 2u ||
               component_id.substr(0u, BUTTON_PREFIX_LEN) != "button") {
@@ -128,7 +143,7 @@ script:
           }
           const uint8_t button_id = static_cast<uint8_t>(std::stoi(suffix));
 
-          // Validate extracted index range [1..8]
+          // Validate extracted index range [1..7]
           if (button_id < 1u || button_id > BUTTON_COUNT) {
             ESP_LOGW("${TAG_PAGE_HOME}", "Button id %" PRIu8 " out of range [1..%" PRIu8 "]",
                       button_id, BUTTON_COUNT);
@@ -178,7 +193,7 @@ script:
 
   - id: !extend boot_wrap_up
     then:
-      - script.execute: page_home_weather_pic
+      - script.execute: sun_coordinates_apply
 
   - id: !extend page_change
     then:
@@ -199,27 +214,61 @@ script:
           home_button_repaint();
           #endif  // NSPANEL_EASY_SUBSCRIBE
 
-  - id: page_home_weather_pic
-    mode: restart
-    then:
-      - lambda: |-
-          const uint8_t weather_pic_corrected = id(weather_pic) +
-                                ((current_theme == ThemeMode::LIGHT) ? ${THEME_DARK_PIC_PAGE_HOME_WEATHER_OFFSET} : 0);
-          ESP_LOGD("${TAG_PAGE_HOME}", "Update weather pic: %" PRIu8, weather_pic_corrected);
-          disp1->set_component_pic(hmi::home::WEATHER.name, weather_pic_corrected);
-          if (display_easy) {  // To do: Implement logic for new format
-            disp1->send_command_printf("home_weather_pic=%" PRIu8, id(weather_pic));
-          }
-
-  - id: page_home_weather_update
-    mode: restart
-    then:
-
-
   - id: !extend stop_all
     then:
       - lambda: |-
           page_home->stop();  // Page home is an exception to the stop_page_constructor, as it can be constructed in the background
-          page_home_weather_pic->stop();
-          page_home_weather_update->stop();
+          sun_coordinates_apply->stop();
+          sun_state_update->stop();
+
+  - id: sun_coordinates_apply
+    mode: single
+    then:
+      - lambda: |-
+          // coords_valid is derived here, never restored on its own, so it can
+          // never disagree with the stored coordinates.
+          sun_info.coords_valid = !std::isnan(id(sun_latitude)) && !std::isnan(id(sun_longitude));
+          if (sun_info.coords_valid) {
+            sun_component->set_latitude(id(sun_latitude));
+            sun_component->set_longitude(id(sun_longitude));
+          }
+      - script.execute: sun_state_update
+
+  - id: sun_state_update
+    mode: single
+    then:
+      - lambda: |-
+          if (sun_info.coords_valid) {
+            // Seeded explicitly: SunTrigger suppresses its first crossing, so
+            // the triggers alone would leave this stale until the next one.
+            sun_info.is_up = sun_component->is_above_horizon();
+          } else {
+            const auto now = time_provider->now();
+            if (!now.is_valid()) return;  // Keep the safe daytime default
+            sun_info.is_up = (now.hour >= 6 && now.hour < 18);
+          }
+          #ifdef NSPANEL_EASY_SUBSCRIBE
+          home_weather_resolve();
+          #endif  // NSPANEL_EASY_SUBSCRIBE
+
+sun:
+  id: sun_component
+  time_id: time_provider
+  latitude: ${SUN_DEFAULT_LATITUDE}
+  longitude: ${SUN_DEFAULT_LONGITUDE}
+  on_sunrise:
+    - then:
+        - script.execute: sun_state_update
+  on_sunset:
+    - then:
+        - script.execute: sun_state_update
+
+time:
+  - id: !extend time_provider
+    on_time:
+      - hours: 6,18
+        minutes: 0
+        seconds: 0
+        then:
+          - script.execute: sun_state_update
 ...
