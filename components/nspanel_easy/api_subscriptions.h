@@ -129,7 +129,7 @@ struct SubBinding {
   char page[SUB_PAGE_LEN];                  ///< Target page, e.g. "chips"
   char component[SUB_COMPONENT_LEN];        ///< Target component, e.g. "chip01"
   char device_class[SUB_DEVICE_CLASS_LEN];  ///< HA device_class; cover only, empty when unset
-  char attribute[SUB_ATTR_LEN];  ///< Attribute to read instead of the state; empty to use the state
+  char attribute[SUB_ATTR_LEN];             ///< Attribute to read instead of the state; empty to use the state
   uint8_t domain;                           ///< SubDomain, derived from entity at bind time
   bool inverted;                            ///< Show while the entity is inactive
 };
