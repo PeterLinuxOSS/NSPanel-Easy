@@ -37,6 +37,7 @@ api:
         component: string     # Target component, e.g. "chip01"
         entity: string        # Home Assistant entity_id
         device_class: string  # HA device_class; only consulted for the cover domain
+        attribute: string     # HA entity's attribute to subscribe to
         icon_on: string       # Icon for the active state; empty to resolve on-device
         icon_off: string      # Icon for the inactive state; empty to resolve on-device
         color_on: int[]       # RGB array for the active state
@@ -44,12 +45,19 @@ api:
         inverted: bool        # Render as visible while the entity is inactive
       then:
         - lambda: |-
-            sub_push_binding(page.c_str(), component.c_str(), entity.c_str(), device_class.c_str(),
-                              icon_on.c_str(), icon_off.c_str(),
-                              color_on.size() == 3 ? rgbTo565(color_on) : 0,
-                              color_off.size() == 3 ? rgbTo565(color_off) : 0, inverted);
-        - script.execute: api_subscribe_debounce
-        - script.execute: api_subscribe_watchdog
+            sub_push_binding(
+              page.c_str(),
+              component.c_str(),
+              entity.c_str(),
+              device_class.c_str(),
+              attribute.c_str(),
+              icon_on.c_str(),
+              icon_off.c_str(),
+              color_on.size() == 3 ? rgbTo565(color_on) : 0,
+              color_off.size() == 3 ? rgbTo565(color_off) : 0, inverted
+            );
+            api_subscribe_debounce->execute();
+            api_subscribe_watchdog->execute();
 
     ##### End marker. Sent after every binding, carrying how many were sent. #####
     - action: api_subscribe_end
@@ -60,7 +68,7 @@ api:
             if (sub_push_end(static_cast<uint16_t>(count))) {
               api_subscribe_restart->execute();
             }
-        - script.stop: api_subscribe_watchdog
+            api_subscribe_watchdog->stop();
 
 script:
   ##### Collapses a burst of binding calls into a single restart decision. #####

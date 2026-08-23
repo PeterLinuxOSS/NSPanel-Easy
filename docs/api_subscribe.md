@@ -44,17 +44,33 @@ A **binding** connects one Home Assistant entity to one panel component. It cons
 | `page` | Which page the target component belongs to, e.g. `chips` |
 | `component` | Which component on that page, e.g. `chip01` |
 | `entity` | The Home Assistant `entity_id` to follow |
+| `attribute` | Read this attribute instead of the entity's state; empty to use the state |
 | `device_class` | Used only for the `cover` domain, to pick the right icon set |
 | `inverted` | Render the component as visible while the entity is inactive |
 
 Bindings are stored in the panel's NVS partition. Appearance — icons and colours — is **not**
 stored, and arrives with every push.
 
+### Reading an attribute instead of the state
+
+A binding may name an `attribute`, in which case the panel subscribes to that attribute and the
+entity's own state is never received. This is how the outdoor temperature reads `temperature` from a
+weather entity, and how the indoor temperature reads `current_temperature` from a climate entity.
+
+The attribute value reaches the renderer exactly where the state normally would, so classification
+and appearance resolution behave as if it were the state. A missing attribute arrives as the literal
+`None`, which classifies as unrecognised.
+
+An entity may be bound twice — once for its state and once for an attribute — targeting different
+components. The home page does this with a weather entity, which drives both the weather picture and
+the outdoor temperature.
+
 ### Lifecycle
 
 1. **Boot.** Before the API connects, the panel loads its persisted bindings and registers one
-   Home Assistant state subscription per binding. Climate bindings register a second subscription
-   for the `hvac_action` attribute.
+   Home Assistant state subscription per binding, or one for the named attribute where a binding
+   has one. Climate bindings register a second subscription for the `hvac_action` attribute, unless
+   they already name an attribute of their own.
 2. **Connect.** Home Assistant delivers the current state of every subscribed
    entity immediately. The panel classifies each state, and renders once a
    binding push has supplied appearance.
@@ -118,9 +134,10 @@ Registers one binding. Called once per subscribable component.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `page` | string | Target page. Currently only `chips` has a renderer. |
+| `page` | string | Target page. `chips` and `home` have renderers. |
 | `component` | string | Target component, e.g. `chip01`. |
 | `entity` | string | Home Assistant `entity_id`. |
+| `attribute` | string | Attribute to follow instead of the state. Send an empty string to follow the state. |
 | `device_class` | string | HA `device_class`. Only read for the `cover` domain; send an empty string otherwise. |
 | `icon_on` | string | Icon codepoint for the active state. Empty resolves on-device. |
 | `icon_off` | string | Icon codepoint for the inactive state. Empty resolves on-device. |
@@ -134,6 +151,7 @@ data:
   page: chips
   component: chip01
   entity: binary_sensor.corridor_motion
+  attribute: ""
   device_class: ""
   icon_on: "\uE1B1"
   icon_off: ""
@@ -168,16 +186,17 @@ persisted bindings stay in effect. This prevents a truncated push from silently 
 The engine has no dependency on the Blueprint. Any automation, script, or external integration that
 can call ESPHome actions can register bindings.
 
-A minimal Home Assistant script that binds two chips:
+A minimal Home Assistant script that binds two chips and the home page weather picture:
 
 ```yaml
-alias: NSPanel chips
+alias: NSPanel bindings
 sequence:
   - action: esphome.my_panel_api_subscribe
     data:
       page: chips
       component: chip01
       entity: binary_sensor.front_door
+      attribute: ""
       device_class: ""
       icon_on: "\uE18D"
       icon_off: "\uE18C"
@@ -189,7 +208,20 @@ sequence:
       page: chips
       component: chip02
       entity: cover.garage_door
+      attribute: ""
       device_class: garage
+      icon_on: ""
+      icon_off: ""
+      color_on: [200, 204, 200]
+      color_off: [92, 92, 92]
+      inverted: false
+  - action: esphome.my_panel_api_subscribe
+    data:
+      page: home
+      component: weather
+      entity: weather.home
+      attribute: ""
+      device_class: ""
       icon_on: ""
       icon_off: ""
       color_on: [200, 204, 200]
@@ -197,7 +229,7 @@ sequence:
       inverted: false
   - action: esphome.my_panel_api_subscribe_end
     data:
-      count: 2
+      count: 3
 mode: single
 ```
 
@@ -219,6 +251,9 @@ supply `icon_on` and `icon_off`. Two rules matter:
 For `alarm_control_panel`, `climate`, `cover`, `lock` and `water_heater`, leave both icon fields
 empty and the panel resolves them from the domain and state. See
 [Appearance resolution](#appearance-resolution).
+
+The weather picture and both temperature components ignore the icon and colour fields entirely: the
+picture comes from a built-in condition table, and the temperatures are rendered as text.
 
 ## State classification
 
@@ -251,7 +286,12 @@ polarities. An entity that drops off the network never lights an inverted compon
 
 `climate` bindings subscribe to both the state and the `hvac_action` attribute. When `hvac_action`
 holds a usable value it takes precedence, so a thermostat set to `heat` but currently idle is
-classified as inactive.
+classified as inactive. A climate binding that names an attribute of its own — such as the indoor
+temperature reading `current_temperature` — does not subscribe to `hvac_action`, because it wants
+the attribute value rather than the action.
+
+The weather picture and both temperature components do not use classification at all. They consume
+the raw value: the picture looks the condition up in a table, and the temperatures parse a number.
 
 ## Appearance resolution
 
@@ -272,24 +312,42 @@ icon override reaches the panel.
 Covers with no `device_class`, or with one the panel does not recognise, fall back to a generic
 blinds icon in all four states.
 
+### The home page weather picture
+
+The picture is resolved from three things: the weather condition, whether the sun is above the
+horizon, and the active theme. Conditions the panel does not recognise, along with `unknown` and
+`unavailable`, resolve to a blank picture, so the component needs no visibility handling.
+
+Sun elevation is computed on the panel from coordinates supplied once by the Blueprint and stored
+across reboots. Until coordinates arrive, the panel treats 06:00 to 18:00 local time as daytime.
+
+### The home page temperatures
+
+Both temperatures are rendered exactly as Home Assistant reports them, with no unit conversion. The
+number of decimal places follows the panel's compiled unit: none for Fahrenheit, one for Celsius.
+
+The outdoor temperature is hidden when its source has no usable number. The indoor temperature falls
+back to the panel's own sensor instead, so that component is never blank.
+
 ## Limits and behaviour
 
-- **Only `chips` has a renderer today.** Bindings for other pages are accepted, persisted and
+- **`chips` and `home` have renderers.** Bindings for other pages are accepted, persisted and
   subscribed, but nothing is drawn and `dump_config` marks them `[no renderer]`.
 - **`chip_relay1`, `chip_relay2` and `chip_climate` cannot be bound.** They are driven locally by
   the relay and embedded-thermostat logic and keep working without Home Assistant. Attempting to
   bind them logs a warning and is ignored.
-- **Components stay hidden after a boot until a binding push arrives.**
+- **Chips and custom buttons stay hidden after a boot until a binding push arrives.**
   Appearance is not persisted, so the panel knows a component's state before it
-  knows what to draw.
+  knows what to draw. The weather picture and the temperatures are unaffected: they use no pushed
+  appearance and render as soon as a value arrives.
 - **A binding change costs one restart.** Appearance changes, inversion changes and repeated
   identical pushes do not.
 - **The panel refuses to commit unverified pushes indefinitely.** After three consecutive pushes
   with no end marker, the panel keeps its last good set and logs an error rather than restarting in
   a loop.
 - **Numeric sensors are not classified.** A `sensor` state such as `23.4` matches neither the active
-  nor inactive list, so the component stays hidden. Sensor values are not yet supported by this
-  engine.
+  nor inactive list, so a chip or custom button bound to it stays hidden. The two temperature
+  components are the exception: they parse the number directly rather than classifying it.
 
 ## Troubleshooting
 
@@ -298,11 +356,15 @@ blinds icon in all four states.
 Check `dump_config` for the loaded bindings:
 
 ```text
-[C][nspanel.sub]: Subscriptions
-[C][nspanel.sub]:   Bindings: 2 of 128
-[C][nspanel.sub]:   chips.chip01 <- binary_sensor.front_door
-[C][nspanel.sub]:   chips.chip02 <- cover.garage_door
+[C][nspanel.api.sub]: Subscriptions
+[C][nspanel.api.sub]:   Bindings: 3 of 128
+[C][nspanel.api.sub]:   chips.chip01 <- binary_sensor.front_door
+[C][nspanel.api.sub]:   home.weather <- weather.home
+[C][nspanel.api.sub]:   home.outdoor_temp <- weather.home (temperature)
 ```
+
+An attribute, where one is used, is shown in brackets after the entity. This is how two bindings on
+the same entity are told apart.
 
 If bindings are listed but nothing draws, no binding push has supplied
 appearance in this session. Reload the automation, or re-run whatever registers
@@ -310,6 +372,15 @@ your bindings.
 
 If a binding shows `[no renderer]`, the target page has no renderer — see
 [Limits and behaviour](#limits-and-behaviour).
+
+### A component bound to an attribute shows nothing
+
+Check that the entity really exposes that attribute, in Developer Tools → States. A missing
+attribute arrives as the literal `None`: a chip or button will stay hidden, and a temperature will
+be hidden or fall back to the panel's own sensor.
+
+Note that a binding with an attribute never receives the entity's state, so `unavailable` arrives as
+`None` rather than as itself.
 
 ### The panel restarts on every reconnect
 

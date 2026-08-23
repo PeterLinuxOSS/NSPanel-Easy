@@ -43,7 +43,7 @@ enum class Visibility : uint8_t {
 };
 
 /// @brief Persisted format version. Bump whenever SubBinding's layout changes.
-static constexpr uint8_t SUB_FORMAT_VERSION = 2;  // 2: chunk size reduced from 16 to 4
+static constexpr uint8_t SUB_FORMAT_VERSION = 3;  // 3: SubBinding gained the attribute field
 
 /// @brief Upper bound on bindings; storage is allocated to the configured count, not this.
 #ifndef NSPANEL_EASY_SUB_MAX
@@ -65,13 +65,15 @@ static constexpr uint16_t SUB_CHUNK_SIZE = 4;
 /// @brief Number of NVS chunks needed to hold SUB_MAX bindings.
 static constexpr uint16_t SUB_CHUNK_COUNT = (SUB_MAX + SUB_CHUNK_SIZE - 1) / SUB_CHUNK_SIZE;
 
-static constexpr uint8_t SUB_ENTITY_LEN = 64;        ///< Longest stored entity_id
-static constexpr uint8_t SUB_PAGE_LEN = 12;          ///< Longest stored page name ("screensaver")
+static constexpr uint8_t SUB_ATTR_LEN = 24;          ///< Longest stored attribute name
 static constexpr uint8_t SUB_COMPONENT_LEN = 16;     ///< Longest stored component name
 static constexpr uint8_t SUB_DEVICE_CLASS_LEN = 16;  ///< Longest device_class in use ("garage_door")
+static constexpr uint8_t SUB_ENTITY_LEN = 64;        ///< Longest stored entity_id
+static constexpr uint8_t SUB_PAGE_LEN = 12;          ///< Longest stored page name ("screensaver")
 static constexpr uint8_t SUB_STATE_LEN = 24;         ///< Longest state ("armed_custom_bypass" is 19)
 
-/// @brief Attribute subscribed alongside the state for climate bindings.
+/// @brief Attribute subscribed alongside the state for climate bindings, unlike
+///        SubBinding::attribute which is subscribed instead of the state.
 static constexpr const char SUB_HVAC_ACTION[] = "hvac_action";
 
 /// @brief Consecutive unverified commits tolerated before refusing to commit again.
@@ -127,6 +129,7 @@ struct SubBinding {
   char page[SUB_PAGE_LEN];                  ///< Target page, e.g. "chips"
   char component[SUB_COMPONENT_LEN];        ///< Target component, e.g. "chip01"
   char device_class[SUB_DEVICE_CLASS_LEN];  ///< HA device_class; cover only, empty when unset
+  char attribute[SUB_ATTR_LEN];  ///< Attribute to read instead of the state; empty to use the state
   uint8_t domain;                           ///< SubDomain, derived from entity at bind time
   bool inverted;                            ///< Show while the entity is inactive
 };
@@ -544,6 +547,7 @@ void sub_subscribe_all();
  * @param component Target component.
  * @param entity Home Assistant entity_id.
  * @param device_class HA device_class, or empty.
+ * @param attribute HA attribute to subscribe to.
  * @param icon_on Icon for the active state, or empty to resolve on-device.
  * @param icon_off Icon for the inactive state, or empty.
  * @param color_on RGB565 colour for the active state.
@@ -551,7 +555,8 @@ void sub_subscribe_all();
  * @param inverted Show while the entity is inactive.
  */
 void sub_push_binding(const char *page, const char *component, const char *entity, const char *device_class,
-                      const char *icon_on, const char *icon_off, uint16_t color_on, uint16_t color_off, bool inverted);
+                      const char *attribute, const char *icon_on, const char *icon_off, uint16_t color_on,
+                      uint16_t color_off, bool inverted);
 
 /**
  * @brief Close the blueprint's push.

@@ -7066,9 +7066,11 @@ actions:
                                     page: home
                                     component: weather
                                   - entity: '{{ outdoor_temp_entity }}'  # Outdoor temperature
+                                    attribute: '{{ "temperature" if outdoor_temp_entity == weather_entity else "" }}'
                                     page: home
                                     component: outdoor_temp
                                   - entity: '{{ indoor_temp_entity }}'  # Indoor temperature
+                                    attribute: '{{ "current_temperature" if indoor_temp_entity.split(".")[0] == "climate" else "" }}'
                                     page: home
                                     component: indr_temp
 
@@ -7166,6 +7168,7 @@ actions:
                                         component: '{{ repeat.item.component }}'
                                         entity: '{{ entity_id }}'
                                         device_class: '{{ sub_device_class }}'
+                                        attribute: '{{ repeat.item.attribute | default("", true) }}'
                                         icon_on: '{{ sub_icon_on }}'
                                         icon_off: '{{ sub_icon_off }}'
                                         color_on: '{{ repeat.item.icon_color_rgb if icon_color_rgb_valid else nextion.color.on }}'
@@ -7271,6 +7274,18 @@ actions:
                                     {%- if climate_chip_visibility == 'always' %}1
                                     {%- elif climate_chip_visibility == 'never' %}2
                                     {%- else %}0{%- endif %}
+                                continue_on_error: true
+                              - *delay_boot
+                          - alias: indoor_temperature_visibility
+                            sequence:
+                              - variables:
+                                  home_indoor_temp_visible: !input home_indoor_temp_visible
+                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                data:
+                                  page: mem
+                                  id: command
+                                  txt_list:
+                                    - 'vis_indr_temp={{ 1 if home_indoor_temp_visible else 0 }}'
                                 continue_on_error: true
                               - *delay_boot
                           - alias: chip_font
