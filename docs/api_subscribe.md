@@ -323,11 +323,13 @@ across reboots. Until coordinates arrive, the panel treats 06:00 to 18:00 local 
 
 ### The home page temperatures
 
-Both temperatures are rendered exactly as Home Assistant reports them, with no unit conversion. The
-number of decimal places follows the panel's compiled unit: none for Fahrenheit, one for Celsius.
+Temperatures sourced from Home Assistant are rendered exactly as reported, with no unit conversion.
+The number of decimal places follows the panel's compiled unit: none for Fahrenheit, one for
+Celsius.
 
 The outdoor temperature is hidden when its source has no usable number. The indoor temperature falls
-back to the panel's own sensor instead, so that component is never blank.
+back to the panel's own sensor instead, so that component is never blank. That sensor reads in
+Celsius and is converted when the panel is compiled for Fahrenheit.
 
 ## Limits and behaviour
 
@@ -363,12 +365,16 @@ Check `dump_config` for the loaded bindings:
 [C][nspanel.api.sub]:   home.outdoor_temp <- weather.home (temperature)
 ```
 
-An attribute, where one is used, is shown in brackets after the entity. This is how two bindings on
-the same entity are told apart.
+An attribute, where one is used, is shown in parentheses after the entity. This is how two bindings
+on the same entity are told apart.
 
-If bindings are listed but nothing draws, no binding push has supplied
-appearance in this session. Reload the automation, or re-run whatever registers
-your bindings.
+If a chip or custom button is listed but nothing draws, no binding push has supplied appearance in
+this session. Reload the automation, or re-run whatever registers your bindings.
+
+The weather picture and the temperatures do not use pushed appearance, so a blank one means no value
+has arrived. Set the log level to `VERBOSE` and look for the `nspanel.api.sub` line naming that
+component: if it never appears, Home Assistant is not sending the state or attribute; if it appears
+with a value that is not a number, the binding is following the wrong attribute.
 
 If a binding shows `[no renderer]`, the target page has no renderer — see
 [Limits and behaviour](#limits-and-behaviour).
