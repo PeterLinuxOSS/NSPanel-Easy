@@ -41,7 +41,7 @@
 
 namespace esphome::nspanel_easy {
 
-extern bool is_home_page;
+inline bool is_home_page() { return current_page_id == get_page_id("home"); }
 
 /// @brief Number of custom button slots on the home page (button01..button07).
 static constexpr uint8_t HOME_BUTTON_COUNT = 7;

@@ -12,7 +12,7 @@ substitutions:
   ## Change only in your      ##
   ## local yaml substitutions ##
   TAG_PAGE_HOME: nspanel.page.home
-  home_repaint_delay: 250ms
+  home_repaint_delay: 10ms
   SUN_DEFAULT_LATITUDE: '0'
   SUN_DEFAULT_LONGITUDE: '0'
   ##############################
@@ -199,8 +199,7 @@ script:
   - id: !extend page_change
     then:
       - lambda: |-
-          is_home_page = (new_page_id == get_page_id("home"));
-          if (!is_home_page) return;
+          if (!is_home_page()) return;
           page_home->execute();
 
   - id: page_home
