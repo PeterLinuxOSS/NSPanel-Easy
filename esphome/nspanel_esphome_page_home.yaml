@@ -12,6 +12,7 @@ substitutions:
   ## Change only in your      ##
   ## local yaml substitutions ##
   TAG_PAGE_HOME: nspanel.page.home
+  home_repaint_delay: 250ms
   SUN_DEFAULT_LATITUDE: '0'
   SUN_DEFAULT_LONGITUDE: '0'
   ##############################
@@ -208,6 +209,7 @@ script:
       # Extended by:
       # - hw_relays
       # - hw_wifi
+      - delay: ${home_repaint_delay}
       - lambda: |-
           // Repaint home page custom buttons (only when using subscriptions)
           #ifdef NSPANEL_EASY_SUBSCRIBE
