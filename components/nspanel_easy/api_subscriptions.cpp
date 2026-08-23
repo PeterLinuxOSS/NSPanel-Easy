@@ -145,8 +145,8 @@ static void sub_apply(uint16_t idx) {
   rt.last_state = evaluate_sub_state(domain, effective);
   const bool visible = sub_visible(rt.last_state, binding.inverted);
 
-  ESP_LOGV(TAG, "%s.%s%s%s: '%s' => vis=%s", binding.page, binding.component,
-           binding.attribute[0] != '\0' ? "." : "", binding.attribute, effective, YESNO(visible));
+  ESP_LOGV(TAG, "%s.%s%s%s: '%s' => vis=%s", binding.page, binding.component, binding.attribute[0] != '\0' ? "." : "",
+           binding.attribute, effective, YESNO(visible));
 
   if (sub_renderers[idx] != nullptr) {
     sub_renderers[idx](binding, rt, effective, visible);
