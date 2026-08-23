@@ -4731,8 +4731,53 @@ trigger_variables:
     }}
 
 variables:
-  # Version will be following release version defined automatically when merging to main
+  # Blueprint version will be following release version defined automatically when merging to main
+  # There's no need to change it here
   blueprint_version: 9999.99.9
+
+  # Firmware version as reported by the ESPHome integration in the device registry.
+  # Format: "<project_version> (ESPHome <compiler_version>)", e.g. "2026.8.5 (ESPHome 2026.6.0)".
+  # The device registry is used instead of a sensor so the value stays readable
+  # while the panel is offline.
+  esphome_sw_version: >-
+    {{ device_attr(nspanel_deviceid, 'sw_version') | default('', true) | string | trim }}
+  esphome_version_string: >-
+    {{ esphome_sw_version.split(' ')[0] if esphome_sw_version | length > 0 else '' }}
+  # AwesomeVersion object for comparisons, derived from the device registry
+  # sw_version attribute. Falls back to 0.0.0 when the version is unparseable,
+  # matching the fail-closed behaviour of esphome_compatible.
+  esphome_version: >-
+    {{
+      version(esphome_version_string)
+      if esphome_version_parts | count == 3
+      else version("0.0.0")
+    }}
+  # Parsed into an integer tuple; empty list means "could not determine".
+  esphome_version_parts: >-
+    {{
+      esphome_version_string.split('.') | map('int') | list
+      if esphome_version_string.split('.') | count == 3
+      and esphome_version_string.split('.') | select('match', '^[0-9]+$') | list | count == 3
+      else []
+    }}
+  blueprint_version_parts: >-
+    {{ (blueprint_version | string).split('.') | map('int') | list }}
+  # ESPHome must be equal to or newer than the Blueprint. The documented update
+  # order is ESPHome -> TFT -> Blueprint, so a Blueprint ahead of the firmware
+  # means the user skipped a step and new API actions may not exist yet.
+  # Fails closed: an unparseable version blocks all action calls.
+  esphome_compatible: >-
+    {{
+      esphome_version_parts | count == 3
+      and (
+        esphome_version_parts[0] > blueprint_version_parts[0]
+        or (esphome_version_parts[0] == blueprint_version_parts[0]
+            and esphome_version_parts[1] > blueprint_version_parts[1])
+        or (esphome_version_parts[0] == blueprint_version_parts[0]
+            and esphome_version_parts[1] == blueprint_version_parts[1]
+            and esphome_version_parts[2] >= blueprint_version_parts[2])
+      )
+    }}
 
   pages:
     current: '{{ states(currentpage) }}'
@@ -5664,6 +5709,10 @@ triggers:
 
 # yamllint disable rule:line-length
 conditions:
+  - >  # Prevent trigger when panel's versio is older, unless in speciall cases (handled later)
+    {{
+      esphome_compatible or trigger.id in ["automation_reloaded", "ha_started", "nspanel_event"]
+    }}
   - >  # Trigger is coming from panel's event or Device Name is available
     {{
       trigger.id in ["automation_reloaded", "ha_started", "nspanel_event"] or has_value(device_name_sensor)
@@ -5721,32 +5770,18 @@ actions:
               )
           }}
         {%- endif %}
+
       nspanel_name: '{{ action_prefix }}'
+      # Device name with the action prefix appended when they differ,
+      # e.g. "Office Panel (office_workstation_panel)".
+      nspanel_full_name: >-
+        {{
+          device_name(nspanel_deviceid) ~ ((" (" ~ nspanel_name ~ ")")
+          if nspanel_name != device_name(nspanel_deviceid)
+          else "")
+        }}
 
       page_constructor: false
-
-      esphome_version: >
-        {%
-          set esphome_version_sensor =
-            nspanel_entities | selectattr(None, "search", "sensor.*_esphome_version") | list | last
-            if nspanel_entities | selectattr(None, "search", "sensor.*_esphome_version") | list | count > 0
-            else ("sensor." ~ device_name ~ "_esphome_version")
-        %}
-        {{
-          version(trigger.event.data.esphome_version)
-          if
-            trigger is defined and
-            trigger.event is defined and
-            trigger.event.data is defined and
-            trigger.event.data.esphome_version is defined and
-            trigger.event.data.esphome_version is string and trigger.event.data.esphome_version | length > 0
-          else
-            (
-              version(states(esphome_version_sensor))
-              if has_value(esphome_version_sensor)
-              else version("0.0.0")
-            )
-        }}
 
       compact_unit_display: !input compact_unit_display
       units_separator: "{{ '' if compact_unit_display else ' ' }}"
@@ -6627,6 +6662,64 @@ actions:
   - condition: '{{ nspanel_name is defined }}'
   - condition: '{{ nspanel_name is string }}'
   - condition: '{{ nspanel_name | length > 0 }}'
+
+  - alias: ESPHome version gate
+    # Prevents calling API actions that an older firmware has not registered yet.
+    # An unknown action raises ServiceNotFound, which HA surfaces as a repair issue
+    # even when the call carries continue_on_error.
+    if: '{{ not esphome_compatible }}'
+    then:
+      - action: persistent_notification.create
+        data:
+          notification_id: 'NSPanel_Easy_version_mismatch_{{ nspanel_name }}'
+          title: "NSPanel Easy - Version mismatch: ESPHome"
+          message: >
+            {% if esphome_version_parts | count != 3 %}
+            The ESPHome firmware version for the NSPanel **{{ nspanel_full_name }}** could not be determined,
+            so the Blueprint has stopped to avoid calling API actions the firmware may not support.
+
+            - Blueprint version: {{ blueprint_version }}
+
+            - Reported firmware version: {{ esphome_sw_version if esphome_sw_version | length > 0 else "Unknown" }}
+
+            ---
+
+            **How to Resolve This Issue**
+
+            1. Confirm the correct device is selected in the **NSPanel device** field of this automation.
+
+            2. Confirm the panel is online and connected to Home Assistant.
+
+            3. If the panel is online and the correct device is selected, please
+            [report this issue](https://github.com/edwardtfn/NSPanel-Easy/issues/new/choose),
+            including the reported firmware version shown above.
+            {% else %}
+            Your NSPanel Easy ESPHome firmware is older than the Blueprint, so the Blueprint has stopped
+            to avoid calling API actions this firmware does not implement yet.
+
+            - Panel: **{{ nspanel_full_name }}**
+
+            - Current ESPHome version: {{ esphome_version_string }}
+
+            - Required version: {{ blueprint_version }} or newer
+
+            ---
+
+            **How to Resolve This Issue**
+
+            Components must be updated in this order: **ESPHome**, then **TFT**, then **Blueprint**.
+
+            1. Update your ESPHome configuration to reference version {{ blueprint_version }} or newer.
+
+            2. Install the new firmware on your panel.
+
+            3. Let the panel upload the matching TFT file and reboot.
+
+            *For more detailed instructions, please refer to the online documentation:
+            [How to Update](https://github.com/edwardtfn/NSPanel-Easy/blob/main/docs/howto.md).*
+            {% endif %}
+        continue_on_error: true
+      - stop: ESPHome firmware is older than the Blueprint
 
   - alias: Global anchor repository
     if: '{{ false }}'  # It should never execute directly
@@ -11334,15 +11427,6 @@ actions:
                 conditions:
                   - '{{ nspanel_event.type == "version"}}'
                 sequence:
-                  - &variable_nspanel_full_name
-                    variables:
-                      nspanel_deviceid: !input nspanel_name
-                      nspanel_full_name: >-
-                        {{
-                          device_name(nspanel_deviceid) ~ ((" (" ~ nspanel_name ~ ")")
-                          if nspanel_name != device_name(nspanel_deviceid)
-                          else "")
-                        }}
                   - variables:
                       versions:
                         blueprint: '{{ nspanel_event.blueprint | default("") }}'
@@ -11653,7 +11737,6 @@ actions:
                   notification_id: 'NSPanel_Easy_device_name_sensor_missing_{{ nspanel_name }}'
                 continue_on_error: true
             else:
-              - *variable_nspanel_full_name
               - action: persistent_notification.create
                 data:
                   notification_id: 'NSPanel_Easy_device_name_sensor_missing_{{ nspanel_name }}'
