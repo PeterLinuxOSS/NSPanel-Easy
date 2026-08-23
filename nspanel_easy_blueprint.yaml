@@ -4743,6 +4743,14 @@ variables:
     {{ device_attr(nspanel_deviceid, 'sw_version') | default('', true) | string | trim }}
   esphome_version_string: >-
     {{ esphome_sw_version.split(' ')[0] if esphome_sw_version | length > 0 else '' }}
+  # Parsed into an integer tuple; empty list means "could not determine".
+  esphome_version_parts: >-
+    {{
+      esphome_version_string.split('.') | map('int') | list
+      if esphome_version_string.split('.') | count == 3
+      and esphome_version_string.split('.') | select('match', '^[0-9]+$') | list | count == 3
+      else []
+    }}
   # AwesomeVersion object for comparisons, derived from the device registry
   # sw_version attribute. Falls back to 0.0.0 when the version is unparseable,
   # matching the fail-closed behaviour of esphome_compatible.
@@ -4751,14 +4759,6 @@ variables:
       version(esphome_version_string)
       if esphome_version_parts | count == 3
       else version("0.0.0")
-    }}
-  # Parsed into an integer tuple; empty list means "could not determine".
-  esphome_version_parts: >-
-    {{
-      esphome_version_string.split('.') | map('int') | list
-      if esphome_version_string.split('.') | count == 3
-      and esphome_version_string.split('.') | select('match', '^[0-9]+$') | list | count == 3
-      else []
     }}
   blueprint_version_parts: >-
     {{ (blueprint_version | string).split('.') | map('int') | list }}
