@@ -21,8 +21,6 @@
 
 namespace esphome::nspanel_easy {
 
-bool is_home_page = false;
-
 #ifdef NSPANEL_EASY_SUBSCRIBE
 
 static const char *const TAG = "nspanel.page.home.sub";
@@ -128,9 +126,9 @@ static void home_button_render(const SubBinding &binding, const SubRuntime &rt, 
   button.color = color;
 
   ESP_LOGV(TAG, "%s: icon='%s' color=%" PRIu16 " home=%s appearance=%s", binding.component, icon, color,
-           YESNO(is_home_page), YESNO(rt.has_appearance));
+           YESNO(is_home_page()), YESNO(rt.has_appearance));
 
-  if (!is_home_page) {
+  if (!is_home_page()) {
     return;  // Shadow is up to date; the repaint on entry will draw it
   }
   if (icon_changed) {
@@ -253,7 +251,7 @@ static void home_indoor_temp_render(const char *state) {
   strncpy(indoor_temp_text, text, sizeof(indoor_temp_text) - 1);
   indoor_temp_text[sizeof(indoor_temp_text) - 1] = '\0';
 
-  if (!is_home_page) {
+  if (!is_home_page()) {
     return;  // Shadow is up to date; the repaint on entry will draw it
   }
   nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
@@ -278,7 +276,7 @@ static void home_outdoor_temp_render(const char *state) {
     if (strcmp(outdoor_temp_text, text) != 0) {
       strncpy(outdoor_temp_text, text, sizeof(outdoor_temp_text) - 1);
       outdoor_temp_text[sizeof(outdoor_temp_text) - 1] = '\0';
-      if (is_home_page) {
+      if (is_home_page()) {
         nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
       }
     }
@@ -295,7 +293,7 @@ static void home_outdoor_temp_render(const char *state) {
   // The TFT restores visibility from vis_<component> on page entry, so the
   // variable is always written; the vis command only reaches a visible page.
   nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
-  if (is_home_page) {
+  if (is_home_page()) {
     nextion_display->set_component_visibility("outdoor_temp", visible);
   }
 }
@@ -332,7 +330,7 @@ void home_button_repaint() {
     ESP_LOGE(TAG, "Missing Nextion display pointer");
     return;
   }
-  if (!is_home_page) {
+  if (!is_home_page()) {
     return;  // Unscoped names resolve against the visible page only
   }
 
