@@ -207,12 +207,21 @@ script:
     then:
       # Extended by:
       # - hw_relays
+      # - hw_temperature
       # - hw_wifi
+      # Give the Nextion time to finish constructing the page before repainting.
+      # Commands arriving while it is still drawing can overrun its receive
+      # buffer and be silently discarded.
       - delay: ${home_repaint_delay}
       - lambda: |-
-          // Repaint home page custom buttons (only when using subscriptions)
+          // Navigation during the delay leaves this script writing to whatever page
+          // is now displayed, so the check is here rather than in each extension.
+          if (!is_home_page()) {
+            page_home->stop();
+            return;
+          }
           #ifdef NSPANEL_EASY_SUBSCRIBE
-          home_button_repaint();
+          home_button_repaint();  // Repaint home page custom buttons
           #endif  // NSPANEL_EASY_SUBSCRIBE
 
   - id: !extend stop_all
