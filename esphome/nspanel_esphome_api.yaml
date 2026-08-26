@@ -238,7 +238,6 @@ script:
           ESP_LOGV("${TAG_API}", "  color:     %" PRIu16, color);
           if (page == "mem") return;
           if (page == "chips") return;
-          if (display_easy) return;  // To do: Implement logic for new format
           if (page.empty()) {
             disp1->set_component_font_color(component.c_str(), color);
             return;
