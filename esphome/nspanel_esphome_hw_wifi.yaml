@@ -18,7 +18,8 @@ substitutions:
 api:
   on_client_connected:
     then:
-      - script.execute: refresh_wifi_icon
+      - lambda: |-
+          refresh_wifi_icon->execute(false);
   on_client_disconnected:
     then:
       - lambda: |-
