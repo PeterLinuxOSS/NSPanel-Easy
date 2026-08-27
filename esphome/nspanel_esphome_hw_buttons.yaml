@@ -115,10 +115,10 @@ script:
           if (page == "mem") {
             if (component == "hw_bt_left") {
               id(hardware_settings).button_left_state = (val != 0);
-              refresh_hardware_buttons_bars->execute(1);
+              refresh_hardware_buttons_bars->execute(1, false);
             } else if (component == "hw_bt_right") {
               id(hardware_settings).button_right_state = (val != 0);
-              refresh_hardware_buttons_bars->execute(2);
+              refresh_hardware_buttons_bars->execute(2, false);
             } else if (component == "buttons_bars_pages") {
               id(buttons_bars_pages) = val;
               blueprint_status_flags.hw_buttons_settings = true;
@@ -157,6 +157,7 @@ script:
     mode: restart
     parameters:
       button_mask: uint8_t
+      force: bool  # Redraw even when the colour is unchanged
     then:
       - script.wait: page_change
       - lambda: |-
@@ -183,7 +184,7 @@ script:
                                                   ? id(buttons_color_on)
                                                   : id(buttons_color_off);
             if (${'true' if buttons_bar_text_follow_color else 'false'} and
-                button_bar_left_color != button_bar_text_left_last_color_sent) {
+                (force or button_bar_left_color != button_bar_text_left_last_color_sent)) {
               button_bar_text_left_last_color_sent = button_bar_left_color;
               disp1->set_component_font_color(hmi::home::LEFT_BT_TEXT.name, button_bar_left_color);
             }
@@ -210,7 +211,7 @@ script:
                                                   ? id(buttons_color_on)
                                                   : id(buttons_color_off);
             if (${'true' if buttons_bar_text_follow_color else 'false'} and
-                button_bar_right_color != button_bar_text_right_last_color_sent) {
+                (force or button_bar_right_color != button_bar_text_right_last_color_sent)) {
               button_bar_text_right_last_color_sent = button_bar_right_color;
               disp1->set_component_font_color(hmi::home::RIGHT_BT_TEXT.name, button_bar_right_color);
             }

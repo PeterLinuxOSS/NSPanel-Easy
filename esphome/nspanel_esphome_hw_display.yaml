@@ -86,6 +86,11 @@ display:
             wait_for_display->stop();
             ESP_LOGI("${TAG_HW_DISPLAY}", "Nextion setup triggered");
             system_flags.nextion_ready = true;
+            // The display restarted and lost everything drawn on it. Arm a
+            // repaint rather than doing it here: this fires while the boot
+            // page is showing, and unscoped names resolve against the
+            // visible page only.
+            system_flags.display_resync_pending = true;
             boot_request_blueprint_settings->execute("setup");
 
     on_page:
@@ -353,9 +358,26 @@ script:
             });
           }
 
+          // A resync armed while the boot page was showing cannot be spent
+          // there: the buttons bars are not drawn on boot, so the forced
+          // refresh would return early and the flag would be lost.
+          const bool resync_now = system_flags.display_resync_pending and
+                                  current_page_id != get_page_id("boot");
+
           // Update buttons bars on screen
           ESP_LOGV("${TAG_HW_DISPLAY}", "Update buttons bars on screen");
-          refresh_hardware_buttons_bars->execute(3);
+          refresh_hardware_buttons_bars->execute(3, resync_now);
+
+          if (resync_now) {
+            resync_display->execute();
+          }
+
+  - id: resync_display
+    mode: restart
+    then:
+      - lambda: |-
+          ESP_LOGI("${TAG_HW_DISPLAY}", "Display resync on page '%s'", page_names[current_page_id]);
+          system_flags.display_resync_pending = false;
 
   - id: reset_globals
     mode: restart

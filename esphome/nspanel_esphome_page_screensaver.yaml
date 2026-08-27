@@ -147,14 +147,12 @@ script:
             return;
           }
 
-
   - id: page_screensaver
     mode: restart
     then:
       - lambda: |-
           if (current_page_id != get_page_id("screensaver")) return;
           page_screensaver_apply_settings->execute();
-          refresh_hardware_buttons_bars->execute(3);
           if (id(screensaver_display_time)) refresh_datetime->execute();
           brightness_current = int(display_sleep_brightness->state);
           page_screensaver_apply_settings_with_delay->execute();

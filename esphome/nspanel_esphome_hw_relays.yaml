@@ -188,7 +188,7 @@ switch:
         - lambda: |-
             if (id(hardware_settings).relay1_local) id(hardware_settings).button_left_state = x;
             refresh_relays->execute(1);
-            refresh_hardware_buttons_bars->execute(1);
+            refresh_hardware_buttons_bars->execute(1, false);
 
   - id: relay_2  # Physical switch 2
     name: Relay 2
@@ -200,5 +200,5 @@ switch:
         - lambda: |-
             if (id(hardware_settings).relay2_local) id(hardware_settings).button_right_state = x;
             refresh_relays->execute(2);
-            refresh_hardware_buttons_bars->execute(2);
+            refresh_hardware_buttons_bars->execute(2, false);
 ...

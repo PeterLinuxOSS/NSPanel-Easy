@@ -27,8 +27,7 @@ script:
     then:
       - lambda: |-
           refresh_datetime->execute();
-          refresh_hardware_buttons_bars->execute(3);
-          refresh_wifi_icon->execute();
+          refresh_wifi_icon->execute(false);
 
   - id: !extend page_home
     then:
