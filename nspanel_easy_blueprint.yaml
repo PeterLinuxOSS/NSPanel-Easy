@@ -4655,7 +4655,7 @@ blueprint:
               type: text
 
 mode: parallel
-max: 50
+max: 51
 
 trigger_variables:
   nspanel_deviceid: !input nspanel_name
@@ -7034,7 +7034,6 @@ actions:
                                 nspanel_event.step == "start"
                               )
                             }}
-                          home_indoor_temp_icon: !input home_indoor_temp_icon
 
                       - alias: Blueprint version
                         sequence:
@@ -7164,6 +7163,7 @@ actions:
                                     component: outdoor_temp
                                   - entity: '{{ indoor_temp_entity }}'  # Indoor temperature
                                     attribute: '{{ "current_temperature" if indoor_temp_entity.split(".")[0] == "climate" else "" }}'
+                                    icon: !input 
                                     page: home
                                     component: indr_temp
 
@@ -7355,11 +7355,12 @@ actions:
 
                       - alias: Home page
                         sequence:
-                          - alias: climate_chip_visibility
+                          - alias: Chips
                             sequence:
                               - variables:
                                   climate_chip_visibility: !input climate_chip_visibility
-                              - action: 'esphome.{{ action_prefix }}_component_val'
+                              - alias: climate_chip_visibility
+                                action: 'esphome.{{ action_prefix }}_component_val'
                                 data:
                                   page: mem
                                   id: climate_chip_visibility
@@ -7369,26 +7370,14 @@ actions:
                                     {%- else %}0{%- endif %}
                                 continue_on_error: true
                               - *delay_boot
-                          - alias: indoor_temperature_visibility
-                            sequence:
-                              - variables:
-                                  home_indoor_temp_visible: !input home_indoor_temp_visible
-                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                              - alias: chip_font
+                                action: 'esphome.{{ action_prefix }}_component_val'
                                 data:
                                   page: mem
-                                  id: command
-                                  txt_list:
-                                    - 'vis_indr_temp={{ 1 if home_indoor_temp_visible else 0 }}'
+                                  id: chip_font
+                                  val: !input chip_font_size
                                 continue_on_error: true
                               - *delay_boot
-                          - alias: chip_font
-                            action: 'esphome.{{ action_prefix }}_component_val'
-                            data:
-                              page: mem
-                              id: chip_font
-                              val: !input chip_font_size
-                            continue_on_error: true
-                          - *delay_boot
                           - alias: custom_buttons_font
                             action: 'esphome.{{ action_prefix }}_component_val'
                             data:
@@ -7397,14 +7386,50 @@ actions:
                               val: !input custom_buttons_font_size
                             continue_on_error: true
                           - *delay_boot
-                          - alias: outdoor_temp_font
-                            action: 'esphome.{{ action_prefix }}_component_val'
-                            data:
-                              page: mem
-                              id: outdoor_temp_font
-                              val: !input home_outdoor_temp_font
-                            continue_on_error: true
-                          - *delay_boot
+                          - alias: Temperatures appearance
+                            sequence:
+                              - variables:
+                                  home_indoor_temp_icon: !input home_indoor_temp_icon
+                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                data:
+                                  page: home
+                                  id: indr_temp_icon
+                                  txt_list:
+                                    - >
+                                      {{
+                                        all_icons[home_indoor_temp_icon.split("mdi:")[1]]
+                                        if home_indoor_temp_icon.split("mdi:") | count == 2 and home_indoor_temp_icon.split("mdi:")[1] in all_icons
+                                        else all_icons.thermometer
+                                      }}
+                                continue_on_error: true
+                              - *delay_boot
+                              - action: 'esphome.{{ action_prefix }}_component_color'
+                                data:
+                                  page: home
+                                  id: indr_temp_icon
+                                  color: !input home_indoor_temp_icon_color
+                                continue_on_error: true
+                              - *delay_boot
+                              - alias: indoor_temperature_visibility
+                                sequence:
+                                  - variables:
+                                      home_indoor_temp_visible: !input home_indoor_temp_visible
+                                  - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                    data:
+                                      page: mem
+                                      id: command
+                                      txt_list:
+                                        - 'vis_indr_temp={{ 1 if home_indoor_temp_visible else 0 }}'
+                                    continue_on_error: true
+                                  - *delay_boot
+                                  - alias: outdoor_temp_font
+                                    action: 'esphome.{{ action_prefix }}_component_val'
+                                    data:
+                                      page: mem
+                                      id: outdoor_temp_font
+                                      val: !input home_outdoor_temp_font
+                                    continue_on_error: true
+                                  - *delay_boot
                           - alias: Home page - Entities button
                             sequence:
                               - variables:
