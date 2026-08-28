@@ -81,6 +81,26 @@ static constexpr const char *CHIP_NAMES[CHIP_COUNT] = {
     "chip07",        ///< Index 9
 };
 
+/**
+ * @brief Scoped Nextion component names for each chip slot on the home page.
+ *
+ * Index order matches chip_states[]. Home is a global page and its chips are
+ * global components, so these names resolve from any page. Writing here both
+ * persists the value and updates the live component when home is showing.
+ */
+static constexpr const char *CHIP_NAMES_HOME[CHIP_COUNT] = {
+    "home.chip_relay1",   ///< Index 0
+    "home.chip_relay2",   ///< Index 1
+    "home.chip_climate",  ///< Index 2
+    "home.chip01",        ///< Index 3
+    "home.chip02",        ///< Index 4
+    "home.chip03",        ///< Index 5
+    "home.chip04",        ///< Index 6
+    "home.chip05",        ///< Index 7
+    "home.chip06",        ///< Index 8
+    "home.chip07",        ///< Index 9
+};
+
 // Named indices for direct access by relay and climate logic.
 static constexpr uint8_t CHIP_IDX_RELAY1 = 0;   ///< chip_relay1 index in chip_states
 static constexpr uint8_t CHIP_IDX_RELAY2 = 1;   ///< chip_relay2 index in chip_states
@@ -90,7 +110,8 @@ static constexpr uint8_t CHIP_IDX_USER = 3;     ///< First user chip (chip01) in
 /// @brief Shadow state array; one entry per chip slot.
 extern ChipState chip_states[CHIP_COUNT];
 
-extern bool is_chips_page;
+/// @brief True while a page whose chips are local copies of home's is showing.
+extern bool chips_mirror_page;
 
 /**
  * @brief Find the chip index for a given component name.
@@ -114,6 +135,16 @@ inline uint8_t find_chip_index(const char *name) {
  * @return Index into chip_states[] / CHIP_NAMES[], or UINT8_MAX if not found.
  */
 inline uint8_t find_chip_index(const std::string &name) { return find_chip_index(name.c_str()); }
+
+/**
+ * @brief Write a chip's current shadow state to the display.
+ *
+ * Always writes the scoped home component, which persists and also updates the
+ * live component when home is showing. Adds an unscoped write when a mirror
+ * page is visible. A hidden chip is rendered as empty text rather than through
+ * a vis command, so visibility survives page changes without a vis_* variable.
+ */
+void chip_render(uint8_t idx);
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
 

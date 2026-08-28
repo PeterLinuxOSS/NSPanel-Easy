@@ -291,7 +291,7 @@ Text right_bt_text
 Text chip_relay1
     Attributes
         ID                      : 11
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -318,7 +318,7 @@ Text chip_relay1
 Text chip_relay2
     Attributes
         ID                      : 12
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -345,7 +345,7 @@ Text chip_relay2
 Text chip_climate
     Attributes
         ID                      : 13
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -372,7 +372,7 @@ Text chip_climate
 Text chip01
     Attributes
         ID                      : 14
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -399,7 +399,7 @@ Text chip01
 Text chip02
     Attributes
         ID                      : 15
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -426,7 +426,7 @@ Text chip02
 Text chip03
     Attributes
         ID                      : 16
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -453,7 +453,7 @@ Text chip03
 Text chip04
     Attributes
         ID                      : 17
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -480,7 +480,7 @@ Text chip04
 Text chip05
     Attributes
         ID                      : 18
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -507,7 +507,7 @@ Text chip05
 Text chip06
     Attributes
         ID                      : 19
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -534,7 +534,7 @@ Text chip06
 Text chip07
     Attributes
         ID                      : 20
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127

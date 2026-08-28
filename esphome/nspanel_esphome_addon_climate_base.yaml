@@ -421,22 +421,23 @@ script:
           // Apply the icon and color to the climate chip
           // Update shadow state
           ChipState &the_chip = chip_states[CHIP_IDX_CLIMATE];
+          bool changed = false;
+
           if (strcmp(the_chip.icon, icon) != 0) {
             strncpy(the_chip.icon, icon, sizeof(the_chip.icon) - 1);
             the_chip.icon[sizeof(the_chip.icon) - 1] = '\0';
-            if (is_chips_page)
-              disp1->set_component_text(CHIP_NAMES[CHIP_IDX_CLIMATE], icon);
+            changed = true;
           }
           if (the_chip.color != color) {
             the_chip.color = color;
-            if (is_chips_page)
-              disp1->set_component_font_color(CHIP_NAMES[CHIP_IDX_CLIMATE], static_cast<uint16_t>(color));
+            changed = true;
           }
           if (the_chip.visible != visible) {
             the_chip.visible = visible;
-            if (is_chips_page)
-              disp1->set_component_visibility(CHIP_NAMES[CHIP_IDX_CLIMATE], visible);
+            changed = true;
           }
+
+          if (changed) chip_render(CHIP_IDX_CLIMATE);
 
           if (current_page_id != get_page_id("climate")) return;
           if (!climate_embedded_visible) return;

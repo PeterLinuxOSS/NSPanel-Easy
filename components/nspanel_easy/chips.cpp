@@ -3,22 +3,45 @@
 #ifdef NSPANEL_EASY_CHIPS
 
 #include "chips.h"
+#include "nextion_components.h"
+
+#include "esphome/components/nextion/nextion.h"
+
 #include <string>
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
-#include "nextion_components.h"
-#include "esphome/components/nextion/nextion.h"
 #include "esphome/core/log.h"
 #endif  // NSPANEL_EASY_SUBSCRIBE
 
 namespace esphome::nspanel_easy {
 
+static const char *const TAG = "nspanel.chips";
+
 ChipState chip_states[CHIP_COUNT] = {};
-bool is_chips_page = false;
+bool chips_mirror_page = false;
+
+void chip_render(uint8_t idx) {
+  if (idx >= CHIP_COUNT || nextion_display == nullptr) {
+    return;
+  }
+
+  const ChipState &the_chip = chip_states[idx];
+  const char *text = the_chip.visible ? the_chip.icon : "";
+
+  nextion_display->set_component_text(CHIP_NAMES_HOME[idx], text);
+  if (the_chip.visible) {
+    nextion_display->set_component_font_color(CHIP_NAMES_HOME[idx], the_chip.color);
+  }
+
+  if (chips_mirror_page) {
+    nextion_display->set_component_text(CHIP_NAMES[idx], text);
+    if (the_chip.visible) {
+      nextion_display->set_component_font_color(CHIP_NAMES[idx], the_chip.color);
+    }
+  }
+}
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
-
-static const char *const TAG = "nspanel.chips.sub";
 
 void chip_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible) {
   const uint8_t idx = find_chip_index(binding.component);
@@ -39,6 +62,8 @@ void chip_sub_render(const SubBinding &binding, const SubRuntime &rt, const char
   if (!rt.has_appearance) {
     return;
   }
+
+  bool changed = false;
 
   if (visible) {
     const bool active = (rt.last_state == SUB_STATE_ON);
@@ -64,24 +89,21 @@ void chip_sub_render(const SubBinding &binding, const SubRuntime &rt, const char
     if (strcmp(the_chip.icon, icon) != 0) {
       strncpy(the_chip.icon, icon, sizeof(the_chip.icon) - 1);
       the_chip.icon[sizeof(the_chip.icon) - 1] = '\0';
-      if (is_chips_page) {
-        nextion_display->set_component_text(CHIP_NAMES[idx], the_chip.icon);
-      }
+      changed = true;
     }
     if (the_chip.color != color) {
       the_chip.color = color;
-      if (is_chips_page) {
-        nextion_display->set_component_font_color(CHIP_NAMES[idx], color);
-      }
+      changed = true;
     }
   }  // if visible — appearance is left untouched while hidden
 
-  if (the_chip.visible == visible) {
-    return;
+  if (the_chip.visible != visible) {
+    the_chip.visible = visible;
+    changed = true;
   }
-  the_chip.visible = visible;
-  if (is_chips_page) {
-    nextion_display->set_component_visibility(CHIP_NAMES[idx], visible);
+
+  if (changed) {
+    chip_render(idx);
   }
 }
 

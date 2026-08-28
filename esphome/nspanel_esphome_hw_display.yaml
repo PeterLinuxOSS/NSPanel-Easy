@@ -372,13 +372,6 @@ script:
             resync_display->execute();
           }
 
-  - id: resync_display
-    mode: restart
-    then:
-      - lambda: |-
-          ESP_LOGI("${TAG_HW_DISPLAY}", "Display resync on page '%s'", page_names[current_page_id]);
-          system_flags.display_resync_pending = false;
-
   - id: reset_globals
     mode: restart
     parameters:
@@ -386,6 +379,13 @@ script:
     then:
       - lambda: |-
           ESP_LOGV("${TAG_HW_DISPLAY}", "Reset globals");
+
+  - id: resync_display
+    mode: restart
+    then:
+      - lambda: |-
+          ESP_LOGI("${TAG_HW_DISPLAY}", "Display resync on page '%s'", page_names[current_page_id]);
+          system_flags.display_resync_pending = false;
 
   - id: set_brightness
     mode: single
@@ -407,6 +407,7 @@ script:
           goto_page->stop();
           page_change->stop();
           reset_globals->stop();
+          resync_display->stop();
           set_brightness->stop();
           theme_update->stop();
           theme_update_all->stop();

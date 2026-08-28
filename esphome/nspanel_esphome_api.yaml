@@ -187,7 +187,7 @@ api:
 
             const bool is_chip_target = (page == "chips");
             const bool target_is_home_page = (page == "home");
-            const bool target_is_current_page = (page == current_page->state) || (is_chip_target && is_chips_page);
+            const bool target_is_current_page = (page == current_page->state) || is_chip_target;
 
             // Only process if home page (global) OR current page
             if (!target_is_home_page && !target_is_current_page) {

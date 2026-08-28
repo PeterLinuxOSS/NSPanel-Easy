@@ -159,6 +159,10 @@ script:
           }
           disp1->set_component_text(component.c_str(), date_string.c_str());
 
+  - id: !extend resync_display
+    then:
+      - script.execute: refresh_datetime
+
   - id: !extend stop_all
     then:
       - lambda: |-
