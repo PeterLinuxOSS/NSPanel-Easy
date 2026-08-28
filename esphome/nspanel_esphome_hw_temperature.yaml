@@ -114,10 +114,6 @@ script:
     then:
       - script.execute: display_embedded_temp
 
-  - id: !extend page_home
-    then:
-      - script.execute: display_embedded_temp
-
   - id: !extend stop_all
     then:
       - lambda: display_embedded_temp->stop();

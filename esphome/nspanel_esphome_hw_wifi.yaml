@@ -55,11 +55,6 @@ script:
             ESP_LOGE("${TAG_HW_WIFI}", "WiFi: DISCONNECTED");
           }
 
-  - id: !extend page_home
-    then:
-      - lambda: |-
-          refresh_wifi_icon->execute(false);
-
   - id: refresh_wifi_icon
     mode: single
     parameters:

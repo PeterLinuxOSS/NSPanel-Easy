@@ -140,12 +140,6 @@ script:
           id: refresh_relays
           relay_mask: 3
 
-  - id: !extend page_home
-    then:
-      - script.execute:
-          id: refresh_relays
-          relay_mask: 3
-
   - id: refresh_relays
     mode: single
     parameters:

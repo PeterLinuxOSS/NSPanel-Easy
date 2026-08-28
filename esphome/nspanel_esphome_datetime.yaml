@@ -29,10 +29,6 @@ script:
           refresh_datetime->execute();
           refresh_wifi_icon->execute(false);
 
-  - id: !extend page_home
-    then:
-      - script.execute: refresh_datetime
-
   - id: refresh_datetime
     mode: restart
     then:

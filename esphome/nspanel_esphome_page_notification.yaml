@@ -35,7 +35,7 @@ api:
             }
             notification_label = label.c_str();
             notification_text = message.c_str();
-            notification_unread->publish_state(true);
+            notification_refresh->execute(true);
             if (current_page_id == get_page_id("notification")) {
               page_notification->execute();
             } else {
@@ -45,8 +45,6 @@ api:
             #ifdef NSPANEL_EASY_HW_BUZZER
             notification_play_sound->execute();
             #endif
-            disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name, notification_icon_color_unread);
-            disp1->send_command("vis_bt_notific=1");
 
 binary_sensor:
   - id: notification_unread
@@ -61,22 +59,18 @@ display:
     on_touch:
       then:
         - lambda: |-
-            if (
-                  page_id == get_page_id("notification") and  // Page notification
-                  !touch_event                            // Only act with release
-                ) {
-              switch (component_id) {
-                case 7:  // bt_accept
-                  ha_button->execute("notification", "bt_accept", "released");
-                  notification_clear->execute();
-                  break;
-                case 8:  // bt_clear
-                  ha_button->execute("notification", "bt_clear", "released");
-                  notification_unread->publish_state(false);
-                  disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name, notification_icon_color_normal);
-                  goto_page->execute(get_page_id("home"));
-                  break;
-              }
+            if (page_id != get_page_id("notification")) return;
+            if (touch_event) return;  // Only act with release
+            switch (component_id) {
+              case 7:  // bt_accept
+                ha_button->execute("notification", "bt_accept", "released");
+                notification_clear->execute();
+                break;
+              case 8:  // bt_clear
+                ha_button->execute("notification", "bt_clear", "released");
+                notification_refresh->execute(false);
+                goto_page->execute(get_page_id("home"));
+                break;
             }
 
 esphome:
@@ -87,13 +81,16 @@ script:
   - id: !extend action_component_color
     then:
       - lambda: |-
-          if (page == "mem") {
-            if (component == "notification_icon_color_normal") {
-              notification_icon_color_normal = color;
-            } else if (component == "notification_icon_color_unread") {
-              notification_icon_color_unread = color;
-            }
+          if (page != "mem") return;
+          bool color_changed = false;
+          if (component == "notification_icon_color_normal") {
+            color_changed = notification_icon_color_normal != color;
+            notification_icon_color_normal = color;
+          } else if (component == "notification_icon_color_unread") {
+            color_changed = notification_icon_color_unread != color;
+            notification_icon_color_unread = color;
           }
+          if (color_changed) notification_refresh->execute(notification_unread->state);
 
   - id: !extend boot
     then:
@@ -108,11 +105,7 @@ script:
             goto_page->execute(get_page_id("home"));
           notification_label = "";
           notification_text = "";
-          notification_unread->publish_state(false);
-          disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name, Colors::RGB565_BLACK);
-          if (current_page_id == get_page_id("home")) {
-            disp1->hide_component("bt_notific");
-          }
+          notification_refresh->execute(false);
 
   - id: notification_play_sound
     mode: single
@@ -124,28 +117,27 @@ script:
             buzzer->play("${tone_notification}");
           #endif
 
+  - id: notification_refresh
+    mode: single
+    parameters:
+      unread: bool
+    then:
+      - lambda: |-
+          notification_unread->publish_state(unread);
+          const bool notification_available = !notification_text.empty();
+          disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name,
+                                          unread ? notification_icon_color_unread
+                                                 : notification_icon_color_normal);
+          if (current_page_id == get_page_id("home")) {
+            disp1->set_component_visibility("bt_notific", notification_available);
+          }
+          disp1->send_command_printf("vis_bt_notific=%i", notification_available ? 1 : 0);
+
   - id: !extend page_change
     then:
       - lambda: |-
           if (new_page_id != get_page_id("notification")) return;
           page_notification->execute();
-
-  - id: !extend page_home
-    then:
-      - lambda: |-
-          if (notification_text.empty()) {
-            disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name, Colors::RGB565_BLACK);
-            if (current_page_id == get_page_id("home")) {
-              disp1->hide_component("bt_notific");
-            }
-          } else {
-            disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name, notification_unread->state
-                                                                      ? notification_icon_color_unread
-                                                                      : notification_icon_color_normal);
-            if (current_page_id == get_page_id("home")) {
-              disp1->show_component("bt_notific");
-            }
-          }
 
   - id: page_notification
     mode: single
@@ -162,6 +154,7 @@ script:
       - lambda: |-
           notification_clear->stop();
           notification_play_sound->stop();
+          notification_refresh->stop();
 
   - id: !extend stop_page_constructors
     then:

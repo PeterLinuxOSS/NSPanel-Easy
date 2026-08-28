@@ -447,10 +447,6 @@ script:
           });
           ESP_LOGV("${TAG_API}", "'button_click' event sent");
 
-  - id: !extend page_home
-    then:
-      - script.execute: update_flag_api_ready
-
   - id: !extend stop_all
     then:
       - lambda: |-
