@@ -4655,7 +4655,7 @@ blueprint:
               type: text
 
 mode: parallel
-max: 51
+max: 50
 
 trigger_variables:
   nspanel_deviceid: !input nspanel_name
@@ -7163,7 +7163,6 @@ actions:
                                     component: outdoor_temp
                                   - entity: '{{ indoor_temp_entity }}'  # Indoor temperature
                                     attribute: '{{ "current_temperature" if indoor_temp_entity.split(".")[0] == "climate" else "" }}'
-                                    icon: !input 
                                     page: home
                                     component: indr_temp
 
@@ -7434,26 +7433,29 @@ actions:
                             sequence:
                               - variables:
                                   bt_entities_icon: !input home_button06_icon
+                                  bt_entities_visible: >-
+                                    {{
+                                      entities_pages.entities
+                                      | selectattr("page", "defined")
+                                      | selectattr("page", "in", pages.entitypages)
+                                      | selectattr("entity", "defined")
+                                      | rejectattr("entity", "eq", [])
+                                      | list
+                                      | count > 0
+                                    }}
                               - alias: entities_pages_icon
-                                action: 'esphome.{{ action_prefix }}_component_text_list'
+                                action: 'esphome.{{ action_prefix }}_icon'
                                 data:
-                                  page: mem
-                                  id: entities_pages_icon
-                                  txt_list:
-                                    - >
-                                      {{
-                                        all_icons[bt_entities_icon.split("mdi:")[1]]
-                                        if bt_entities_icon is string and bt_entities_icon.split("mdi:")[1] in all_icons
-                                        else all_icons["format-list-bulleted-square"]
-                                      }}
-                                continue_on_error: true
-                              - *delay_boot
-                              - alias: entities_pages_icon_color
-                                action: 'esphome.{{ action_prefix }}_component_color'
-                                data:
-                                  page: mem
-                                  id: entities_pages_icon_color
-                                  color: !input home_button06_icon_color
+                                  page: home
+                                  id: bt_entities
+                                  icon: >
+                                    {{
+                                      all_icons[bt_entities_icon.split("mdi:")[1]]
+                                      if bt_entities_icon is string and bt_entities_icon.split("mdi:")[1] in all_icons
+                                      else all_icons["format-list-bulleted-square"]
+                                    }}
+                                  icon_color: !input home_button06_icon_color
+                                  visible: '{{ bt_entities_visible }}'
                                 continue_on_error: true
                               - *delay_boot
                           - alias: Home page - Utilities button
@@ -8019,7 +8021,7 @@ actions:
                         sequence:
                           - variables:
                               txt_list_payload: >
-                                {% set ns = namespace(items=[]) %}
+                                {% set ns = namespace(items=[], any_entities=false) %}
                                 {% for page in pages.entitypages %}
                                   {% set has_entities = entities_pages.entities
                                         | selectattr("page", "defined")
@@ -8029,6 +8031,7 @@ actions:
                                         | list
                                         | count > 0 %}
                                   {% set ns.items = ns.items + ["is_" ~ page ~ "=" ~ (1 if has_entities else 0)] %}
+                                  {% set ns.any_entities = ns.any_entities or has_entities %}
                                 {% endfor %}
                                 {{ ns.items }}
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
@@ -8038,21 +8041,6 @@ actions:
                               txt_list: '{{ txt_list_payload }}'
                             continue_on_error: true
                           - *delay_boot
-
-                      - alias: Entity pages button visibility
-                        action: 'esphome.{{ action_prefix }}_component_val'
-                        data:
-                          page: mem
-                          id: is_entitypages
-                          val: >-
-                            {{
-                              entities_pages.entities
-                              | selectattr("entity", "defined")
-                              | rejectattr("entity", "eq", [])
-                              | list
-                              | count
-                            }}
-                        continue_on_error: true
 
               - alias: NSPanel action call
                 conditions:

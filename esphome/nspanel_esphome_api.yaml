@@ -402,7 +402,6 @@ script:
           if (target_is_current_page) {
             // Use short format for current page: "id"
             target_id = component.component_id;
-            action_component_visibility->execute(component.page, component.component_id, visible);
           } else {
             // Use full format for global components: "page.id"
             snprintf(full_id, sizeof(full_id), "%s.%s", component.page, component.component_id);
@@ -416,6 +415,12 @@ script:
           if (icon_color >= 0) {
             disp1->set_component_font_color(target_id, static_cast<uint16_t>(icon_color));
           }
+
+          // Visibility is handled unconditionally: action_component_visibility
+          // writes the persistent vis_* variable for home page targets even when
+          // another page is showing, and applies the live vis command only when
+          // the target page is the current one.
+          action_component_visibility->execute(component.page, component.component_id, visible);
 
   - id: !extend dump_config
     then:

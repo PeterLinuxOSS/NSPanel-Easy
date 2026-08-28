@@ -861,6 +861,7 @@ Text bt_entities
                 }else
                 {
                     vis bt_entities,0
+                    vis_bt_entities=0
                 }
             }
         

@@ -6,7 +6,6 @@
 
 namespace esphome::nspanel_easy {
 
-bool page_entities_enabled = false;
 uint8_t page_entities_value_horizontal_alignment = 1;  // Horizontal alignment: 0-Left; 1-Center; 2-Right
 
 }  // namespace esphome::nspanel_easy
