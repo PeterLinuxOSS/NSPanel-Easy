@@ -56,12 +56,11 @@ struct HomeVisBit {
 };
 
 static constexpr HomeVisBit HOME_VIS_BITS[] = {
-    {"indr_temp", 0},      {"indr_temp_icon", 0},  {"outdoor_temp", 1},   {"bt_icon", 2},
-    {"bt_utilities", 3},   {"bt_notific", 4},      {"bt_qrcode", 5},      {"bt_entities", 6},
-    {"button01", 7},       {"button02", 8},        {"button03", 9},       {"button04", 10},
-    {"button05", 11},      {"button06", 12},       {"button07", 13},      {"value01", 14},
-    {"value01_icon", 14},  {"value02", 15},        {"value02_icon", 15},  {"value03", 16},
-    {"value03_icon", 16},  {"value04", 17},        {"value04_icon", 17},
+    {"indr_temp", 0},     {"indr_temp_icon", 0}, {"outdoor_temp", 1},  {"bt_icon", 2},       {"bt_utilities", 3},
+    {"bt_notific", 4},    {"bt_qrcode", 5},      {"bt_entities", 6},   {"button01", 7},      {"button02", 8},
+    {"button03", 9},      {"button04", 10},      {"button05", 11},     {"button06", 12},     {"button07", 13},
+    {"value01", 14},      {"value01_icon", 14},  {"value02", 15},      {"value02_icon", 15}, {"value03", 16},
+    {"value03_icon", 16}, {"value04", 17},       {"value04_icon", 17},
 };
 
 extern uint32_t home_vis_mask;
