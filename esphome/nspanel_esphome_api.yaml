@@ -357,15 +357,14 @@ script:
           const bool target_is_home_page = (component_page == "home");
           const bool is_current_page = (component_page == current_page->state);
 
-          // Always update the home page persistent visibility variable,
-          // regardless of which page is currently active
-          if (target_is_home_page &&
-              strcmp(target_id, "indr_temp_icon") != 0 &&
-              strcmp(target_id, "value01_icon")   != 0 &&
-              strcmp(target_id, "value02_icon")   != 0 &&
-              strcmp(target_id, "value03_icon")   != 0 &&
-              strcmp(target_id, "value04_icon")   != 0)
-            disp1->send_command_printf("vis_%s=%" PRIu8, target_id, (uint8_t)visible);
+          // Nextion does not retain vis across page loads, so home page
+          // visibility is mirrored into the vis_home bitmask, which the page's
+          // Preinitialize event walks on entry. Companion components (*_icon)
+          // follow their parent and have no bit of their own, so home_vis_set()
+          // simply finds no match for them.
+          if (target_is_home_page) {
+            home_vis_set(target_id, visible);
+          }
 
           // Apply the vis command only when the target page is currently visible
           if (page.empty() || is_current_page) {

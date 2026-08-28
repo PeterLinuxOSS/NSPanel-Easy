@@ -43,6 +43,33 @@ namespace esphome::nspanel_easy {
 
 inline bool is_home_page() { return current_page_id == get_page_id("home"); }
 
+/**
+ * @brief Bit positions in the Nextion vis_home bitmask.
+ *
+ * The display's home page Preinitialize event walks these bits to restore
+ * visibility, since Nextion does not retain vis across page loads. Companion
+ * components (*_icon) follow their parent and have no bit of their own.
+ */
+struct HomeVisBit {
+  const char *component;  ///< Unscoped component name as the blueprint sends it
+  uint8_t bit;            ///< Bit position in vis_home
+};
+
+static constexpr HomeVisBit HOME_VIS_BITS[] = {
+    {"indr_temp", 0},      {"indr_temp_icon", 0},  {"outdoor_temp", 1},   {"bt_icon", 2},
+    {"bt_utilities", 3},   {"bt_notific", 4},      {"bt_qrcode", 5},      {"bt_entities", 6},
+    {"button01", 7},       {"button02", 8},        {"button03", 9},       {"button04", 10},
+    {"button05", 11},      {"button06", 12},       {"button07", 13},      {"value01", 14},
+    {"value01_icon", 14},  {"value02", 15},        {"value02_icon", 15},  {"value03", 16},
+    {"value03_icon", 16},  {"value04", 17},        {"value04_icon", 17},
+};
+
+extern uint32_t home_vis_mask;
+
+bool home_vis_set(const char *component, bool visible);
+
+void home_vis_resend();
+
 /// @brief Number of custom button slots on the home page (button01..button07).
 static constexpr uint8_t HOME_BUTTON_COUNT = 7;
 

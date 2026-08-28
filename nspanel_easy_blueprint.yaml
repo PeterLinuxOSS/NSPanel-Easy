@@ -7410,25 +7410,22 @@ actions:
                                 continue_on_error: true
                               - *delay_boot
                               - alias: indoor_temperature_visibility
-                                sequence:
-                                  - variables:
-                                      home_indoor_temp_visible: !input home_indoor_temp_visible
-                                  - action: 'esphome.{{ action_prefix }}_component_text_list'
-                                    data:
-                                      page: mem
-                                      id: command
-                                      txt_list:
-                                        - 'vis_indr_temp={{ 1 if home_indoor_temp_visible else 0 }}'
-                                    continue_on_error: true
-                                  - *delay_boot
-                                  - alias: outdoor_temp_font
-                                    action: 'esphome.{{ action_prefix }}_component_val'
-                                    data:
-                                      page: mem
-                                      id: outdoor_temp_font
-                                      val: !input home_outdoor_temp_font
-                                    continue_on_error: true
-                                  - *delay_boot
+                                action: 'esphome.{{ action_prefix }}_components_visibility'
+                                data:
+                                  page: home
+                                  ids:
+                                    - indr_temp
+                                  visible: !input home_indoor_temp_visible
+                                continue_on_error: true
+                              - *delay_boot
+                              - alias: outdoor_temp_font
+                                action: 'esphome.{{ action_prefix }}_component_val'
+                                data:
+                                  page: mem
+                                  id: outdoor_temp_font
+                                  val: !input home_outdoor_temp_font
+                                continue_on_error: true
+                              - *delay_boot
                           - alias: Home page - Entities button
                             sequence:
                               - variables:

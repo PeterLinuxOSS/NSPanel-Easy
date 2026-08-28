@@ -332,9 +332,7 @@ script:
           ESP_LOGI("${TAG_UPLOAD_TFT}", "Free heap before: %" PRIu32 " bytes, largest block: %zu bytes",
                                         esp_get_free_heap_size(), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
 
-          // Hide Bluetooth icon on page "home"
-          disp1->send_command("vis_bt_icon=0");
-          if (current_page_id == get_page_id("home")) disp1->hide_component(hmi::home::BT_ICON.name);
+          action_component_visibility->execute("home", "bt_icon", false);  // Hide Bluetooth icon on page "home"
 
           // Disable BLE stack
           if (esp32_ble::global_ble != nullptr) {
