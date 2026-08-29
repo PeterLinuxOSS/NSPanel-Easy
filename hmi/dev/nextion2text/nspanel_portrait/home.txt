@@ -86,6 +86,7 @@ Page home
                     vis value04_icon,sys2
                 }
             }
+            sendme
         
 Variable (string) lastclick
     Attributes
