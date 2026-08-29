@@ -154,10 +154,10 @@ script:
   - id: !extend resync_display
     then:
       - lambda: |-
-          // The mask write is change-guarded, so a display restart needs an
-          // unconditional re-send to restore visibility from the shadow.
-          disp1->send_command_printf("vis_home=%" PRIu32, home_vis_mask);
+          home_vis_resend();
+          #ifdef NSPANEL_EASY_SUBSCRIBE
           home_button_repaint();
+          #endif  // NSPANEL_EASY_SUBSCRIBE
 
   - id: !extend stop_all
     then:

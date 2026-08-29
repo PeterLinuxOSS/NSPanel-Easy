@@ -4,41 +4,29 @@
 
 #include "page_home.h"
 
-#ifdef NSPANEL_EASY_SUBSCRIBE
-
-#include <cctype>
 #include <cinttypes>
-#include <cstdio>
 
 #include "esphome/components/nextion/nextion.h"
-#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
 #include "nextion_components.h"
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
+
+#include <cctype>
+#include <cstdio>
+
+#include "esphome/core/helpers.h"
+
 #include "text.h"
 
 #endif  // NSPANEL_EASY_SUBSCRIBE
 
 namespace esphome::nspanel_easy {
 
-#ifdef NSPANEL_EASY_SUBSCRIBE
-
-static const char *const TAG = "nspanel.page.home.sub";
+static const char *const TAG = "nspanel.page.home";
 
 uint32_t home_vis_mask = 0;
-
-HomeButtonState home_button_states[HOME_BUTTON_COUNT] = {};
-
-bool indoor_temp_bound = false;
-bool indoor_temp_valid = false;
-std::function<void()> indoor_temp_fallback;
-
-/// @brief Last rendered text for each subscribed temperature component.
-static char indoor_temp_text[TEMP_TEXT_LEN] = {};
-static char outdoor_temp_text[TEMP_TEXT_LEN] = {};
-
-/// @brief Whether the outdoor temperature component is currently shown.
-static Visibility outdoor_temp_shown = Visibility::UNKNOWN;
 
 bool home_vis_set(const char *component, bool visible) {
   if (nextion_display == nullptr) {
@@ -73,6 +61,21 @@ void home_vis_resend() {
   // restart needs the mask pushed again even though the shadow is unchanged.
   nextion_display->send_command_printf("vis_home=%" PRIu32, home_vis_mask);
 }
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
+
+HomeButtonState home_button_states[HOME_BUTTON_COUNT] = {};
+
+bool indoor_temp_bound = false;
+bool indoor_temp_valid = false;
+std::function<void()> indoor_temp_fallback;
+
+/// @brief Last rendered text for each subscribed temperature component.
+static char indoor_temp_text[TEMP_TEXT_LEN] = {};
+static char outdoor_temp_text[TEMP_TEXT_LEN] = {};
+
+/// @brief Whether the outdoor temperature component is currently shown.
+static Visibility outdoor_temp_shown = Visibility::UNKNOWN;
 
 /**
  * @brief Parse the slot index out of a custom button component name.

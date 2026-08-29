@@ -128,10 +128,10 @@ script:
           disp1->set_component_font_color(hmi::home::BT_NOTIFIC.name,
                                           unread ? notification_icon_color_unread
                                                  : notification_icon_color_normal);
+          home_vis_set("bt_notific", notification_available);
           if (current_page_id == get_page_id("home")) {
             disp1->set_component_visibility("bt_notific", notification_available);
           }
-          disp1->send_command_printf("vis_bt_notific=%i", notification_available ? 1 : 0);
 
   - id: !extend page_change
     then:
