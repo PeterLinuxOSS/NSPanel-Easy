@@ -47,16 +47,43 @@ Page home
                 }else if(sys1==6)
                 {
                     vis bt_entities,sys2
-                }else if(sys1<=13)
+                }else if(sys1==7)
                 {
-                    sys3=sys1+24
-                    vis b[sys3],sys2
+                    vis button01,sys2
+                }else if(sys1==8)
+                {
+                    vis button02,sys2
+                }else if(sys1==9)
+                {
+                    vis button03,sys2
+                }else if(sys1==10)
+                {
+                    vis button04,sys2
+                }else if(sys1==11)
+                {
+                    vis button05,sys2
+                }else if(sys1==12)
+                {
+                    vis button06,sys2
+                }else if(sys1==13)
+                {
+                    vis button07,sys2
+                }else if(sys1==14)
+                {
+                    vis value01,sys2
+                    vis value01_icon,sys2
+                }else if(sys1==15)
+                {
+                    vis value02,sys2
+                    vis value02_icon,sys2
+                }else if(sys1==16)
+                {
+                    vis value03,sys2
+                    vis value03_icon,sys2
                 }else
                 {
-                    sys3=sys1+32
-                    vis b[sys3],sys2
-                    sys4=sys3+4
-                    vis b[sys4],sys2
+                    vis value04,sys2
+                    vis value04_icon,sys2
                 }
             }
         

@@ -2,7 +2,7 @@ Program.s
     //The following code is only run once when power on, and is generally used for global variable definition and power on initialization data
     //At present, the definition of global variable only supports 4-byte signed integer (int), and other types of global quantity declaration are not supported
     //If you want to use string type, you can use variable control in the page to implement
-    int sys0=0,sys1=0,sys2=0,sys3=0,sys4=0
+    int sys0=0,sys1=0,sys2=0,sys3=0
     int swipex=0,swipey=0,swipex2=0,swipey2=0,swipec=0,swipec2=0,swipedx=100,swipedy=100
     int climate_embedded=0
     int light_features_mask=0
