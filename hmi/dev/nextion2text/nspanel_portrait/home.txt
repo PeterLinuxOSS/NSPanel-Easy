@@ -19,6 +19,12 @@ Page home
     
     Events
         Preinitialize Event
+            back_page_id=home_page_id
+            // restore chips
+            for(sys0=11;sys0<=20;sys0++)
+            {
+                b[sys0].font=chip_font
+            }
             // set component visibility
             sys0=vis_home
             for(sys1=0;sys1<=17;sys1++)
@@ -86,6 +92,13 @@ Page home
                     vis value04_icon,sys2
                 }
             }
+            // HW Button's labels
+            if(display_mode==3)
+            {
+                vis left_bt_text,0
+                vis right_bt_text,0
+            }
+            dim=brightness
             sendme
         
 Variable (string) lastclick
