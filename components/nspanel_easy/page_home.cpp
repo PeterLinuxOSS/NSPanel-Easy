@@ -57,9 +57,22 @@ void home_vis_resend() {
     ESP_LOGE(TAG, "Missing Nextion display pointer");
     return;
   }
+
   // Unconditional: home_vis_set() suppresses unchanged writes, so a display
   // restart needs the mask pushed again even though the shadow is unchanged.
   nextion_display->send_command_printf("vis_home=%" PRIu32, home_vis_mask);
+
+  if (!is_home_page()) {
+    return;  // The page's Preinitialize event will apply the mask on entry
+  }
+
+  // The page is already showing, so its Preinitialize event has run with
+  // whatever the mask held at the time. Writing the variable does not repaint,
+  // so each bit is applied to the live components as well.
+  for (const auto &entry : HOME_VIS_BITS) {
+    const bool visible = ((home_vis_mask >> entry.bit) & 1U) != 0;
+    nextion_display->set_component_visibility(entry.component, visible);
+  }
 }
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
