@@ -154,6 +154,10 @@ script:
   - id: !extend resync_display
     then:
       - lambda: |-
+          // The display lost every Nextion global to its Program.s default.
+          // boot_nextion is what pushes them, and until now it only ran on the
+          // full boot path.
+          boot_nextion->execute();
           home_vis_resend();
           #ifdef NSPANEL_EASY_SUBSCRIBE
           home_button_repaint();
