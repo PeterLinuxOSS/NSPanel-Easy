@@ -278,6 +278,12 @@ blueprint:
               filter:
                 domain:
                   - weather
+        home_outdoor_temp_visible:
+          name: Home Page - Outdoor Temperature Sensor Visibility
+          description: "Toggle to display the outdoor temperature on the Home page."
+          default: true
+          selector:
+            boolean:
         outdoortemp:
           name: Home page - Outdoor Temperature Sensor
           description: >-
@@ -7091,11 +7097,14 @@ actions:
                                 {%- elif states.weather | list | count > 0 -%} {{ states.weather | map(attribute="entity_id") | list | first }}
                                 {%- endif -%}
 
-                          - variables: &variables_temperature_entities_from_input
+                          - alias: variables_temperature_entities_from_input
+                            variables:
                               outdoortemp_tmp: !input outdoortemp
+                              home_outdoor_temp_visible_tmp: !input home_outdoor_temp_visible
 
                               outdoor_temp_entity: >
-                                {%- if outdoortemp_tmp is string and outdoortemp_tmp | length > 0 -%} {{ outdoortemp_tmp }}
+                                {%- if not home_outdoor_temp_visible_tmp -%}
+                                {%- elif outdoortemp_tmp is string and outdoortemp_tmp | length > 0 -%} {{ outdoortemp_tmp }}
                                 {%- elif outdoortemp_tmp is list and outdoortemp_tmp | count > 0 and outdoortemp_tmp[0] is string -%} {{ outdoortemp_tmp[0] }}
                                 {%- else -%} {{ weather_entity }}
                                 {%- endif -%}
@@ -7418,14 +7427,29 @@ actions:
                                   visible: !input home_indoor_temp_visible
                                 continue_on_error: true
                               - *delay_boot
-                              - alias: outdoor_temp_font
-                                action: 'esphome.{{ action_prefix }}_component_val'
-                                data:
-                                  page: mem
-                                  id: outdoor_temp_font
-                                  val: !input home_outdoor_temp_font
-                                continue_on_error: true
-                              - *delay_boot
+                              - alias: Outdoor temperature
+                                sequence:
+                                  - alias: outdoor_temperature_visibility
+                                    action: 'esphome.{{ action_prefix }}_components_visibility'
+                                    data:
+                                      page: home
+                                      ids:
+                                        - outdoor_temp
+                                      visible: !input home_outdoor_temp_visible
+                                    continue_on_error: true
+                                  - *delay_boot
+                                  - variables:
+                                      home_outdoor_temp_visible_tmp: !input home_outdoor_temp_visible
+                                  - if: '{{ home_outdoor_temp_visible_tmp }}'
+                                    then:
+                                      - alias: outdoor_temp_font
+                                        action: 'esphome.{{ action_prefix }}_component_val'
+                                        data:
+                                          page: mem
+                                          id: outdoor_temp_font
+                                          val: !input home_outdoor_temp_font
+                                        continue_on_error: true
+                                      - *delay_boot
                           - alias: Home page - Entities button
                             sequence:
                               - variables:
