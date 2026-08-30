@@ -7021,7 +7021,7 @@ actions:
               - alias: Boot init
                 conditions:
                   - '{{ nspanel_event.type == "boot"}}'
-                  - '{{ nspanel_event.step is defined and nspanel_event.step in ["setup", "start", "timeout"] }}'
+                  - '{{ nspanel_event.step is defined and nspanel_event.step in ["display_ack", "setup", "start", "timeout"] }}'
                 sequence:
                   - &global_settings
                     sequence:

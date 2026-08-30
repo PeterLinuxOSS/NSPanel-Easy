@@ -16,6 +16,15 @@ substitutions:
 display:
   - id: !extend disp1
     start_up_page: ${PAGE_BOOT_ID}
+    on_custom_binary_sensor:
+      then:
+        - lambda: |-
+            if (key != "display_ack") return;
+            ESP_LOGI("${TAG_PAGE_BOOT}", "Nextion display acknowledged. Requesting update from the blueprint...");
+            disp1->send_command("display_ack=1");
+            system_flags.display_resync_pending = true;
+            boot_request_blueprint_settings->execute("display_ack");
+
     on_touch:
       then:
         - lambda: |-

@@ -548,3 +548,23 @@ Timer tm_esphome
             printh 00
             printh FF FF FF
         
+Timer tm_display_ack
+    Attributes
+        ID         : 27
+        Scope      : local
+        Period (ms): 1000
+        Enabled    : yes
+    
+    Events
+        Timer Event
+            if(display_ack>0)
+            {
+                tm_display_ack.en=0
+            }else
+            {
+                // Send aknowledge flag to ESPHome
+                printh 93
+                prints "display_ack",0
+                printh 00 01 FF FF FF
+            }
+        
