@@ -4,26 +4,78 @@
 
 #include "page_home.h"
 
-#ifdef NSPANEL_EASY_SUBSCRIBE
-
-#include <cctype>
 #include <cinttypes>
-#include <cstdio>
 
 #include "esphome/components/nextion/nextion.h"
-#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
 #include "nextion_components.h"
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
+
+#include <cctype>
+#include <cstdio>
+
+#include "esphome/core/helpers.h"
+
 #include "text.h"
 
 #endif  // NSPANEL_EASY_SUBSCRIBE
 
 namespace esphome::nspanel_easy {
 
-#ifdef NSPANEL_EASY_SUBSCRIBE
+static const char *const TAG = "nspanel.page.home";
 
-static const char *const TAG = "nspanel.page.home.sub";
+uint32_t home_vis_mask = 0;
+
+bool home_vis_set(const char *component, bool visible) {
+  if (nextion_display == nullptr) {
+    return false;  // Boot has not handed the display over yet
+  }
+
+  for (const auto &entry : HOME_VIS_BITS) {
+    if (strcmp(component, entry.component) != 0) {
+      continue;
+    }
+
+    const uint32_t bit = (1UL << entry.bit);
+    const uint32_t updated = visible ? (home_vis_mask | bit) : (home_vis_mask & ~bit);
+    if (updated == home_vis_mask) {
+      return false;  // Nothing changed; avoid a redundant Nextion write
+    }
+    home_vis_mask = updated;
+    nextion_display->send_command_printf("vis_home=%" PRIu32, home_vis_mask);
+    return true;
+  }  // for each known home component
+
+  ESP_LOGW(TAG, "'%s' has no visibility bit", component);
+  return false;
+}
+
+void home_vis_resend() {
+  if (nextion_display == nullptr) {
+    ESP_LOGE(TAG, "Missing Nextion display pointer");
+    return;
+  }
+
+  // Unconditional: home_vis_set() suppresses unchanged writes, so a display
+  // restart needs the mask pushed again even though the shadow is unchanged.
+  nextion_display->send_command_printf("vis_home=%" PRIu32, home_vis_mask);
+
+  if (!is_home_page()) {
+    return;  // The page's Preinitialize event will apply the mask on entry
+  }
+
+  // The page is already showing, so its Preinitialize event has run with
+  // whatever the mask held at the time. Writing the variable does not repaint,
+  // so each bit is applied to the live components as well.
+  for (const auto &entry : HOME_VIS_BITS) {
+    const bool visible = ((home_vis_mask >> entry.bit) & 1U) != 0;
+    nextion_display->set_component_visibility(entry.component, visible);
+  }
+}
+
+#ifdef NSPANEL_EASY_SUBSCRIBE
 
 HomeButtonState home_button_states[HOME_BUTTON_COUNT] = {};
 
@@ -66,6 +118,22 @@ static uint8_t parse_home_button_index(const char *component) {
 }
 
 /**
+ * @brief Build the scoped Nextion name for a home custom button.
+ *
+ * Home is a global page and its buttons are global components, so the scoped
+ * form resolves from any page. That is what allows a state change arriving
+ * while another page is showing to be applied straight away, rather than
+ * waiting for a repaint on entry.
+ *
+ * @param idx Zero-based slot index.
+ * @param out Destination buffer.
+ * @param size Size of the destination buffer.
+ */
+static void home_button_target(uint8_t idx, char *out, size_t size) {
+  snprintf(out, size, "home.button%02" PRIu8, static_cast<uint8_t>(idx + 1));
+}
+
+/**
  * @brief Render a subscription binding onto a home custom button.
  *
  * Unlike a chip, a bound custom button is always visible: it renders the active
@@ -87,8 +155,6 @@ static void home_button_render(const SubBinding &binding, const SubRuntime &rt, 
     return;
   }
 
-  // Resolve unconditionally, even while the home page is not showing: the page
-  // is repainted from this shadow on entry, without asking Home Assistant.
   // SUB_STATE_TRANSITIONAL and SUB_STATE_NEITHER both fall to the inactive
   // appearance, matching how an unavailable entity renders today.
   const bool active = (rt.last_state == SUB_STATE_ON);
@@ -125,23 +191,24 @@ static void home_button_render(const SubBinding &binding, const SubRuntime &rt, 
   const bool color_changed = (button.color != color);
   button.color = color;
 
-  ESP_LOGV(TAG, "%s: icon='%s' color=%" PRIu16 " home=%s appearance=%s", binding.component, icon, color,
-           YESNO(is_home_page()), YESNO(rt.has_appearance));
+  ESP_LOGV(TAG, "%s: icon='%s' color=%" PRIu16 " appearance=%s", binding.component, icon, color,
+           YESNO(rt.has_appearance));
 
-  if (!is_home_page()) {
-    return;  // Shadow is up to date; the repaint on entry will draw it
-  }
+  // Scoped writes persist in display RAM and reach the live component when home
+  // is showing, so no repaint on page entry is needed.
+  char target[14];  // "home.buttonNN" + null terminator
+  home_button_target(idx, target, sizeof(target));
   if (icon_changed) {
-    nextion_display->set_component_text(binding.component, button.icon);
+    nextion_display->set_component_text(target, button.icon);
   }
   if (color_changed) {
-    nextion_display->set_component_font_color(binding.component, color);
+    nextion_display->set_component_font_color(target, color);
   }
   if (!button.shown) {
     // A bound button is always visible. The blueprint used to send this with
     // every icon push; nothing else sets it now.
     button.shown = true;
-    nextion_display->set_component_visibility(binding.component, true);
+    home_vis_set(binding.component, true);
   }
 }
 
@@ -251,9 +318,6 @@ static void home_indoor_temp_render(const char *state) {
   strncpy(indoor_temp_text, text, sizeof(indoor_temp_text) - 1);
   indoor_temp_text[sizeof(indoor_temp_text) - 1] = '\0';
 
-  if (!is_home_page()) {
-    return;  // Shadow is up to date; the repaint on entry will draw it
-  }
   nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
 }
 
@@ -276,9 +340,7 @@ static void home_outdoor_temp_render(const char *state) {
     if (strcmp(outdoor_temp_text, text) != 0) {
       strncpy(outdoor_temp_text, text, sizeof(outdoor_temp_text) - 1);
       outdoor_temp_text[sizeof(outdoor_temp_text) - 1] = '\0';
-      if (is_home_page()) {
-        nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
-      }
+      nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
     }
   } else {
     outdoor_temp_text[0] = '\0';
@@ -290,12 +352,10 @@ static void home_outdoor_temp_render(const char *state) {
   }
   outdoor_temp_shown = wanted;
 
-  // The TFT restores visibility from vis_<component> on page entry, so the
-  // variable is always written; the vis command only reaches a visible page.
-  nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
-  if (is_home_page()) {
-    nextion_display->set_component_visibility("outdoor_temp", visible);
-  }
+  // The mask persists visibility across page loads; the scoped vis command
+  // reaches the live component when home is the visible page.
+  home_vis_set("outdoor_temp", visible);
+  nextion_display->set_component_visibility(hmi::home::OUTDOOR_TEMP.name, visible);
 }
 
 void home_sub_render(const SubBinding &binding, const SubRuntime &rt, const char *state, bool visible) {
@@ -330,38 +390,29 @@ void home_button_repaint() {
     ESP_LOGE(TAG, "Missing Nextion display pointer");
     return;
   }
-  if (!is_home_page()) {
-    return;  // Unscoped names resolve against the visible page only
-  }
 
-  char component[9] = {};  // "buttonNN" + null terminator
+  // Scoped names throughout: this runs from resync_display, which fires on the
+  // first non-boot page entry after a display restart, and that page is not
+  // necessarily home.
+  char target[14];  // "home.buttonNN" + null terminator
   for (uint8_t idx = 0; idx < HOME_BUTTON_COUNT; ++idx) {
     HomeButtonState &button = home_button_states[idx];
     if (!button.bound || button.icon[0] == '\0') {
       continue;  // Unbound slots stay with whatever the blueprint drew
     }
-    snprintf(component, sizeof(component), "button%02" PRIu8, static_cast<uint8_t>(idx + 1));
-    nextion_display->set_component_text(component, button.icon);
-    nextion_display->set_component_font_color(component, button.color);
-    nextion_display->set_component_visibility(component, true);
+    home_button_target(idx, target, sizeof(target));
+    nextion_display->set_component_text(target, button.icon);
+    nextion_display->set_component_font_color(target, button.color);
     button.shown = true;
   }  // for each custom button slot
 
   // Temperatures are repainted from the same shadow, for the same reason: the
-  // Nextion does not retain what was drawn on a page that has been left.
+  // display lost everything drawn on it.
   if (indoor_temp_bound && indoor_temp_valid && indoor_temp_text[0] != '\0') {
     nextion_display->set_component_text(hmi::home::INDR_TEMP.name, indoor_temp_text);
   }
-  if (outdoor_temp_shown != Visibility::UNKNOWN) {
-    // Re-asserted rather than assumed: a TFT reset without an ESPHome restart
-    // returns vis_outdoor_temp to its default while this shadow still holds the
-    // last value, and the renderer would then suppress every further write.
-    const bool visible = (outdoor_temp_shown == Visibility::SHOWN);
-    nextion_display->send_command_printf("vis_outdoor_temp=%" PRIu8, static_cast<uint8_t>(visible));
-    nextion_display->set_component_visibility("outdoor_temp", visible);
-    if (visible && outdoor_temp_text[0] != '\0') {
-      nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
-    }
+  if (outdoor_temp_shown == Visibility::SHOWN && outdoor_temp_text[0] != '\0') {
+    nextion_display->set_component_text(hmi::home::OUTDOOR_TEMP.name, outdoor_temp_text);
   }
 }
 

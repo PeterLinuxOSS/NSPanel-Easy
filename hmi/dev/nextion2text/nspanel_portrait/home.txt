@@ -23,38 +23,75 @@ Page home
             // restore chips
             for(sys0=11;sys0<=20;sys0++)
             {
-                b[sys0].picc=home.pic
                 b[sys0].font=chip_font
             }
             // set component visibility
-            // indoor temp
-            vis indr_temp,vis_indr_temp
-            vis indr_temp_icon,vis_indr_temp
-            // outdoor temp
-            vis outdoor_temp,vis_outdoor_temp
-            // buttons
-            vis bt_utilities,vis_bt_utilities
-            vis bt_notific,vis_bt_notific
-            vis bt_qrcode,vis_bt_qrcode
-            vis bt_entities,vis_bt_entities
-            // Custom buttons
-            vis button01,vis_button01
-            vis button02,vis_button02
-            vis button03,vis_button03
-            vis button04,vis_button04
-            vis button05,vis_button05
-            vis button06,vis_button06
-            vis button07,vis_button07
-            vis value01,vis_value01
-            vis value02,vis_value02
-            vis value03,vis_value03
-            vis value04,vis_value04
-            vis value01_icon,vis_value01
-            vis value02_icon,vis_value02
-            vis value03_icon,vis_value03
-            vis value04_icon,vis_value04
-            // Bluetooth icon
-            vis bt_icon,vis_bt_icon
+            sys0=vis_home
+            for(sys1=0;sys1<=17;sys1++)
+            {
+                sys2=sys0%2
+                sys0=sys0/2
+                if(sys1==0)
+                {
+                    vis indr_temp,sys2
+                    vis indr_temp_icon,sys2
+                }else if(sys1==1)
+                {
+                    vis outdoor_temp,sys2
+                }else if(sys1==2)
+                {
+                    vis bt_icon,sys2
+                }else if(sys1==3)
+                {
+                    vis bt_utilities,sys2
+                }else if(sys1==4)
+                {
+                    vis bt_notific,sys2
+                }else if(sys1==5)
+                {
+                    vis bt_qrcode,sys2
+                }else if(sys1==6)
+                {
+                    vis bt_entities,sys2
+                }else if(sys1==7)
+                {
+                    vis button01,sys2
+                }else if(sys1==8)
+                {
+                    vis button02,sys2
+                }else if(sys1==9)
+                {
+                    vis button03,sys2
+                }else if(sys1==10)
+                {
+                    vis button04,sys2
+                }else if(sys1==11)
+                {
+                    vis button05,sys2
+                }else if(sys1==12)
+                {
+                    vis button06,sys2
+                }else if(sys1==13)
+                {
+                    vis button07,sys2
+                }else if(sys1==14)
+                {
+                    vis value01,sys2
+                    vis value01_icon,sys2
+                }else if(sys1==15)
+                {
+                    vis value02,sys2
+                    vis value02_icon,sys2
+                }else if(sys1==16)
+                {
+                    vis value03,sys2
+                    vis value03_icon,sys2
+                }else
+                {
+                    vis value04,sys2
+                    vis value04_icon,sys2
+                }
+            }
             // HW Button's labels
             if(display_mode==3)
             {
@@ -291,7 +328,7 @@ Text right_bt_text
 Text chip_relay1
     Attributes
         ID                      : 11
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -318,7 +355,7 @@ Text chip_relay1
 Text chip_relay2
     Attributes
         ID                      : 12
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -345,7 +382,7 @@ Text chip_relay2
 Text chip_climate
     Attributes
         ID                      : 13
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -372,7 +409,7 @@ Text chip_climate
 Text chip01
     Attributes
         ID                      : 14
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -399,7 +436,7 @@ Text chip01
 Text chip02
     Attributes
         ID                      : 15
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -426,7 +463,7 @@ Text chip02
 Text chip03
     Attributes
         ID                      : 16
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -453,7 +490,7 @@ Text chip03
 Text chip04
     Attributes
         ID                      : 17
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -480,7 +517,7 @@ Text chip04
 Text chip05
     Attributes
         ID                      : 18
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -507,7 +544,7 @@ Text chip05
 Text chip06
     Attributes
         ID                      : 19
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -534,7 +571,7 @@ Text chip06
 Text chip07
     Attributes
         ID                      : 20
-        Scope                   : local
+        Scope                   : global
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
@@ -858,9 +895,6 @@ Text bt_entities
                 }else if(is_entitypage04>0)
                 {
                     page entitypage04
-                }else
-                {
-                    vis bt_entities,0
                 }
             }
         

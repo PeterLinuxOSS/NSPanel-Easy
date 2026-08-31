@@ -151,7 +151,7 @@ script:
       step: string
     then:
       - lambda: |-
-          if (system_flags.blueprint_ready) return;
+          if (system_flags.blueprint_ready and step != "display_ack") return;
           static uint32_t last_boot_event_fired = 0;
           const uint32_t now = App.get_loop_component_start_time();
           if (step != "start" &&

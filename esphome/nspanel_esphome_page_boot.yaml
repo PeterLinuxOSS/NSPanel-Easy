@@ -16,6 +16,15 @@ substitutions:
 display:
   - id: !extend disp1
     start_up_page: ${PAGE_BOOT_ID}
+    on_custom_binary_sensor:
+      then:
+        - lambda: |-
+            if (key != "display_ack") return;
+            ESP_LOGI("${TAG_PAGE_BOOT}", "Nextion display acknowledged. Requesting update from the blueprint...");
+            disp1->send_command("display_ack=1");
+            system_flags.display_resync_pending = true;
+            boot_request_blueprint_settings->execute("display_ack");
+
     on_touch:
       then:
         - lambda: |-
@@ -97,6 +106,8 @@ script:
             };
 
             const uint8_t display_mode_from_tft = parse_uint8_strict(params[2]);
+            const bool valid_display_mode_from_tft = display_mode_from_tft > 0
+                                                  && display_mode_from_tft <= ${DISPLAY_MODES.BLANK.ID};
             ESP_LOGI("${TAG_PAGE_BOOT}", "Display params:");
             ESP_LOGI("${TAG_PAGE_BOOT}", "  Contract ver:  %" PRIu8, protocol_version);
             ESP_LOGI("${TAG_PAGE_BOOT}", "  Mode:          %" PRIu8, display_mode_from_tft);
@@ -104,7 +115,7 @@ script:
             switch (protocol_version) {
               case 0:  // Blackymas / pre-CJK removal: boot,params,<display_mode>,<charset>,<version>
                 ESP_LOGW("${TAG_PAGE_BOOT}", "  Old TFT contract v0 — initializing EEPROM");
-                if (display_mode_from_tft > 0 && display_mode_from_tft <= ${DISPLAY_MODES.EASY_US_LAND.ID}) {
+                if (valid_display_mode_from_tft) {
                   display_mode_eeprom = display_mode_from_tft;
                   auto call = display_model->make_call();
                   call.set_index(display_mode_from_tft - 1);
@@ -115,7 +126,7 @@ script:
                 break;
               case 1:  // v2026.4.9 only: boot,params,<display_mode>,<version>
                 ESP_LOGW("${TAG_PAGE_BOOT}", "  Old TFT contract v1 — initializing EEPROM");
-                if (display_mode_from_tft > 0 && display_mode_from_tft <= ${DISPLAY_MODES.EASY_US_LAND.ID}) {
+                if (valid_display_mode_from_tft) {
                   display_mode_eeprom = display_mode_from_tft;
                   auto call = display_model->make_call();
                   call.set_index(display_mode_from_tft - 1);
@@ -132,7 +143,7 @@ script:
 
                 if (magic_flag_found_at_boot == 0) {
                   ESP_LOGW("${TAG_PAGE_BOOT}", "  EEPROM was uninitialized at boot — using hard-coded default");
-                  if (hard_coded_mode > 0 && hard_coded_mode <= ${DISPLAY_MODES.EASY_US_LAND.ID}) {
+                  if (hard_coded_mode > 0 && hard_coded_mode <= ${DISPLAY_MODES.BLANK.ID}) {
                     auto call = display_model->make_call();
                     call.set_index(hard_coded_mode - 1);
                     call.perform();
@@ -140,7 +151,7 @@ script:
                     ESP_LOGW("${TAG_PAGE_BOOT}", "  Invalid hard_coded_mode: %" PRIu8, hard_coded_mode);
                   }
                 } else {
-                  if (display_mode_from_tft > 0 && display_mode_from_tft <= ${DISPLAY_MODES.EASY_US_LAND.ID}) {
+                  if (valid_display_mode_from_tft) {
                     auto call = display_model->make_call();
                     call.set_index(display_mode_from_tft - 1);
                     call.perform();
@@ -219,8 +230,8 @@ script:
   - id: !extend page_change
     then:
       - lambda: |-
-          if (new_page_id == get_page_id("boot") and !display_easy)
-            page_boot->execute();
+          if (new_page_id != get_page_id("boot")) return;
+          page_boot->execute();
 
   - id: !extend stop_all
     then:

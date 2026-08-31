@@ -114,7 +114,7 @@ script:
     then:
       - script.execute: display_embedded_temp
 
-  - id: !extend page_home
+  - id: !extend resync_display
     then:
       - script.execute: display_embedded_temp
 

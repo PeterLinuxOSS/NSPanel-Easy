@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.8.9)
+  name: NSPanel Easy Configuration (v9999.99.9)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -278,6 +278,12 @@ blueprint:
               filter:
                 domain:
                   - weather
+        home_outdoor_temp_visible:
+          name: Home Page - Outdoor Temperature Sensor Visibility
+          description: "Toggle to display the outdoor temperature on the Home page."
+          default: true
+          selector:
+            boolean:
         outdoortemp:
           name: Home page - Outdoor Temperature Sensor
           description: >-
@@ -4733,7 +4739,7 @@ trigger_variables:
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
-  blueprint_version: 2026.8.9
+  blueprint_version: 9999.99.9
 
   # Firmware version as reported by the ESPHome integration in the device registry.
   # Format: "<project_version> (ESPHome <compiler_version>)", e.g. "2026.8.5 (ESPHome 2026.6.0)".
@@ -7021,7 +7027,7 @@ actions:
               - alias: Boot init
                 conditions:
                   - '{{ nspanel_event.type == "boot"}}'
-                  - '{{ nspanel_event.step is defined and nspanel_event.step in ["setup", "start", "timeout"] }}'
+                  - '{{ nspanel_event.step is defined and nspanel_event.step in ["display_ack", "setup", "start", "timeout"] }}'
                 sequence:
                   - &global_settings
                     sequence:
@@ -7034,7 +7040,6 @@ actions:
                                 nspanel_event.step == "start"
                               )
                             }}
-                          home_indoor_temp_icon: !input home_indoor_temp_icon
 
                       - alias: Blueprint version
                         sequence:
@@ -7092,11 +7097,14 @@ actions:
                                 {%- elif states.weather | list | count > 0 -%} {{ states.weather | map(attribute="entity_id") | list | first }}
                                 {%- endif -%}
 
-                          - variables: &variables_temperature_entities_from_input
+                          - alias: variables_temperature_entities_from_input
+                            variables:
                               outdoortemp_tmp: !input outdoortemp
+                              home_outdoor_temp_visible_tmp: !input home_outdoor_temp_visible
 
                               outdoor_temp_entity: >
-                                {%- if outdoortemp_tmp is string and outdoortemp_tmp | length > 0 -%} {{ outdoortemp_tmp }}
+                                {%- if not home_outdoor_temp_visible_tmp -%}
+                                {%- elif outdoortemp_tmp is string and outdoortemp_tmp | length > 0 -%} {{ outdoortemp_tmp }}
                                 {%- elif outdoortemp_tmp is list and outdoortemp_tmp | count > 0 and outdoortemp_tmp[0] is string -%} {{ outdoortemp_tmp[0] }}
                                 {%- else -%} {{ weather_entity }}
                                 {%- endif -%}
@@ -7355,11 +7363,12 @@ actions:
 
                       - alias: Home page
                         sequence:
-                          - alias: climate_chip_visibility
+                          - alias: Chips
                             sequence:
                               - variables:
                                   climate_chip_visibility: !input climate_chip_visibility
-                              - action: 'esphome.{{ action_prefix }}_component_val'
+                              - alias: climate_chip_visibility
+                                action: 'esphome.{{ action_prefix }}_component_val'
                                 data:
                                   page: mem
                                   id: climate_chip_visibility
@@ -7369,26 +7378,14 @@ actions:
                                     {%- else %}0{%- endif %}
                                 continue_on_error: true
                               - *delay_boot
-                          - alias: indoor_temperature_visibility
-                            sequence:
-                              - variables:
-                                  home_indoor_temp_visible: !input home_indoor_temp_visible
-                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                              - alias: chip_font
+                                action: 'esphome.{{ action_prefix }}_component_val'
                                 data:
                                   page: mem
-                                  id: command
-                                  txt_list:
-                                    - 'vis_indr_temp={{ 1 if home_indoor_temp_visible else 0 }}'
+                                  id: chip_font
+                                  val: !input chip_font_size
                                 continue_on_error: true
                               - *delay_boot
-                          - alias: chip_font
-                            action: 'esphome.{{ action_prefix }}_component_val'
-                            data:
-                              page: mem
-                              id: chip_font
-                              val: !input chip_font_size
-                            continue_on_error: true
-                          - *delay_boot
                           - alias: custom_buttons_font
                             action: 'esphome.{{ action_prefix }}_component_val'
                             data:
@@ -7397,38 +7394,89 @@ actions:
                               val: !input custom_buttons_font_size
                             continue_on_error: true
                           - *delay_boot
-                          - alias: outdoor_temp_font
-                            action: 'esphome.{{ action_prefix }}_component_val'
-                            data:
-                              page: mem
-                              id: outdoor_temp_font
-                              val: !input home_outdoor_temp_font
-                            continue_on_error: true
-                          - *delay_boot
+                          - alias: Temperatures appearance
+                            sequence:
+                              - variables:
+                                  home_indoor_temp_icon: !input home_indoor_temp_icon
+                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                data:
+                                  page: home
+                                  id: indr_temp_icon
+                                  txt_list:
+                                    - >
+                                      {{
+                                        all_icons[home_indoor_temp_icon.split("mdi:")[1]]
+                                        if home_indoor_temp_icon.split("mdi:") | count == 2 and home_indoor_temp_icon.split("mdi:")[1] in all_icons
+                                        else all_icons.thermometer
+                                      }}
+                                continue_on_error: true
+                              - *delay_boot
+                              - action: 'esphome.{{ action_prefix }}_component_color'
+                                data:
+                                  page: home
+                                  id: indr_temp_icon
+                                  color: !input home_indoor_temp_icon_color
+                                continue_on_error: true
+                              - *delay_boot
+                              - alias: indoor_temperature_visibility
+                                action: 'esphome.{{ action_prefix }}_components_visibility'
+                                data:
+                                  page: home
+                                  ids:
+                                    - indr_temp
+                                  visible: !input home_indoor_temp_visible
+                                continue_on_error: true
+                              - *delay_boot
+                              - alias: Outdoor temperature
+                                sequence:
+                                  - alias: outdoor_temperature_visibility
+                                    action: 'esphome.{{ action_prefix }}_components_visibility'
+                                    data:
+                                      page: home
+                                      ids:
+                                        - outdoor_temp
+                                      visible: !input home_outdoor_temp_visible
+                                    continue_on_error: true
+                                  - *delay_boot
+                                  - variables:
+                                      home_outdoor_temp_visible_tmp: !input home_outdoor_temp_visible
+                                  - if: '{{ home_outdoor_temp_visible_tmp }}'
+                                    then:
+                                      - alias: outdoor_temp_font
+                                        action: 'esphome.{{ action_prefix }}_component_val'
+                                        data:
+                                          page: mem
+                                          id: outdoor_temp_font
+                                          val: !input home_outdoor_temp_font
+                                        continue_on_error: true
+                                      - *delay_boot
                           - alias: Home page - Entities button
                             sequence:
                               - variables:
                                   bt_entities_icon: !input home_button06_icon
+                                  bt_entities_visible: >-
+                                    {{
+                                      entities_pages.entities
+                                      | selectattr("page", "defined")
+                                      | selectattr("page", "in", pages.entitypages)
+                                      | selectattr("entity", "defined")
+                                      | rejectattr("entity", "eq", [])
+                                      | list
+                                      | count > 0
+                                    }}
                               - alias: entities_pages_icon
-                                action: 'esphome.{{ action_prefix }}_component_text_list'
+                                action: 'esphome.{{ action_prefix }}_icon'
                                 data:
-                                  page: mem
-                                  id: entities_pages_icon
-                                  txt_list:
-                                    - >
-                                      {{
-                                        all_icons[bt_entities_icon.split("mdi:")[1]]
-                                        if bt_entities_icon is string and bt_entities_icon.split("mdi:")[1] in all_icons
-                                        else all_icons["format-list-bulleted-square"]
-                                      }}
-                                continue_on_error: true
-                              - *delay_boot
-                              - alias: entities_pages_icon_color
-                                action: 'esphome.{{ action_prefix }}_component_color'
-                                data:
-                                  page: mem
-                                  id: entities_pages_icon_color
-                                  color: !input home_button06_icon_color
+                                  page: home
+                                  id: bt_entities
+                                  icon: >
+                                    {{
+                                      all_icons[bt_entities_icon.split("mdi:")[1]]
+                                      if bt_entities_icon is string and bt_entities_icon.split("mdi:")[1] in all_icons
+                                      else all_icons["format-list-bulleted-square"]
+                                    }}
+                                  icon_color: !input home_button06_icon_color
+                                  visible: '{{ bt_entities_visible }}'
                                 continue_on_error: true
                               - *delay_boot
                           - alias: Home page - Utilities button
@@ -7994,7 +8042,7 @@ actions:
                         sequence:
                           - variables:
                               txt_list_payload: >
-                                {% set ns = namespace(items=[]) %}
+                                {% set ns = namespace(items=[], any_entities=false) %}
                                 {% for page in pages.entitypages %}
                                   {% set has_entities = entities_pages.entities
                                         | selectattr("page", "defined")
@@ -8004,6 +8052,7 @@ actions:
                                         | list
                                         | count > 0 %}
                                   {% set ns.items = ns.items + ["is_" ~ page ~ "=" ~ (1 if has_entities else 0)] %}
+                                  {% set ns.any_entities = ns.any_entities or has_entities %}
                                 {% endfor %}
                                 {{ ns.items }}
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
@@ -8013,21 +8062,6 @@ actions:
                               txt_list: '{{ txt_list_payload }}'
                             continue_on_error: true
                           - *delay_boot
-
-                      - alias: Entity pages button visibility
-                        action: 'esphome.{{ action_prefix }}_component_val'
-                        data:
-                          page: mem
-                          id: is_entitypages
-                          val: >-
-                            {{
-                              entities_pages.entities
-                              | selectattr("entity", "defined")
-                              | rejectattr("entity", "eq", [])
-                              | list
-                              | count
-                            }}
-                        continue_on_error: true
 
               - alias: NSPanel action call
                 conditions:

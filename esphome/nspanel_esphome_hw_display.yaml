@@ -41,37 +41,22 @@ substitutions:
       FILE: "landscape"
       ID: 1
       IDX: 0
-      TEXT: "NSpanel EU"
+      TEXT: "NSPanel EU"
     US:
       FILE: "portrait"
       ID: 2
       IDX: 1
-      TEXT: "NSpanel US"
+      TEXT: "NSPanel US"
     US_LAND:
       FILE: "landscape"
       ID: 3
       IDX: 2
-      TEXT: "NSpanel US Landscape"
+      TEXT: "NSPanel US Landscape"
     BLANK:
       FILE: "blank"
       ID: 4
       IDX: 3
-      TEXT: "NSpanel Blank"
-    EASY_EU:
-      FILE: "easy_landscape"
-      ID: 5
-      IDX: 4
-      TEXT: "NSpanel Easy EU (Under construction)"
-    EASY_US:
-      FILE: "easy_portrait"
-      ID: 6
-      IDX: 5
-      TEXT: "NSpanel Easy US (Under construction)"
-    EASY_US_LAND:
-      FILE: "easy_landscape"
-      ID: 7
-      IDX: 6
-      TEXT: "NSpanel Easy US Landscape (Under construction)"
+      TEXT: "NSPanel Blank"
 
   TAG_HW_DISPLAY: nspanel.hw.display
   include_action_wake_up: false
@@ -101,6 +86,11 @@ display:
             wait_for_display->stop();
             ESP_LOGI("${TAG_HW_DISPLAY}", "Nextion setup triggered");
             system_flags.nextion_ready = true;
+            // The display restarted and lost everything drawn on it. Arm a
+            // repaint rather than doing it here: this fires while the boot
+            // page is showing, and unscoped names resolve against the
+            // visible page only.
+            system_flags.display_resync_pending = true;
             boot_request_blueprint_settings->execute("setup");
 
     on_page:
@@ -368,9 +358,19 @@ script:
             });
           }
 
+          // A resync armed while the boot page was showing cannot be spent
+          // there: the buttons bars are not drawn on boot, so the forced
+          // refresh would return early and the flag would be lost.
+          const bool resync_now = system_flags.display_resync_pending and
+                                  current_page_id != get_page_id("boot");
+
           // Update buttons bars on screen
           ESP_LOGV("${TAG_HW_DISPLAY}", "Update buttons bars on screen");
-          refresh_hardware_buttons_bars->execute(3);
+          refresh_hardware_buttons_bars->execute(3, resync_now);
+
+          if (resync_now) {
+            resync_display->execute();
+          }
 
   - id: reset_globals
     mode: restart
@@ -379,6 +379,13 @@ script:
     then:
       - lambda: |-
           ESP_LOGV("${TAG_HW_DISPLAY}", "Reset globals");
+
+  - id: resync_display
+    mode: restart
+    then:
+      - lambda: |-
+          ESP_LOGI("${TAG_HW_DISPLAY}", "Display resync on page '%s'", page_names[current_page_id]);
+          system_flags.display_resync_pending = false;
 
   - id: set_brightness
     mode: single
@@ -400,6 +407,7 @@ script:
           goto_page->stop();
           page_change->stop();
           reset_globals->stop();
+          resync_display->stop();
           set_brightness->stop();
           theme_update->stop();
           theme_update_all->stop();
@@ -419,10 +427,6 @@ script:
     then:
       - lambda: |-
           ESP_LOGI("${TAG_HW_DISPLAY}", "Apply theme: %s", background_type->current_option().c_str());
-          if (display_easy) {  // To do: Implement logic for new format
-            ESP_LOGI("${TAG_HW_DISPLAY}", "New format - No themes yet");
-            return;
-          }
           current_theme = (background_type->current_option() == "${THEME_LIGHT_LABEL}") ?
                                                                 ThemeMode::LIGHT : ThemeMode::DARK;
           theme_update_all->execute();
@@ -588,11 +592,6 @@ script:
             ESP_LOGE("${TAG_HW_DISPLAY}", "TFT version invalid");
             return;
           }
-          if (display_easy) {  // To do: Implement logic for new format
-            ESP_LOGI("${TAG_HW_DISPLAY}", "New format - Just go to home page");
-            goto_page->execute(get_page_id("home"));
-            return;
-          }
           if (current_page_id == get_page_id("screensaver") or current_page_id == get_page_id("boot")) {
             ESP_LOGD("${TAG_HW_DISPLAY}", "Wake-up on page %s", page_names[wakeup_page_id]);
             #ifdef NSPANEL_EASY_PAGE_CLIMATE
@@ -657,8 +656,7 @@ select:
             display_valid = (i < UINT8_MAX);
             if (!display_valid) return;
 
-            display_easy = (i >= ${DISPLAY_MODES.EASY_EU.IDX} && i <= ${DISPLAY_MODES.EASY_US_LAND.IDX});
-            display_portrait = (i == ${DISPLAY_MODES.US.IDX} || i == ${DISPLAY_MODES.EASY_US.IDX});
+            display_portrait = (i == ${DISPLAY_MODES.US.IDX});
 
             // Persist to Nextion EEPROM
             const uint8_t mode = static_cast<uint8_t>(i) + 1;

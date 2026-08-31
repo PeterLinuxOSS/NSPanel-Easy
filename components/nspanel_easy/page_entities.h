@@ -8,7 +8,6 @@
 
 namespace esphome::nspanel_easy {
 
-extern bool page_entities_enabled;
 extern uint8_t page_entities_value_horizontal_alignment;
 
 }  // namespace esphome::nspanel_easy

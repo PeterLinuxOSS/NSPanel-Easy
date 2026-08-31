@@ -29,16 +29,17 @@ struct SystemFlags {
   uint16_t display_settings_received : 1;  ///< All display settings received
 
   // Runtime operation flags
-  uint16_t tft_upload_active : 1;  ///< TFT firmware upload in progress
-  uint16_t ota_in_progress : 1;    ///< Over-the-air update active
-  uint16_t display_sleep : 1;      ///< Display is in sleep mode
+  uint16_t tft_upload_active : 1;       ///< TFT firmware upload in progress
+  uint16_t ota_in_progress : 1;         ///< Over-the-air update active
+  uint16_t display_sleep : 1;           ///< Display is in sleep mode
+  uint16_t display_resync_pending : 1;  ///< Display restarted; repaint on next page entry
 
   // Baud rate flags
   uint16_t baud_fallback_active : 1;  ///< UART is operating at non-primary rate (detected via scan)
   uint16_t baud_scan_success : 1;     ///< Last baud rate scan found a responsive rate
 
   // Reserved flags
-  uint16_t reserved : 4;
+  uint16_t reserved : 3;
 
   // Default constructor - all flags start as false (zero-initialized)
   SystemFlags()

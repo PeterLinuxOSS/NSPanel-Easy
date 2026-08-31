@@ -27,12 +27,7 @@ script:
     then:
       - lambda: |-
           refresh_datetime->execute();
-          refresh_hardware_buttons_bars->execute(3);
-          refresh_wifi_icon->execute();
-
-  - id: !extend page_home
-    then:
-      - script.execute: refresh_datetime
+          refresh_wifi_icon->execute(false);
 
   - id: refresh_datetime
     mode: restart
@@ -163,6 +158,10 @@ script:
             return;
           }
           disp1->set_component_text(component.c_str(), date_string.c_str());
+
+  - id: !extend resync_display
+    then:
+      - script.execute: refresh_datetime
 
   - id: !extend stop_all
     then:

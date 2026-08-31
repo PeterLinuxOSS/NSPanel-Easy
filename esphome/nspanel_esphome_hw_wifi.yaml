@@ -18,11 +18,12 @@ substitutions:
 api:
   on_client_connected:
     then:
-      - script.execute: refresh_wifi_icon
+      - lambda: |-
+          refresh_wifi_icon->execute(false);
   on_client_disconnected:
     then:
       - lambda: |-
-          refresh_wifi_icon->execute();
+          refresh_wifi_icon->execute(false);
           wait_for_wifi->execute();
 
 esphome:
@@ -54,12 +55,10 @@ script:
             ESP_LOGE("${TAG_HW_WIFI}", "WiFi: DISCONNECTED");
           }
 
-  - id: !extend page_home
-    then:
-      - script.execute: refresh_wifi_icon
-
   - id: refresh_wifi_icon
     mode: single
+    parameters:
+      force: bool  # Redraw even when unchanged, after a display restart
     then:
       - lambda: |-
           // Determine current icon
@@ -73,7 +72,7 @@ script:
 
           // Update WiFi icon only when changed
           static std::string icon_previous;
-          if (icon_previous != icon_new) {
+          if (force or icon_previous != icon_new) {
             disp1->set_component_text("home.wifi_icon", icon_new);
             icon_previous = icon_new;
           }
@@ -107,10 +106,15 @@ script:
 
           // Update WiFi icon color only when changed
           static uint16_t color_previous = Colors::RGB565_GRAY_MOSS;
-          if (color_previous != color_new) {
+          if (force or color_previous != color_new) {
             disp1->set_component_font_color("home.wifi_icon", color_new);
             color_previous = color_new;
           }
+
+  - id: !extend resync_display
+    then:
+      - lambda: |-
+          refresh_wifi_icon->execute(true);
 
   - id: !extend stop_all
     then:
@@ -150,7 +154,7 @@ script:
     then:
       - lambda: |-
           wait_for_wifi->execute();
-          refresh_wifi_icon->execute();
+          refresh_wifi_icon->execute(false);
 
 text_sensor:
   - id: device_name  # Device name - Used by blueprint to find service's names

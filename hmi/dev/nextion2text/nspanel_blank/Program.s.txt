@@ -2,7 +2,7 @@ Program.s
     //The following code is only run once when power on, and is generally used for global variable definition and power on initialization data
     int sys0=0
     // Model & EEPROM management
-    int hard_coded_display_mode=4  // 1=EU, 2=US, 3=US Land, 4=Blank, 5=Easy EU, 6=Easy US, 7=Easy US Land
+    int hard_coded_display_mode=4  // 1=EU, 2=US, 3=US Land, 4=Blank
     int display_mode=0
     int magic_flag_found_at_boot=0
     repo sys0,0  // Read magic byte from addresses 0-3
@@ -10,7 +10,7 @@ Program.s
     {
       magic_flag_found_at_boot=1
       repo display_mode,4  // Read display_mode from addresses 4-7
-      if(display_mode<1||display_mode>7)
+      if(display_mode<1||display_mode>4)
       {
         display_mode=hard_coded_display_mode
         wepo hard_coded_display_mode,4

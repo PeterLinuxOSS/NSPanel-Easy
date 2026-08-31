@@ -12,7 +12,6 @@ substitutions:
   ## Change only in your      ##
   ## local yaml substitutions ##
   TAG_PAGE_HOME: nspanel.page.home
-  home_repaint_delay: 10ms
   SUN_DEFAULT_LATITUDE: '0'
   SUN_DEFAULT_LONGITUDE: '0'
   ##############################
@@ -59,7 +58,6 @@ script:
   - id: !extend action_component_color
     then:
       - lambda: |-
-          if (display_easy) return;  // To do: Implement logic for new format
           if (page != "mem") return;
           if (component == "date_color") {
             id(home_date_color) = color;
@@ -117,60 +115,6 @@ script:
             return;
           }
 
-  - id: !extend action_icon
-    then:
-      - lambda: |-
-          if (!target_is_home_page) return;
-
-          // Only applies to home page buttons (button01..button07) on new design
-          if (!display_easy) return;
-          if (!target_is_current_page) return;  // cirs only affects the visible page
-
-          // Extract the numeric suffix from component_id, e.g. "button01" -> 1
-          // Expected format: "button%02u" — prefix is exactly 6 chars ("button")
-          constexpr uint8_t BUTTON_PREFIX_LEN = 6u;  // strlen("button")
-          constexpr uint8_t BUTTON_COUNT      = 7u;
-
-          if (component_id.length() != BUTTON_PREFIX_LEN + 2u ||
-              component_id.substr(0u, BUTTON_PREFIX_LEN) != "button") {
-            return;  // Not a home button component
-          }
-
-          // Parse the two-digit index; reject non-numeric suffixes
-          const std::string suffix = component_id.substr(BUTTON_PREFIX_LEN);
-          if (!std::isdigit(static_cast<unsigned char>(suffix[0])) ||
-              !std::isdigit(static_cast<unsigned char>(suffix[1]))) {
-            return;  // Not a valid button component
-          }
-          const uint8_t button_id = static_cast<uint8_t>(std::stoi(suffix));
-
-          // Validate extracted index range [1..7]
-          if (button_id < 1u || button_id > BUTTON_COUNT) {
-            ESP_LOGW("${TAG_PAGE_HOME}", "Button id %" PRIu8 " out of range [1..%" PRIu8 "]",
-                      button_id, BUTTON_COUNT);
-            return;
-          }
-
-          // Only draw the circle when the blueprint has populated the icon
-          if (icon.empty()) {
-            ESP_LOGD("${TAG_PAGE_HOME}", "%s has no icon, skipping circle", component_id.c_str());
-            return;
-          }
-
-          // Compute circle X-center: button01 -> 32, button02 -> 86, ... (+54 per step)
-          const uint16_t circle_x      = 32u + static_cast<uint16_t>(button_id - 1u) * 54u;
-          const uint16_t circle_y      = 257u;
-          const uint16_t circle_radius = 22u;
-
-          // Draw the filled circle behind the button, then trigger a repaint
-          disp1->send_command_printf("cirs %" PRIu16 ",%" PRIu16 ",%" PRIu16 ",color_containers",
-                                      circle_x, circle_y, circle_radius);
-
-          disp1->send_command_printf("ref %s", component_id.c_str());
-
-          ESP_LOGD("${TAG_PAGE_HOME}", "Drew circle for %s at (%" PRIu16 ",%" PRIu16 ")",
-                    component_id.c_str(), circle_x, circle_y);
-
   - id: !extend boot_nextion
     then:
       - lambda: |-
@@ -203,25 +147,20 @@ script:
           page_home->execute();
 
   - id: page_home
-    mode: single
+    mode: restart
     then:
-      # Extended by:
-      # - hw_relays
-      # - hw_temperature
-      # - hw_wifi
-      # Give the Nextion time to finish constructing the page before repainting.
-      # Commands arriving while it is still drawing can overrun its receive
-      # buffer and be silently discarded.
-      - delay: ${home_repaint_delay}
+      - script.wait: page_change
+
+  - id: !extend resync_display
+    then:
       - lambda: |-
-          // Navigation during the delay leaves this script writing to whatever page
-          // is now displayed, so the check is here rather than in each extension.
-          if (!is_home_page()) {
-            page_home->stop();
-            return;
-          }
+          // The display lost every Nextion global to its Program.s default.
+          // boot_nextion is what pushes them, and until now it only ran on the
+          // full boot path.
+          boot_nextion->execute();
+          home_vis_resend();
           #ifdef NSPANEL_EASY_SUBSCRIBE
-          home_button_repaint();  // Repaint home page custom buttons
+          home_button_repaint();
           #endif  // NSPANEL_EASY_SUBSCRIBE
 
   - id: !extend stop_all

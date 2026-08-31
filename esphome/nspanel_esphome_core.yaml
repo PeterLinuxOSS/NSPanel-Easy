@@ -212,5 +212,5 @@ script:  # Scripts
           ESP_LOGI("${TAG_CORE}", "Receiving settings from Blueprint: %0.1f%%",
                                   blueprint_status_flags.get_completion_percentage());
           boot_log->execute("Boot", "Blueprint is ready");
-          refresh_wifi_icon->execute();
+          refresh_wifi_icon->execute(false);
 ...

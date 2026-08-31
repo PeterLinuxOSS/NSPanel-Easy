@@ -45,15 +45,11 @@ script:
             if (component == "relay1_icon_color") {
               id(home_relay1_icon_color) = color;
               chip_states[CHIP_IDX_RELAY1].color = color;
-              if (is_chips_page) {
-                disp1->set_component_font_color(CHIP_NAMES[CHIP_IDX_RELAY1], color);
-              }
+              chip_render(CHIP_IDX_RELAY1);
             } else if (component == "relay2_icon_color") {
               id(home_relay2_icon_color) = color;
               chip_states[CHIP_IDX_RELAY2].color = color;
-              if (is_chips_page) {
-                disp1->set_component_font_color(CHIP_NAMES[CHIP_IDX_RELAY2], color);
-              }
+              chip_render(CHIP_IDX_RELAY2);
             }
           }
 
@@ -65,16 +61,12 @@ script:
             id(home_relay1_icon) = txt;
             strncpy(chip_states[CHIP_IDX_RELAY1].icon, txt.c_str(), sizeof(chip_states[CHIP_IDX_RELAY1].icon) - 1);
             chip_states[CHIP_IDX_RELAY1].icon[sizeof(chip_states[CHIP_IDX_RELAY1].icon) - 1] = '\0';
-            if (is_chips_page) {
-              disp1->set_component_text(CHIP_NAMES[CHIP_IDX_RELAY1], chip_states[CHIP_IDX_RELAY1].icon);
-            }
+            chip_render(CHIP_IDX_RELAY1);
           } else if (component == "relay2_icon" && id(home_relay2_icon) != txt) {
             id(home_relay2_icon) = txt;
             strncpy(chip_states[CHIP_IDX_RELAY2].icon, txt.c_str(), sizeof(chip_states[CHIP_IDX_RELAY2].icon) - 1);
             chip_states[CHIP_IDX_RELAY2].icon[sizeof(chip_states[CHIP_IDX_RELAY2].icon) - 1] = '\0';
-            if (is_chips_page) {
-              disp1->set_component_text(CHIP_NAMES[CHIP_IDX_RELAY2], chip_states[CHIP_IDX_RELAY2].icon);
-            }
+            chip_render(CHIP_IDX_RELAY2);
           }
 
   - id: !extend action_component_val
@@ -140,12 +132,6 @@ script:
           id: refresh_relays
           relay_mask: 3
 
-  - id: !extend page_home
-    then:
-      - script.execute:
-          id: refresh_relays
-          relay_mask: 3
-
   - id: refresh_relays
     mode: single
     parameters:
@@ -159,8 +145,7 @@ script:
             ESP_LOGV("${TAG_HW_RELAYS}", "  relay1_fallback: %s", YESNO(id(hardware_settings).relay1_fallback));
             if (chip_states[CHIP_IDX_RELAY1].visible != relay_1->state) {
               chip_states[CHIP_IDX_RELAY1].visible = relay_1->state;
-              if (is_chips_page)
-                disp1->set_component_visibility(CHIP_NAMES[CHIP_IDX_RELAY1], chip_states[CHIP_IDX_RELAY1].visible);
+              chip_render(CHIP_IDX_RELAY1);
             }
           }
           if (relay_mask & 2) {  // Chip - Relay 2
@@ -168,8 +153,7 @@ script:
             ESP_LOGV("${TAG_HW_RELAYS}", "  relay2_fallback: %s", YESNO(id(hardware_settings).relay2_fallback));
             if (chip_states[CHIP_IDX_RELAY2].visible != relay_2->state) {
               chip_states[CHIP_IDX_RELAY2].visible = relay_2->state;
-              if (is_chips_page)
-                disp1->set_component_visibility(CHIP_NAMES[CHIP_IDX_RELAY2], chip_states[CHIP_IDX_RELAY2].visible);
+              chip_render(CHIP_IDX_RELAY2);
             }
           }
 
@@ -188,7 +172,7 @@ switch:
         - lambda: |-
             if (id(hardware_settings).relay1_local) id(hardware_settings).button_left_state = x;
             refresh_relays->execute(1);
-            refresh_hardware_buttons_bars->execute(1);
+            refresh_hardware_buttons_bars->execute(1, false);
 
   - id: relay_2  # Physical switch 2
     name: Relay 2
@@ -200,5 +184,5 @@ switch:
         - lambda: |-
             if (id(hardware_settings).relay2_local) id(hardware_settings).button_right_state = x;
             refresh_relays->execute(2);
-            refresh_hardware_buttons_bars->execute(2);
+            refresh_hardware_buttons_bars->execute(2, false);
 ...

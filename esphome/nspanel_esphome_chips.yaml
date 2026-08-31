@@ -8,15 +8,11 @@
 ---
 substitutions:
   TAG_CHIPS: nspanel.chips
-  chips_page_boot: true
-  chips_page_home: true
   chips_page_screensaver: true
 
 esphome:
   build_flags:
     - -D NSPANEL_EASY_CHIPS
-    - -D NSPANEL_EASY_CHIPS_PAGE_BOOT=${1 if chips_page_boot else 0}
-    - -D NSPANEL_EASY_CHIPS_PAGE_HOME=${1 if chips_page_home else 0}
     - -D NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER=${1 if chips_page_screensaver else 0}
 
 globals:
@@ -28,37 +24,36 @@ globals:
     initial_value: '7'  # 24px — matches blueprint default chip_font_size
 
 script:
-  - id: !extend action_icon
+  - id: !extend action_component_color
     then:
       - lambda: |-
-          if (page != "chips") return;  // Only handle chip components (limited pages)
+          if (page != "chips") return;
 
-          const uint8_t idx = find_chip_index(component_id);
+          const uint8_t idx = find_chip_index(component);
           if (idx == UINT8_MAX) return;
 
-          // Update shadow state
           ChipState &the_chip = chip_states[idx];
           if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
+          if (the_chip.color == color) return;
 
-          // Render immediately if on a supported page (full render — icon+color just updated)
-          if (strcmp(the_chip.icon, icon.c_str()) != 0) {
-            strncpy(the_chip.icon, icon.c_str(), sizeof(the_chip.icon) - 1);
-            the_chip.icon[sizeof(the_chip.icon) - 1] = '\0';
-            if (is_chips_page)
-              disp1->set_component_text(CHIP_NAMES[idx], the_chip.icon);
-          }
-          if (icon_color >= 0 && the_chip.color != static_cast<uint16_t>(icon_color)) {
-            the_chip.color = static_cast<uint16_t>(icon_color);
-            if (is_chips_page)
-              disp1->set_component_font_color(CHIP_NAMES[idx], the_chip.color);
-          }
-          if (the_chip.visible != visible) {
-            the_chip.visible = visible;
-            if (is_chips_page)
-              disp1->set_component_visibility(CHIP_NAMES[idx], visible);
-          }
-          ESP_LOGV("${TAG_CHIPS}", "action_icon: chip[%" PRIu8 "] (%s) color=%" PRIu16 " vis=%s",
-                    idx, CHIP_NAMES[idx], the_chip.color, YESNO(the_chip.visible));
+          the_chip.color = color;
+          chip_render(idx);
+
+  - id: !extend action_component_text
+    then:
+      - lambda: |-
+          if (page != "chips") return;
+
+          const uint8_t idx = find_chip_index(component);
+          if (idx == UINT8_MAX) return;
+
+          ChipState &the_chip = chip_states[idx];
+          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
+          if (strcmp(the_chip.icon, txt.c_str()) == 0) return;
+
+          strncpy(the_chip.icon, txt.c_str(), sizeof(the_chip.icon) - 1);
+          the_chip.icon[sizeof(the_chip.icon) - 1] = '\0';
+          chip_render(idx);
 
   - id: !extend action_component_val
     then:
@@ -81,44 +76,19 @@ script:
           disp1->set_component_font(hmi::home::WIFI_ICON.name, new_font);
           disp1->set_component_font(hmi::home::BT_ICON.name,   new_font);
 
-          // Apply font to all chip components on the current page (if supported)
-          if (!is_chips_page) return;
+          // Chips on home are global, so a scoped write both persists the font
+          // and updates the live component when home is the visible page.
+          for (uint8_t i = 0; i < CHIP_COUNT; ++i) {
+            disp1->send_command_printf("%s.font=%" PRIu8, CHIP_NAMES_HOME[i], new_font);
+          }
+
+          // Mirror pages hold local copies of home's chips, so they need the
+          // unscoped write while one of them is showing. Their Preinitialize
+          // event applies chip_font on the next entry either way.
+          if (!chips_mirror_page) return;
           for (uint8_t i = 0; i < CHIP_COUNT; ++i) {
             disp1->send_command_printf("%s.font=%" PRIu8, CHIP_NAMES[i], new_font);
           }
-
-  - id: !extend action_component_color
-    then:
-      - lambda: |-
-          if (page != "chips") return;
-
-          const uint8_t idx = find_chip_index(component);
-          if (idx == UINT8_MAX) return;
-
-          ChipState &the_chip = chip_states[idx];
-          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
-          if (the_chip.color == color) return;
-
-          the_chip.color = color;
-          if (is_chips_page)
-            disp1->set_component_font_color(CHIP_NAMES[idx], color);
-
-  - id: !extend action_component_text
-    then:
-      - lambda: |-
-          if (page != "chips") return;
-
-          const uint8_t idx = find_chip_index(component);
-          if (idx == UINT8_MAX) return;
-
-          ChipState &the_chip = chip_states[idx];
-          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
-          if (strcmp(the_chip.icon, txt.c_str()) == 0) return;
-
-          strncpy(the_chip.icon, txt.c_str(), sizeof(the_chip.icon) - 1);
-          the_chip.icon[sizeof(the_chip.icon) - 1] = '\0';
-          if (is_chips_page)
-            disp1->set_component_text(CHIP_NAMES[idx], the_chip.icon);
 
   - id: !extend action_component_visibility
     then:
@@ -132,9 +102,40 @@ script:
 
           if (chip_states[idx].visible != visible) {
             chip_states[idx].visible = visible;
-            if (is_chips_page)
-              disp1->set_component_visibility(CHIP_NAMES[idx], visible);
+            chip_render(idx);
           }
+
+  - id: !extend action_icon
+    then:
+      - lambda: |-
+          if (page != "chips") return;  // Only handle chip components (limited pages)
+
+          const uint8_t idx = find_chip_index(component_id);
+          if (idx == UINT8_MAX) return;
+
+          // Update shadow state
+          ChipState &the_chip = chip_states[idx];
+          if (the_chip.subscribed) return;  // Driven directly by a HA state subscription
+
+          bool changed = false;
+
+          if (strcmp(the_chip.icon, icon.c_str()) != 0) {
+            strncpy(the_chip.icon, icon.c_str(), sizeof(the_chip.icon) - 1);
+            the_chip.icon[sizeof(the_chip.icon) - 1] = '\0';
+            changed = true;
+          }
+          if (icon_color >= 0 && the_chip.color != static_cast<uint16_t>(icon_color)) {
+            the_chip.color = static_cast<uint16_t>(icon_color);
+            changed = true;
+          }
+          if (the_chip.visible != visible) {
+            the_chip.visible = visible;
+            changed = true;
+          }
+
+          if (changed) chip_render(idx);
+          ESP_LOGV("${TAG_CHIPS}", "action_icon: chip[%" PRIu8 "] (%s) color=%" PRIu16 " vis=%s",
+                    idx, CHIP_NAMES[idx], the_chip.color, YESNO(the_chip.visible));
 
   - id: !extend boot_nextion
     then:
@@ -150,27 +151,17 @@ script:
   - id: !extend page_change
     then:
       - lambda: |-
-          is_chips_page = ( false ||
-                            #if NSPANEL_EASY_CHIPS_PAGE_BOOT
-                            new_page_id == get_page_id("boot") ||
-                            #endif  // NSPANEL_EASY_CHIPS_PAGE_BOOT
-                            #if NSPANEL_EASY_CHIPS_PAGE_HOME
-                            new_page_id == get_page_id("home") ||
-                            #endif  // NSPANEL_EASY_CHIPS_PAGE_HOME
-                            #if NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER
-                            new_page_id == get_page_id("screensaver") ||
-                            #endif  // NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER
-                            false
-                        );
-          if (!is_chips_page) return;
+          chips_mirror_page = ( false ||
+                                #if NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER
+                                new_page_id == get_page_id("screensaver") ||
+                                #endif  // NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER
+                                false
+                              );
 
-          ESP_LOGV("${TAG_CHIPS}", "Rendering chips");
-          for (uint8_t chip_index = 0; chip_index < CHIP_COUNT; ++chip_index) {
-            const char *name = CHIP_NAMES[chip_index];
-            const ChipState &the_chip = chip_states[chip_index];
-            ESP_LOGV("${TAG_CHIPS}", "render chip[%" PRIu8 "]: %s vis=%s", chip_index, name, YESNO(the_chip.visible));
-            disp1->set_component_font_color(name, the_chip.color);
-            disp1->set_component_text(name, the_chip.icon);
-            disp1->set_component_visibility(name, the_chip.visible);
-          }  // for each chip
+  - id: !extend resync_display
+    then:
+      - lambda: |-
+          for (uint8_t i = 0; i < CHIP_COUNT; ++i) {
+            chip_render(i);
+          }
 ...

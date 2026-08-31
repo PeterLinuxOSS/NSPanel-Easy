@@ -187,7 +187,7 @@ api:
 
             const bool is_chip_target = (page == "chips");
             const bool target_is_home_page = (page == "home");
-            const bool target_is_current_page = (page == current_page->state) || (is_chip_target && is_chips_page);
+            const bool target_is_current_page = (page == current_page->state) || is_chip_target;
 
             // Only process if home page (global) OR current page
             if (!target_is_home_page && !target_is_current_page) {
@@ -238,7 +238,6 @@ script:
           ESP_LOGV("${TAG_API}", "  color:     %" PRIu16, color);
           if (page == "mem") return;
           if (page == "chips") return;
-          if (display_easy) return;  // To do: Implement logic for new format
           if (page.empty()) {
             disp1->set_component_font_color(component.c_str(), color);
             return;
@@ -358,15 +357,14 @@ script:
           const bool target_is_home_page = (component_page == "home");
           const bool is_current_page = (component_page == current_page->state);
 
-          // Always update the home page persistent visibility variable,
-          // regardless of which page is currently active
-          if (target_is_home_page &&
-              strcmp(target_id, "indr_temp_icon") != 0 &&
-              strcmp(target_id, "value01_icon")   != 0 &&
-              strcmp(target_id, "value02_icon")   != 0 &&
-              strcmp(target_id, "value03_icon")   != 0 &&
-              strcmp(target_id, "value04_icon")   != 0)
-            disp1->send_command_printf("vis_%s=%" PRIu8, target_id, (uint8_t)visible);
+          // Nextion does not retain vis across page loads, so home page
+          // visibility is mirrored into the vis_home bitmask, which the page's
+          // Preinitialize event walks on entry. Companion components (*_icon)
+          // follow their parent and have no bit of their own, so home_vis_set()
+          // simply finds no match for them.
+          if (target_is_home_page) {
+            home_vis_set(target_id, visible);
+          }
 
           // Apply the vis command only when the target page is currently visible
           if (page.empty() || is_current_page) {
@@ -403,7 +401,6 @@ script:
           if (target_is_current_page) {
             // Use short format for current page: "id"
             target_id = component.component_id;
-            action_component_visibility->execute(component.page, component.component_id, visible);
           } else {
             // Use full format for global components: "page.id"
             snprintf(full_id, sizeof(full_id), "%s.%s", component.page, component.component_id);
@@ -417,6 +414,12 @@ script:
           if (icon_color >= 0) {
             disp1->set_component_font_color(target_id, static_cast<uint16_t>(icon_color));
           }
+
+          // Visibility is handled unconditionally: action_component_visibility
+          // writes the persistent vis_* variable for home page targets even when
+          // another page is showing, and applies the live vis command only when
+          // the target page is the current one.
+          action_component_visibility->execute(component.page, component.component_id, visible);
 
   - id: !extend dump_config
     then:
@@ -447,10 +450,6 @@ script:
             {"command", command.c_str()}
           });
           ESP_LOGV("${TAG_API}", "'button_click' event sent");
-
-  - id: !extend page_home
-    then:
-      - script.execute: update_flag_api_ready
 
   - id: !extend stop_all
     then:

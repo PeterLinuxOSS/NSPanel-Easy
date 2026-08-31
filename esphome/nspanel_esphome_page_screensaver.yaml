@@ -142,19 +142,17 @@ script:
   - id: !extend page_change
     then:
       - lambda: |-
-          if (new_page_id == get_page_id("screensaver")) {
-            page_screensaver->execute();
-            return;
-          }
-
+          if (current_page_id != get_page_id("screensaver")) return;
+          page_screensaver->execute();
 
   - id: page_screensaver
     mode: restart
     then:
       - lambda: |-
+          ESP_LOGV("${TAG_PAGE_SCREENSAVER}", "page_screensaver: current_page_id='%s'",
+                   page_names[current_page_id]);
           if (current_page_id != get_page_id("screensaver")) return;
           page_screensaver_apply_settings->execute();
-          refresh_hardware_buttons_bars->execute(3);
           if (id(screensaver_display_time)) refresh_datetime->execute();
           brightness_current = int(display_sleep_brightness->state);
           page_screensaver_apply_settings_with_delay->execute();
