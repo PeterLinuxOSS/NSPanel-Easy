@@ -9340,10 +9340,13 @@ actions:
                               - '{{ nspanel_event.page == pages.climate }}'
                               - '{{ climate_entity is defined }}'
                             then:
+                              # The page is always reached through `entity_details_show`, which has already
+                              # set `back_page_id` to the calling page. An empty `back_page` keeps it, so
+                              # closing the page returns to the caller instead of jumping to the home page.
                               - action: 'esphome.{{ action_prefix }}_entity_details_show'
                                 data:
                                   entity: '{{ climate_entity }}'
-                                  back_page: home
+                                  back_page: ""
                                 continue_on_error: true
                               - *delay_default
 
@@ -9681,21 +9684,6 @@ actions:
                                 }}
                               friendly_name_raw: '{{ state_attr(water_heater_entity, "friendly_name") }}'
                               friendly_name: '{{ friendly_name_raw if friendly_name_raw and friendly_name_raw is string else "" }}'
-                          - if:
-                              - '{{ page_constructor }}'
-                              - '{{ nspanel_event is defined }}'
-                              - '{{ nspanel_event.page is defined }}'
-                              - '{{ nspanel_event.page == pages.water_heater }}'
-                              - '{{ water_heater_entity is defined }}'
-                              - '{{ water_heater_entity is string }}'
-                              - '{{ water_heater_entity is match "water_heater." }}'
-                            then:
-                              - action: 'esphome.{{ action_prefix }}_entity_details_show'
-                                data:
-                                  entity: '{{ water_heater_entity }}'
-                                  back_page: home
-                                continue_on_error: true
-                              - *delay_default
 
                           - condition: '{{ settings_entity_domain == "water_heater" }}'
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
