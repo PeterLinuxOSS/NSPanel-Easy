@@ -20,6 +20,7 @@ Program.s
     int color_pco_unsupported=6339  // Foreground font color for unsupported or unavailable components
     int button_back_font=8
     int chip_font=7
+    int chips_screensaver=1
     // Boot flag
     int display_ack=0
     int api=0 // 0 = disconnected from HA, 1 = connected to HA

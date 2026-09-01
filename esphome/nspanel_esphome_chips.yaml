@@ -141,6 +141,7 @@ script:
     then:
       - lambda: |-
           disp1->send_command_printf("chip_font=%" PRIu8, id(chip_font_id));
+          disp1->send_command_printf("chips_screensaver=%d", NSPANEL_EASY_CHIPS_PAGE_SCREENSAVER);
 
   - id: !extend dump_config
     then:
