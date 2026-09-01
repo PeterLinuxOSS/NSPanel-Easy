@@ -159,6 +159,9 @@ script:
           // full boot path.
           boot_nextion->execute();
           home_vis_resend();
+          #ifdef NSPANEL_EASY_USE_WEATHER
+          home_weather_resolve();
+          #endif  // NSPANEL_EASY_USE_WEATHER
           #ifdef NSPANEL_EASY_SUBSCRIBE
           home_button_repaint();
           #endif  // NSPANEL_EASY_SUBSCRIBE
