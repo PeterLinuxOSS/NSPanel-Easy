@@ -8964,7 +8964,20 @@ actions:
                                   }}
                           - *variable_entity
                           - *entity_details_title_with_icon
-                          - if: '{{ fan.steps > 0 and fan.supported_features | bitwise_and(2) > 0 }}'  # Oscillate
+                          - alias: FAN capabilities
+                            # SET_SPEED, OSCILLATE and PRESET_MODE are independent features,
+                            # so each block below must be gated on its own bit only.
+                            variables:
+                              fan_speed_available: '{{ fan.steps > 0 and fan.supported_features | bitwise_and(1) > 0 }}'
+                              fan_oscillate_available: '{{ fan.supported_features | bitwise_and(2) > 0 }}'
+                              fan_preset_mode_available: >
+                                {{
+                                  fan.supported_features | bitwise_and(8) > 0 and
+                                  state_attr(entity_id, "preset_modes") is iterable and
+                                  state_attr(entity_id, "preset_modes") is not string and
+                                  state_attr(entity_id, "preset_modes") | default([], true) | length > 0
+                                }}
+                          - if: '{{ fan_oscillate_available }}'
                             then:
                               - action: 'esphome.{{ action_prefix }}_component_text_list'
                                 data:
@@ -8980,27 +8993,54 @@ actions:
                                     - 'vis bt_oscillate,1'
                                 continue_on_error: true
                               - *delay_default
-                          - condition: '{{ fan.steps > 0 and fan.supported_features | bitwise_and(1) > 0 }}'  # Set speed
-                          - variables:
-                              color_rgb565:
-                                grey_white: 59164  # nextion.color.grey_white
-                                grey_dark: 10596   # nextion.color.grey_dark
-                          - action: 'esphome.{{ action_prefix }}_component_text_list'
+
+                          - alias: FAN power button
+                            # Not speed-related, so it must be painted for every fan.
+                            action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
                               page: mem
                               id: command
                               txt_list:
-                                - 'fan_value.txt="{{ fan.percentage ~ units_separator }}%"'
-                                - 'fanslider.val={{ ((fan.percentage / 100) * fan.steps) | round(0) | int(0) }}'
-                                - 'fanslider.maxval={{ fan.steps }}'
-                                - 'button_up.pco={{ color_rgb565.grey_white if fan.percentage < 100 else color_rgb565.grey_dark }}'
-                                - 'button_down.pco={{ color_rgb565.grey_white if fan.percentage > 0 else color_rgb565.grey_dark }}'
                                 - 'power_button.pco=50712'  # [192, 192, 192]
                             continue_on_error: true
                           - *delay_default
 
+                          - alias: FAN speed
+                            sequence:
+                              # Speed widgets are visible by default on the TFT and Nextion keeps
+                              # `vis` across page entries, so set it both ways on every render.
+                              - action: 'esphome.{{ action_prefix }}_components_visibility'
+                                data:
+                                  page: fan
+                                  ids:
+                                    - fan_value
+                                    - fanslider
+                                    - button_up
+                                    - button_down
+                                  visible: '{{ fan_speed_available }}'
+                                continue_on_error: true
+                              - *delay_default
+                              - if: '{{ fan_speed_available }}'
+                                then:
+                                  - variables:
+                                      color_rgb565:
+                                        grey_white: 59164  # nextion.color.grey_white
+                                        grey_dark: 10596   # nextion.color.grey_dark
+                                  - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                    data:
+                                      page: mem
+                                      id: command
+                                      txt_list:
+                                        - 'fan_value.txt="{{ fan.percentage ~ units_separator }}%"'
+                                        - 'fanslider.val={{ ((fan.percentage / 100) * fan.steps) | round(0) | int(0) }}'
+                                        - 'fanslider.maxval={{ fan.steps }}'
+                                        - 'button_up.pco={{ color_rgb565.grey_white if fan.percentage < 100 else color_rgb565.grey_dark }}'
+                                        - 'button_down.pco={{ color_rgb565.grey_white if fan.percentage > 0 else color_rgb565.grey_dark }}'
+                                    continue_on_error: true
+                                  - *delay_default
+
                           - alias: FAN Preset mode
-                            if: '{{ fan.supported_features | bitwise_and(8) > 0 }}'
+                            if: '{{ fan_preset_mode_available }}'
                             then:
                               - variables:
                                   current_preset_mode_raw: '{{ state_attr(entity_id, "preset_mode") }}'
@@ -11010,7 +11050,7 @@ actions:
                                           - >-
                                             {{
                                               entity_domain != "fan" or
-                                              (state_attr(entity_id, "supported_features") | int(0) | bitwise_and(15) > 0)
+                                              (state_attr(entity_id, "supported_features") | int(0) | bitwise_and(11) > 0)
                                             }}
                                         sequence:
                                           - *variable_entity
@@ -11176,7 +11216,7 @@ actions:
                                   - >-
                                     {{
                                       entity_domain != "fan" or
-                                      (state_attr(entity_id, "supported_features") | int(0) | bitwise_and(15) > 0)
+                                      (state_attr(entity_id, "supported_features") | int(0) | bitwise_and(11) > 0)
                                     }}
                                 sequence:
                                   - variables:
@@ -11445,7 +11485,7 @@ actions:
                               {{
                                 entity_domain in domains_functionality.detailed_only or
                                 (entity_domain == "cover" and supported_features | bitwise_and(4) > 0) or
-                                (entity_domain == "fan" and (supported_features | bitwise_and(1) > 0 or supported_features | bitwise_and(2) > 0)) or
+                                (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
                                 (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp)) or
                                 (entity_domain == "timer")
                               }}
