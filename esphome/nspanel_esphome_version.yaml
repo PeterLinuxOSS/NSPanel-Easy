@@ -22,7 +22,7 @@ substitutions:
 
   # Minimum required ESPHome compiler to run this
   # Versioning workflow will take care of updating this
-  min_esphome_compiler_version: 2026.6.0
+  min_esphome_compiler_version: 2026.7.0
 
   TAG_VERSIONING: nspanel.versioning
 
