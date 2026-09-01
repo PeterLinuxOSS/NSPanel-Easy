@@ -1,6 +1,6 @@
 # This GitHub Actions workflow handles version bumping, pre-built firmware, releases, and tag updates.
 #
-# Triggered by merging a PR to the main branch, it automatically:
+# Triggered by any push to the main branch (normally a PR merge), it automatically:
 # 1. Bumps the CalVer version (YYYY.M.seq)
 # 2. Calculates the minimum upstream version (current month minus 2, YYYY.M.0)
 # 3. Resolves the "next" sentinel in min_blueprint_version, if set
@@ -14,16 +14,24 @@
 # 11. Updates the stable and latest floating tags
 # 12. Announces the release on Discord
 #
-# The workflow skips execution if the merge commit message contains
-# [skip-versioning] to prevent loops from its own version bump commits.
+# The workflow skips execution if the head commit message contains
+# [skip-versioning], preventing loops caused by its own version bump and
+# pre-built firmware commits, both of which are pushed back to main.
+#
+# Note: this workflow intentionally listens to `push` and not to
+# `pull_request: closed`. For a pull request whose head branch lives in a fork,
+# GitHub downgrades GITHUB_TOKEN to read-only and withholds repository secrets,
+# regardless of the `permissions:` block declared here. That makes every push,
+# tag and release step below fail with HTTP 403. A `push` event always runs in
+# the base repository context, with the declared permissions and full access to
+# secrets, so collaborator PRs merged directly into main behave exactly like
+# PRs merged from a local branch.
 
 ---
 name: Version, Release & Tags
 
 on:  # yamllint disable-line rule:truthy
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - main
     paths-ignore:
@@ -36,7 +44,10 @@ jobs:
   # ---------------------------------------------------------------------------
   bump:
     name: Bump version
-    if: github.event.pull_request.merged == true
+    # Cheap pre-filter: avoids spinning up a runner for the workflow's own
+    # commits. The step-level check below is kept as a second line of defence,
+    # since head_commit is only populated for push events.
+    if: ${{ !contains(github.event.head_commit.message, '[skip-versioning]') }}
     runs-on: ubuntu-latest
     concurrency:
       group: version-and-release
@@ -89,8 +100,20 @@ jobs:
         uses: actions/github-script@v9
         with:
           script: |
+            // On a push event there is no pull_request payload, so the PR that
+            // introduced this commit has to be resolved through the API.
+            // Direct pushes to main resolve to no PR and fall back below.
             try {
-              const pr = context.payload.pull_request;
+              const { data: prs } =
+                await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  commit_sha: context.sha
+                });
+              const pr = prs.find(p => p.merged_at) || prs[0];
+              if (!pr) {
+                throw new Error(`No pull request associated with ${context.sha}`);
+              }
               return {
                 title: pr.title,
                 body: pr.body || 'No description provided',
