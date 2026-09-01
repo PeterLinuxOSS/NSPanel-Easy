@@ -51,9 +51,8 @@ api:
             if (qrcode.empty() and !id(qrcode_string).empty()) {
               ESP_LOGD("${TAG_PAGE_QRCODE}", "QR code empty");
               id(qrcode_string) = qrcode;
-              disp1->send_command("vis_bt_qrcode=0");
+              action_component_visibility->execute("home", "bt_qrcode", false);
               if (current_page_id == home_page_id) {
-                disp1->hide_component(hmi::home::BT_QRCODE.name);
                 return;
               }
               if (current_page_id == qrcode_page_id) {
@@ -72,7 +71,7 @@ api:
             }
 
             if (data_changed) {
-              disp1->send_command("vis_bt_qrcode=1");
+              action_component_visibility->execute("home", "bt_qrcode", true);
             }
 
             if (data_changed and current_page_id == qrcode_page_id) {
