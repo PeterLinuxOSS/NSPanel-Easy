@@ -162,7 +162,17 @@ api:
                 ) {
               detailed_entity->publish_state(entity);
               goto_page->execute(get_page_id(entity_id.domain.c_str()));
-              disp1->send_command_printf("back_page_id=%" PRIu8, get_page_id(back_page.c_str()));
+              // An empty `back_page` means "keep the current return target".
+              // An unknown page name would resolve to UINT8_MAX, which is not a valid
+              // page and would break the back button, so fall back to the home page.
+              if (!back_page.empty()) {
+                uint8_t back_page_id = get_page_id(back_page.c_str());
+                if (back_page_id == UINT8_MAX) {
+                  ESP_LOGW("${TAG_API}", "Unknown back_page '%s', falling back to home", back_page.c_str());
+                  back_page_id = get_page_id("home");
+                }
+                disp1->send_command_printf("back_page_id=%" PRIu8, back_page_id);
+              }
             }
 
     - action: icon  # Updates icon, color, and visibility for display components
