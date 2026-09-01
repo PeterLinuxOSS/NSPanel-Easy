@@ -23,9 +23,13 @@ Page fan
             {
                 page home_page_id
             }
-            // Oscillate and preset mode buttons (hidden by default)
+            // Optional fan controls hidden by default
             vis bt_oscillate,0
             vis mode_button,0
+            vis fan_value,0
+            vis fanslider,0
+            vis button_up,0
+            vis button_down,0
             // Light mode only: override HMI defaults (which target dark theme).
             // Dark theme uses the component defaults directly, so no else branch.
             if(theme==1)
