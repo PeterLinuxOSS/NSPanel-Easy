@@ -16,6 +16,8 @@ uint8_t display_mode_eeprom = UINT8_MAX;  // Populated from boot report, UINT8_M
 bool display_portrait = false;
 bool display_valid = false;
 
+ClickInterceptor click_interceptor;
+
 }  // namespace esphome::nspanel_easy
 
 #endif  // NSPANEL_EASY_HW_DISPLAY

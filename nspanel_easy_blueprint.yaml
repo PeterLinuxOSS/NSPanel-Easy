@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.9.5)
+  name: NSPanel Easy Configuration (v9999.99.9)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -536,6 +536,13 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button01_confirm:
+          name: Home page - Custom button 1 - Require confirmation
+          default: false
+          description: &description_ask_for_confirmation >
+            When enabled, a confirmation dialog will be shown before the action is executed.
+          selector:
+            boolean:
         home_custom_button02:
           name: Home page - Custom button 2 - Entity
           description: *description_home_custom_button_entity
@@ -552,6 +559,12 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button02_confirm:
+          name: Home page - Custom button 2 - Require confirmation
+          default: false
+          description: *description_ask_for_confirmation
+          selector:
+            boolean:
         home_custom_button03:
           name: Home page - Custom button 3 - Entity
           description: *description_home_custom_button_entity
@@ -568,6 +581,12 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button03_confirm:
+          name: Home page - Custom button 3 - Require confirmation
+          default: false
+          description: *description_ask_for_confirmation
+          selector:
+            boolean:
         home_custom_button04:
           name: Home page - Custom button 4 - Entity
           description: *description_home_custom_button_entity
@@ -584,6 +603,12 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button04_confirm:
+          name: Home page - Custom button 4 - Require confirmation
+          default: false
+          description: *description_ask_for_confirmation
+          selector:
+            boolean:
         home_custom_button05:
           name: Home page - Custom button 5 - Entity
           description: *description_home_custom_button_entity
@@ -600,6 +625,12 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button05_confirm:
+          name: Home page - Custom button 5 - Require confirmation
+          default: false
+          description: *description_ask_for_confirmation
+          selector:
+            boolean:
         home_custom_button06:
           name: Home page - Custom button 6 - Entity
           description: *description_home_custom_button_entity
@@ -616,6 +647,12 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button06_confirm:
+          name: Home page - Custom button 6 - Require confirmation
+          default: false
+          description: *description_ask_for_confirmation
+          selector:
+            boolean:
         alarm:  # This key was kept with this name to support inputs from legacy versions where the alarm was the only option at that button
           name: Home page - Custom button 7 - Entity
           description: *description_home_custom_button_entity
@@ -632,6 +669,12 @@ blueprint:
           default: ""
           selector:
             text:
+        home_custom_button07_confirm:
+          name: Home page - Custom button 7 - Require confirmation
+          default: false
+          description: *description_ask_for_confirmation
+          selector:
+            boolean:
     home_page_general_settings:
       name: Home page - General settings
       icon: mdi:home
@@ -1547,8 +1590,7 @@ blueprint:
         entity01_confirm:
           name: Button page 1, Button 1 - Require confirmation
           default: false
-          description: &description_ask_for_confirmation >
-            When enabled, a confirmation dialog will be shown before the action is executed.
+          description: *description_ask_for_confirmation
           selector:
             boolean:
         entity01_custom_action:
@@ -4739,7 +4781,7 @@ trigger_variables:
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
-  blueprint_version: 2026.9.5
+  blueprint_version: 9999.99.9
 
   # Firmware version as reported by the ESPHome integration in the device registry.
   # Format: "<project_version> (ESPHome <compiler_version>)", e.g. "2026.8.5 (ESPHome 2026.6.0)".
@@ -7394,6 +7436,31 @@ actions:
                               val: !input custom_buttons_font_size
                             continue_on_error: true
                           - *delay_boot
+                          - alias: custom_buttons_confirm
+                            sequence:
+                              - variables:
+                                  home_custom_buttons_confirm:
+                                    - !input home_custom_button01_confirm
+                                    - !input home_custom_button02_confirm
+                                    - !input home_custom_button03_confirm
+                                    - !input home_custom_button04_confirm
+                                    - !input home_custom_button05_confirm
+                                    - !input home_custom_button06_confirm
+                                    - !input home_custom_button07_confirm
+                              - action: 'esphome.{{ action_prefix }}_component_val'
+                                data:
+                                  page: mem
+                                  id: custom_buttons_confirm
+                                  val: >
+                                    {% set ns = namespace(decimal_value = 0) %}
+                                    {% for confirm_item in home_custom_buttons_confirm %}
+                                        {% if (confirm_item) %}
+                                            {% set ns.decimal_value = ns.decimal_value + (2 ** loop.index0) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ ns.decimal_value }}
+                                continue_on_error: true
+                              - *delay_boot
                           - alias: Temperatures appearance
                             sequence:
                               - variables:

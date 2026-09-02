@@ -4,6 +4,7 @@
 
 #include "page_home.h"
 
+#include <cctype>
 #include <cinttypes>
 
 #include "esphome/components/nextion/nextion.h"
@@ -13,7 +14,6 @@
 
 #ifdef NSPANEL_EASY_SUBSCRIBE
 
-#include <cctype>
 #include <cstdio>
 
 #include "esphome/core/helpers.h"
@@ -25,6 +25,23 @@
 namespace esphome::nspanel_easy {
 
 static const char *const TAG = "nspanel.page.home";
+
+uint8_t parse_home_button_index(const char *component) {
+  constexpr uint8_t PREFIX_LEN = 6;  // strlen("button")
+  if (strlen(component) != PREFIX_LEN + 2 || strncmp(component, "button", PREFIX_LEN) != 0) {
+    return UINT8_MAX;
+  }
+  const char tens = component[PREFIX_LEN];
+  const char units = component[PREFIX_LEN + 1];
+  if (!std::isdigit(static_cast<unsigned char>(tens)) || !std::isdigit(static_cast<unsigned char>(units))) {
+    return UINT8_MAX;
+  }
+  const uint8_t number = static_cast<uint8_t>(((tens - '0') * 10) + (units - '0'));
+  if (number < 1 || number > HOME_BUTTON_COUNT) {
+    return UINT8_MAX;
+  }
+  return static_cast<uint8_t>(number - 1);
+}
 
 uint32_t home_vis_mask = 0;
 
@@ -89,33 +106,6 @@ static char outdoor_temp_text[TEMP_TEXT_LEN] = {};
 
 /// @brief Whether the outdoor temperature component is currently shown.
 static Visibility outdoor_temp_shown = Visibility::UNKNOWN;
-
-/**
- * @brief Parse the slot index out of a custom button component name.
- *
- * Used by home_sub_render() as a probe: a component that is not a custom button
- * is an ordinary outcome here, so no warning is emitted. The dispatcher warns
- * once, after every target has been tried.
- *
- * @param component Component name, expected as "button%02u".
- * @return Zero-based index into home_button_states[], or UINT8_MAX if invalid.
- */
-static uint8_t parse_home_button_index(const char *component) {
-  constexpr uint8_t PREFIX_LEN = 6;  // strlen("button")
-  if (strlen(component) != PREFIX_LEN + 2 || strncmp(component, "button", PREFIX_LEN) != 0) {
-    return UINT8_MAX;
-  }
-  const char tens = component[PREFIX_LEN];
-  const char units = component[PREFIX_LEN + 1];
-  if (!std::isdigit(static_cast<unsigned char>(tens)) || !std::isdigit(static_cast<unsigned char>(units))) {
-    return UINT8_MAX;
-  }
-  const uint8_t number = static_cast<uint8_t>(((tens - '0') * 10) + (units - '0'));
-  if (number < 1 || number > HOME_BUTTON_COUNT) {
-    return UINT8_MAX;
-  }
-  return static_cast<uint8_t>(number - 1);
-}
 
 /**
  * @brief Build the scoped Nextion name for a home custom button.

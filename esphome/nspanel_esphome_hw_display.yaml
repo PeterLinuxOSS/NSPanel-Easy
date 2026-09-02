@@ -270,6 +270,12 @@ script:
                 return;
               }
 
+              // A page package may claim the click, e.g. to ask for confirmation
+              if (click_interceptor and click_interceptor(page, event, params[2])) {
+                ESP_LOGD("${TAG_HW_DISPLAY}", "%s handled locally", event.c_str());
+                return;
+              }
+
               // Button click event
               ESP_LOGD("${TAG_HW_DISPLAY}", "%s->HA", event.c_str());
               fire_ha_event("button_click", {

@@ -54,6 +54,13 @@ globals:
     restore_value: true
     initial_value: '8'
 
+  # One bit per custom button slot, bit 0 = button01. Persisted so a reboot
+  # cannot expose an unconfirmed button until the blueprint pushes again.
+  - id: home_confirm_mask
+    type: uint8_t
+    restore_value: true
+    initial_value: '0'
+
 script:
   - id: !extend action_component_color
     then:
@@ -97,6 +104,11 @@ script:
             id(is_climate) = (val != 0);
             return;
           }
+          if (component == "custom_buttons_confirm") {
+            // Custom buttons requiring confirmation
+            id(home_confirm_mask) = static_cast<uint8_t>(val);
+            return;
+          }
           if (component == "custom_buttons_font") {
             // Custom buttons icon size
             id(home_custom_buttons_font_id) = static_cast<uint8_t>(val);
@@ -135,6 +147,33 @@ script:
           // Other components icons size and color
           disp1->set_component_font(hmi::home::BT_ENTITIES.name, id(home_custom_buttons_font_id));
           disp1->set_component_font(hmi::home::WIFI_ICON.name,   id(chip_font_id));
+
+          // Route custom button clicks through the confirmation dialog when the
+          // blueprint asked for it. Only short clicks act on the entity; a long
+          // click opens the detailed page and needs no confirmation.
+          #ifdef NSPANEL_EASY_PAGE_CONFIRM
+          click_interceptor = [](const std::string &page,
+                                 const std::string &event,
+                                 const std::string &component) -> bool {
+            if (page != "home") return false;
+            if (event != "short_click") return false;
+            // The confirm page re-emits the accepted click while it is still
+            // showing, so the guard below is what stops it looping back here.
+            if (current_page_id != get_page_id("home")) return false;
+
+            const uint8_t slot = parse_home_button_index(component.c_str());
+            if (slot == UINT8_MAX) return false;
+            if ((id(home_confirm_mask) & (1U << slot)) == 0) return false;
+
+            ESP_LOGD("${TAG_PAGE_HOME}", "%s requires confirmation", component.c_str());
+            disp1->set_component_text("confirm.page_name", "home");
+            disp1->set_component_text("confirm.component", component.c_str());
+            disp1->set_component_text("confirm.body", "");  // Global component, may hold a button page label
+            disp1->set_component_value("confirm.page_id", get_page_id("home"));
+            goto_page->execute(get_page_id("confirm"));
+            return true;
+          };
+          #endif  // NSPANEL_EASY_PAGE_CONFIRM
 
   - id: !extend boot_wrap_up
     then:

@@ -5,6 +5,8 @@
 #ifdef NSPANEL_EASY_HW_DISPLAY
 
 #include <cstdint>
+#include <functional>
+#include <string>
 #include <vector>
 #include "esphome/core/defines.h"
 #include "esphome/core/helpers.h"
@@ -31,6 +33,23 @@ extern bool display_entity_keep;
 extern uint8_t display_mode_eeprom;
 extern bool display_portrait;
 extern bool display_valid;
+
+/**
+ * @brief Optional local handler for a click, tried before it reaches Home Assistant.
+ *
+ * Assigned from a page package that needs to act on a click itself rather than
+ * forward it, currently the home page routing a custom button through the
+ * confirmation dialog. Returning true consumes the event; whatever handled it
+ * is responsible for re-emitting the click if the user goes ahead.
+ *
+ * @param page Page that produced the event, as reported by the display.
+ * @param event "short_click" or "long_click".
+ * @param component Unscoped component name, e.g. "button01".
+ * @return true when the click was handled locally and must not reach Home Assistant.
+ */
+using ClickInterceptor =
+    std::function<bool(const std::string &page, const std::string &event, const std::string &component)>;
+extern ClickInterceptor click_interceptor;
 
 }  // namespace esphome::nspanel_easy
 
