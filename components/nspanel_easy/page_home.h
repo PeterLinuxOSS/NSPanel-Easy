@@ -72,6 +72,18 @@ void home_vis_resend();
 /// @brief Number of custom button slots on the home page (button01..button07).
 static constexpr uint8_t HOME_BUTTON_COUNT = 7;
 
+/**
+ * @brief Parse the slot index out of a custom button component name.
+ *
+ * Used as a probe by both the subscription renderer and the confirmation gate:
+ * a component that is not a custom button is an ordinary outcome here, so no
+ * warning is emitted. Callers report on their own terms.
+ *
+ * @param component Component name, expected as "button%02u".
+ * @return Zero-based slot index, or UINT8_MAX if the name is not a custom button.
+ */
+uint8_t parse_home_button_index(const char *component);
+
 #ifdef NSPANEL_EASY_SUBSCRIBE
 
 /**
