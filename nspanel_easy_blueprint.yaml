@@ -8950,13 +8950,8 @@ actions:
                                   page: mem
                                   id: command
                                   txt_list:
-                                    # Two position sliders exist: the centered one for covers
-                                    # without tilt and the left one of the pair for covers with it.
-                                    # Only one is visible, both are written.
                                     - 'coverslider.val={{ current_position }}'
                                     - 'cover_value.txt="{{ current_position ~ units_separator }}%"'
-                                    - 'coverslider2.val={{ current_position }}'
-                                    - 'cover_value_2.txt="{{ current_position ~ units_separator }}%"'
                                 continue_on_error: true
                               - *delay_default
 
@@ -9018,30 +9013,17 @@ actions:
                                 - 'cover_close.txt="{{ cover_icons.close }}"'
                             continue_on_error: true
                           - *delay_default
-                          - alias: Cover sliders
-                            # Component coordinates are fixed at design time, so the page carries
-                            # both layouts: one centered slider, or a pair when the cover has tilt.
-                            sequence:
-                              - variables:
-                                  cover_tilt_available: '{{ state_attr(entity_id, "supported_features") | int(0) | bitwise_and(128) > 0 }}'
-                              - action: 'esphome.{{ action_prefix }}_components_visibility'
-                                data:
-                                  page: cover
-                                  ids:
-                                    - coverslider
-                                    - cover_value
-                                  visible: '{{ not cover_tilt_available }}'
-                                continue_on_error: true
-                              - action: 'esphome.{{ action_prefix }}_components_visibility'
-                                data:
-                                  page: cover
-                                  ids:
-                                    - coverslider2
-                                    - cover_value_2
-                                    - tiltslider
-                                    - tilt_value
-                                  visible: '{{ cover_tilt_available }}'
-                                continue_on_error: true
+                          - alias: Cover tilt slider
+                            # Hidden on the TFT by default, so a cover without tilt keeps the page
+                            # it has today. Set both ways, as `vis` is not sticky across page loads.
+                            action: 'esphome.{{ action_prefix }}_components_visibility'
+                            data:
+                              page: cover
+                              ids:
+                                - tiltslider
+                                - tilt_value
+                              visible: '{{ state_attr(entity_id, "supported_features") | int(0) | bitwise_and(128) > 0 }}'
+                            continue_on_error: true
                               - *delay_default
                           - alias: Cover battery icon
                             sequence:
