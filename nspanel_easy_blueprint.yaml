@@ -8224,6 +8224,16 @@ actions:
                                 target:
                                   entity_id: '{{ nspanel_event.entity }}'
                                 continue_on_error: true
+                          - alias: Lawn mower start/pause toggle
+                            conditions: '{{ nspanel_event.action == "lawn_mower.start_pause_toggle" }}'
+                            sequence:
+                              - action: >-
+                                  {{ "lawn_mower.pause"
+                                    if states(nspanel_event.entity) == "mowing"
+                                    else "lawn_mower.start_mowing" }}
+                                target:
+                                  entity_id: '{{ nspanel_event.entity }}'
+                                continue_on_error: true
                           - alias: "light.turn_on (rgb_color)"
                             conditions:
                               - '{{ nspanel_event.action == "light.turn_on" }}'
@@ -8233,6 +8243,16 @@ actions:
                               - action: '{{ nspanel_event.action }}'
                                 data:
                                   rgb_color: '{{ [nspanel_event.red, nspanel_event.green, nspanel_event.blue] }}'
+                                target:
+                                  entity_id: '{{ nspanel_event.entity }}'
+                                continue_on_error: true
+                          - alias: Vacuum start/pause toggle
+                            conditions: '{{ nspanel_event.action == "vacuum.start_pause_toggle" }}'
+                            sequence:
+                              - action: >-
+                                  {{ "vacuum.pause"
+                                    if states(nspanel_event.entity) in ["cleaning", "returning"]
+                                    else "vacuum.start" }}
                                 target:
                                   entity_id: '{{ nspanel_event.entity }}'
                                 continue_on_error: true
