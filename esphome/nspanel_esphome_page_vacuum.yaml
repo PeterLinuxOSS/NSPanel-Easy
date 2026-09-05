@@ -9,16 +9,16 @@
 ---
 substitutions:
   # Vacuum entity feature bitmask constants (VacuumEntityFeature).
-  VACUUM_FEATURE_PAUSE:       "4"
-  VACUUM_FEATURE_STOP:        "8"
-  VACUUM_FEATURE_RETURN_HOME: "16"
-  VACUUM_FEATURE_BATTERY:     "64"
-  VACUUM_FEATURE_START:       "8192"
+  VACUUM_FEATURE_PAUSE: 4
+  VACUUM_FEATURE_STOP: 8
+  VACUUM_FEATURE_RETURN_HOME: 16
+  VACUUM_FEATURE_BATTERY: 64
+  VACUUM_FEATURE_START: 8192
 
   # Lawn mower entity feature bitmask constants (LawnMowerEntityFeature).
-  MOWER_FEATURE_START_MOWING: "1"
-  MOWER_FEATURE_PAUSE:        "2"
-  MOWER_FEATURE_DOCK:         "4"
+  MOWER_FEATURE_START_MOWING: 1
+  MOWER_FEATURE_PAUSE: 2
+  MOWER_FEATURE_DOCK: 4
 
   TAG_PAGE_VACUUM: nspanel.page.vacuum
 

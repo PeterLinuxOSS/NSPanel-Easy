@@ -6668,11 +6668,13 @@ actions:
           - input_boolean
           - input_button
           - input_select
+          - lawn_mower
           - light
           - media_player
           - select
           - switch
           - timer
+          - vacuum
           - water_heater
         detailed_not_supported:
           - binary_sensor
