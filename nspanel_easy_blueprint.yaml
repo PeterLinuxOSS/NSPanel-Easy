@@ -10954,12 +10954,12 @@ actions:
                               # ── Domain detection ──────────────────────────
                               entity_domain: '{{ entity_id.split(".")[0] }}'
                               is_mower: '{{ entity_domain == "lawn_mower" }}'
- 
+
                               # ── Raw attributes ────────────────────────────
                               entity_state: '{{ states(entity_id) }}'
                               supported_features: '{{ state_attr(entity_id, "supported_features") | int(0) }}'
                               battery_level: '{{ state_attr(entity_id, "battery_level") | int(-1) }}'
- 
+
                               # ── State groups ─────────────────────────────
                               is_active: >-
                                 {{
@@ -10967,19 +10967,19 @@ actions:
                                 }}
                               is_docked: '{{ entity_state == "docked" }}'
                               is_running: '{{ entity_state in ["cleaning", "mowing"] }}'
- 
+
                               # ── Vacuum feature flags ──────────────────────
                               has_start:       '{{ not is_mower and supported_features | bitwise_and(8192) > 0 }}'
                               has_pause:       '{{ not is_mower and supported_features | bitwise_and(4) > 0 }}'
                               has_stop:        '{{ not is_mower and supported_features | bitwise_and(8) > 0 }}'
                               has_return_home: '{{ not is_mower and supported_features | bitwise_and(16) > 0 }}'
                               has_battery:     '{{ not is_mower and supported_features | bitwise_and(64) > 0 }}'
- 
+
                               # ── Mower feature flags ───────────────────────
                               mower_has_start: '{{ is_mower and supported_features | bitwise_and(1) > 0 }}'
                               mower_has_pause: '{{ is_mower and supported_features | bitwise_and(2) > 0 }}'
                               mower_has_dock:  '{{ is_mower and supported_features | bitwise_and(4) > 0 }}'
- 
+
                               # ── Unified button availability ───────────────
                               btn_start_pause_available: >-
                                 {{
