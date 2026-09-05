@@ -10969,16 +10969,16 @@ actions:
                               is_running: '{{ entity_state in ["cleaning", "mowing"] }}'
 
                               # ── Vacuum feature flags ──────────────────────
-                              has_start:       '{{ not is_mower and supported_features | bitwise_and(8192) > 0 }}'
-                              has_pause:       '{{ not is_mower and supported_features | bitwise_and(4) > 0 }}'
-                              has_stop:        '{{ not is_mower and supported_features | bitwise_and(8) > 0 }}'
+                              has_start: '{{ not is_mower and supported_features | bitwise_and(8192) > 0 }}'
+                              has_pause: '{{ not is_mower and supported_features | bitwise_and(4) > 0 }}'
+                              has_stop: '{{ not is_mower and supported_features | bitwise_and(8) > 0 }}'
                               has_return_home: '{{ not is_mower and supported_features | bitwise_and(16) > 0 }}'
-                              has_battery:     '{{ not is_mower and supported_features | bitwise_and(64) > 0 }}'
+                              has_battery: '{{ not is_mower and supported_features | bitwise_and(64) > 0 }}'
 
                               # ── Mower feature flags ───────────────────────
                               mower_has_start: '{{ is_mower and supported_features | bitwise_and(1) > 0 }}'
                               mower_has_pause: '{{ is_mower and supported_features | bitwise_and(2) > 0 }}'
-                              mower_has_dock:  '{{ is_mower and supported_features | bitwise_and(4) > 0 }}'
+                              mower_has_dock: '{{ is_mower and supported_features | bitwise_and(4) > 0 }}'
 
                               # ── Unified button availability ───────────────
                               btn_start_pause_available: >-
@@ -10992,16 +10992,16 @@ actions:
                                 {{
                                   has_return_home if not is_mower else mower_has_dock
                                 }}
- 
+
                               # ── Picture slots ─────────────────────────────
-                              pic_active_dark:  '{{ 96 if not is_mower else 100 }}'
+                              pic_active_dark: '{{ 96 if not is_mower else 100 }}'
                               pic_active_light: '{{ 97 if not is_mower else 101 }}'
-                              pic_docked_dark:  '{{ 98 if not is_mower else 102 }}'
+                              pic_docked_dark: '{{ 98 if not is_mower else 102 }}'
                               pic_docked_light: '{{ 99 if not is_mower else 103 }}'
- 
+
                           - *variable_entity
                           - *entity_details_title_with_icon
- 
+
                           ##### State label #####
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
@@ -11011,7 +11011,7 @@ actions:
                                 - '{{ entity_state | capitalize }}'
                             continue_on_error: true
                           - *delay_default
- 
+
                           ##### vacuum_pic — active vs. docked #####
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
@@ -11031,7 +11031,7 @@ actions:
                                   }}
                             continue_on_error: true
                           - *delay_default
- 
+
                           ##### bt_start_pause — icon toggles, grey when unavailable #####
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
@@ -11049,7 +11049,7 @@ actions:
                               visible: '{{ btn_start_pause_available }}'
                             continue_on_error: true
                           - *delay_default
- 
+
                           ##### bt_stop — vacuum only, hidden for mower or when STOP not supported #####
                           - action: 'esphome.{{ action_prefix }}_components_visibility'
                             data:
@@ -11058,7 +11058,7 @@ actions:
                               visible: '{{ btn_stop_available }}'
                             continue_on_error: true
                           - *delay_default
- 
+
                           ##### bt_return — hidden when unavailable or already docked #####
                           - action: 'esphome.{{ action_prefix }}_components_visibility'
                             data:
@@ -11067,7 +11067,7 @@ actions:
                               visible: '{{ btn_return_available and not is_docked }}'
                             continue_on_error: true
                           - *delay_default
- 
+
                           ##### Battery (vacuum only, feature-gated) #####
                           - if: '{{ has_battery and battery_level >= 0 }}'
                             then:
