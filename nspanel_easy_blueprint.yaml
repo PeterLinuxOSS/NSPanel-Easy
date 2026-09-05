@@ -8259,7 +8259,7 @@ actions:
                             sequence:
                               - action: >-
                                   {{ "lawn_mower.pause"
-                                    if states(nspanel_event.entity) == "mowing"
+                                    if states(nspanel_event.entity) in ["mowing", "returning"]
                                     else "lawn_mower.start_mowing" }}
                                 target:
                                   entity_id: '{{ nspanel_event.entity }}'
