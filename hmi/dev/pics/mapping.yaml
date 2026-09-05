@@ -374,6 +374,54 @@
     dimensions: "40x250"
 
 # -----------------------------------------------------------------------------
+# Vacuum page
+# -----------------------------------------------------------------------------
+- id: vacuum_active
+  dark: 96
+  light: 97
+  landscape:
+    src: vacuum/vacuum_active.png
+    coordinates: "145,68"
+    dimensions: "160x160"
+  portrait:
+    src: vacuum/vacuum_active.png
+    coordinates: "80,100"
+    dimensions: "160x160"
+- id: vacuum_docked
+  dark: 98
+  light: 99
+  landscape:
+    src: vacuum/vacuum_docked.png
+    coordinates: "145,68"
+    dimensions: "160x160"
+  portrait:
+    src: vacuum/vacuum_docked.png
+    coordinates: "80,100"
+    dimensions: "160x160"
+- id: lawn_mower_active
+  dark: 100
+  light: 101
+  landscape:
+    src: vacuum/lawn_mower_active.png
+    coordinates: "145,68"
+    dimensions: "160x160"
+  portrait:
+    src: vacuum/lawn_mower_active.png
+    coordinates: "80,100"
+    dimensions: "160x160"
+- id: lawn_mower_docked
+  dark: 102
+  light: 103
+  landscape:
+    src: vacuum/lawn_mower_docked.png
+    coordinates: "145,68"
+    dimensions: "160x160"
+  portrait:
+    src: vacuum/lawn_mower_docked.png
+    coordinates: "80,100"
+    dimensions: "160x160"
+
+# -----------------------------------------------------------------------------
 # Misc components
 # -----------------------------------------------------------------------------
 - id: misc_slider_cursor_horizontal

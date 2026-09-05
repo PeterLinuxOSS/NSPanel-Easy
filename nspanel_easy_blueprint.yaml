@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.9.6)
+  name: NSPanel Easy Configuration (v9999.99.9)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -511,6 +511,7 @@ blueprint:
                   - input_boolean
                   - input_button
                   - input_select
+                  - lawn_mower
                   - light
                   - lock
                   - media_player
@@ -520,6 +521,7 @@ blueprint:
                   - select
                   - switch
                   - timer
+                  - vacuum
                   - water_heater
         home_custom_button01_icon:
           name: Home page - Custom button 1 - Icon
@@ -1376,6 +1378,7 @@ blueprint:
                   - input_boolean
                   - input_button
                   - input_select
+                  - lawn_mower
                   - light
                   - lock
                   - media_player
@@ -1385,6 +1388,7 @@ blueprint:
                   - select
                   - switch
                   - timer
+                  - vacuum
                   - water_heater
         left_button_click_custom_action:
           name: Left hardware button custom action
@@ -1438,11 +1442,13 @@ blueprint:
                   - fan
                   - input_boolean
                   - input_select
+                  - lawn_mower
                   - light
                   - lock
                   - media_player
                   - remote
                   - switch
+                  - vacuum
                   - water_heater
         left_button_color:
           name: Left hardware button - Text color
@@ -1556,6 +1562,7 @@ blueprint:
                   - input_boolean
                   - input_button
                   - input_select
+                  - lawn_mower
                   - light
                   - lock
                   - media_player
@@ -1566,6 +1573,7 @@ blueprint:
                   - select
                   - switch
                   - timer
+                  - vacuum
                   - water_heater
         entity01_name:
           name: Button page 1, Button 1 - Label
@@ -4781,7 +4789,7 @@ trigger_variables:
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
-  blueprint_version: 2026.9.6
+  blueprint_version: 9999.99.9
 
   # Firmware version as reported by the ESPHome integration in the device registry.
   # Format: "<project_version> (ESPHome <compiler_version>)", e.g. "2026.8.5 (ESPHome 2026.6.0)".
@@ -4859,6 +4867,7 @@ variables:
     switch: "switch"
     timer: "timer"
     utilities: "utilities"
+    vacuum: "vacuum"
     water_heater: "water_heater"
     weatherpages:
       - "weather01"
@@ -4877,6 +4886,7 @@ variables:
       - select
       - switch
       - timer
+      - vacuum
       - water_heater
 
   home_page_background_update: !input home_page_background_update
@@ -10936,6 +10946,170 @@ actions:
                                 - 'tick.en=1'
                             continue_on_error: true
 
+                      - alias: Vacuum / lawn mower page
+                        conditions: '{{ nspanel_event.page == pages.vacuum }}'
+                        sequence: &refresh_page_vacuum
+                          - *get_entity_id_from_event_or_trigger
+                          - variables:
+                              # ── Domain detection ──────────────────────────
+                              entity_domain: '{{ entity_id.split(".")[0] }}'
+                              is_mower: '{{ entity_domain == "lawn_mower" }}'
+ 
+                              # ── Raw attributes ────────────────────────────
+                              entity_state: '{{ states(entity_id) }}'
+                              supported_features: '{{ state_attr(entity_id, "supported_features") | int(0) }}'
+                              battery_level: '{{ state_attr(entity_id, "battery_level") | int(-1) }}'
+ 
+                              # ── State groups ─────────────────────────────
+                              is_active: >-
+                                {{
+                                  entity_state in ["cleaning", "mowing", "returning", "paused", "idle"]
+                                }}
+                              is_docked: '{{ entity_state == "docked" }}'
+                              is_running: '{{ entity_state in ["cleaning", "mowing"] }}'
+ 
+                              # ── Vacuum feature flags ──────────────────────
+                              has_start:       '{{ not is_mower and supported_features | bitwise_and(8192) > 0 }}'
+                              has_pause:       '{{ not is_mower and supported_features | bitwise_and(4) > 0 }}'
+                              has_stop:        '{{ not is_mower and supported_features | bitwise_and(8) > 0 }}'
+                              has_return_home: '{{ not is_mower and supported_features | bitwise_and(16) > 0 }}'
+                              has_battery:     '{{ not is_mower and supported_features | bitwise_and(64) > 0 }}'
+ 
+                              # ── Mower feature flags ───────────────────────
+                              mower_has_start: '{{ is_mower and supported_features | bitwise_and(1) > 0 }}'
+                              mower_has_pause: '{{ is_mower and supported_features | bitwise_and(2) > 0 }}'
+                              mower_has_dock:  '{{ is_mower and supported_features | bitwise_and(4) > 0 }}'
+ 
+                              # ── Unified button availability ───────────────
+                              btn_start_pause_available: >-
+                                {{
+                                  (has_start or has_pause)
+                                  if not is_mower
+                                  else (mower_has_start or mower_has_pause)
+                                }}
+                              btn_stop_available: '{{ has_stop }}'  # always false for mower
+                              btn_return_available: >-
+                                {{
+                                  has_return_home if not is_mower else mower_has_dock
+                                }}
+ 
+                              # ── Picture slots ─────────────────────────────
+                              pic_active_dark:  '{{ 96 if not is_mower else 100 }}'
+                              pic_active_light: '{{ 97 if not is_mower else 101 }}'
+                              pic_docked_dark:  '{{ 98 if not is_mower else 102 }}'
+                              pic_docked_light: '{{ 99 if not is_mower else 103 }}'
+ 
+                          - *variable_entity
+                          - *entity_details_title_with_icon
+ 
+                          ##### State label #####
+                          - action: 'esphome.{{ action_prefix }}_component_text_list'
+                            data:
+                              page: vacuum
+                              id: state_label
+                              txt_list:
+                                - '{{ entity_state | capitalize }}'
+                            continue_on_error: true
+                          - *delay_default
+ 
+                          ##### vacuum_pic — active vs. docked #####
+                          - action: 'esphome.{{ action_prefix }}_component_text_list'
+                            data:
+                              page: mem
+                              id: command
+                              txt_list:
+                                - >-
+                                  vacuum_pic.pic={{
+                                    pic_active_light if (is_active and theme == "light")
+                                    else (
+                                      pic_active_dark if is_active
+                                      else (
+                                        pic_docked_light if theme == "light"
+                                        else pic_docked_dark
+                                      )
+                                    )
+                                  }}
+                            continue_on_error: true
+                          - *delay_default
+ 
+                          ##### bt_start_pause — icon toggles, grey when unavailable #####
+                          - action: 'esphome.{{ action_prefix }}_component_text_list'
+                            data:
+                              page: mem
+                              id: command
+                              txt_list:
+                                - >-
+                                  bt_start_pause.txt="{{ all_icons["pause"] if is_running else all_icons["play"] }}"
+                            continue_on_error: true
+                          - *delay_default
+                          - action: 'esphome.{{ action_prefix }}_components_visibility'
+                            data:
+                              page: vacuum
+                              ids: ["bt_start_pause"]
+                              visible: '{{ btn_start_pause_available }}'
+                            continue_on_error: true
+                          - *delay_default
+ 
+                          ##### bt_stop — vacuum only, hidden for mower or when STOP not supported #####
+                          - action: 'esphome.{{ action_prefix }}_components_visibility'
+                            data:
+                              page: vacuum
+                              ids: ["bt_stop"]
+                              visible: '{{ btn_stop_available }}'
+                            continue_on_error: true
+                          - *delay_default
+ 
+                          ##### bt_return — hidden when unavailable or already docked #####
+                          - action: 'esphome.{{ action_prefix }}_components_visibility'
+                            data:
+                              page: vacuum
+                              ids: ["bt_return"]
+                              visible: '{{ btn_return_available and not is_docked }}'
+                            continue_on_error: true
+                          - *delay_default
+ 
+                          ##### Battery (vacuum only, feature-gated) #####
+                          - if: '{{ has_battery and battery_level >= 0 }}'
+                            then:
+                              - variables:
+                                  battery_icon_name: >-
+                                    {% set lvl = battery_level %}
+                                    {% if lvl >= 95 %}battery
+                                    {% elif lvl >= 85 %}battery-90
+                                    {% elif lvl >= 75 %}battery-80
+                                    {% elif lvl >= 65 %}battery-70
+                                    {% elif lvl >= 55 %}battery-60
+                                    {% elif lvl >= 45 %}battery-50
+                                    {% elif lvl >= 35 %}battery-40
+                                    {% elif lvl >= 25 %}battery-30
+                                    {% elif lvl >= 15 %}battery-20
+                                    {% else %}battery-10
+                                    {% endif %}
+                              - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                data:
+                                  page: mem
+                                  id: command
+                                  txt_list:
+                                    - 'battery_icon.txt="{{ all_icons[battery_icon_name | trim] }}"'
+                                    - 'battery_value.txt="{{ battery_level }}%"'
+                                continue_on_error: true
+                              - *delay_default
+                              - action: 'esphome.{{ action_prefix }}_components_visibility'
+                                data:
+                                  page: vacuum
+                                  ids: ["battery_icon", "battery_value"]
+                                  visible: true
+                                continue_on_error: true
+                              - *delay_default
+                            else:
+                              - action: 'esphome.{{ action_prefix }}_components_visibility'
+                                data:
+                                  page: vacuum
+                                  ids: ["battery_icon", "battery_value"]
+                                  visible: false
+                                continue_on_error: true
+                              - *delay_default
+
                   - condition:
                       - '{{ detailed_entity | length > 0 }}'
                       - '{{ original_state.entity_id_valid }}'
@@ -11043,6 +11217,11 @@ actions:
                                 - '{{ current_page_from_sensor == pages.timer }}'
                                 - '{{ original_state.entity_domain in ["timer"] }}'
                               sequence: *refresh_page_timer
+                            - alias: Vacuum page
+                              conditions:
+                                - '{{ current_page_from_sensor == pages.vacuum }}'
+                                - '{{ original_state.entity_domain in ["lawn_mower", "vacuum"] }}'
+                              sequence: *refresh_page_vacuum
                             - alias: Water Heater page
                               conditions:
                                 - '{{ current_page_from_sensor == pages.water_heater }}'
@@ -11170,6 +11349,12 @@ actions:
                                               automation.{{ domain_automation_button_action if domain_automation_button_action is string else "toggle"}}
                                             {% elif entity_domain in ["button", "input_button"] %}
                                               {{ entity_domain }}.press
+                                            {% elif entity_domain == "lawn_mower" %}
+                                              {% if last_click_button_entity_state == "mowing" %}
+                                                lawn_mower.pause
+                                              {% else %}
+                                                lawn_mower.start_mowing
+                                              {% endif %}
                                             {% elif entity_domain == "lock" %}
                                               {% if last_click_button_entity_state == "locked" %}
                                                 lock.unlock
@@ -11185,6 +11370,14 @@ actions:
                                                 timer.pause
                                               {% else %}
                                                 timer.start
+                                              {% endif %}
+                                            {% elif entity_domain == "vacuum" %}
+                                              {% if last_click_button_entity_state in ["cleaning", "returning"] %}
+                                                vacuum.pause
+                                              {% elif last_click_button_entity_state == "paused" %}
+                                                vacuum.start_pause
+                                              {% else %}
+                                                vacuum.start_pause
                                               {% endif %}
                                             {% else %}
                                               homeassistant.update_entity

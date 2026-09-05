@@ -1,0 +1,102 @@
+#####################################################################################################
+#####                 NSPanel Easy - https://github.com/edwardtfn/NSPanel-Easy                  #####
+#####################################################################################################
+##### ESPHOME - Page vacuum (shared with lawn_mower domain)                                     #####
+##### PLEASE only make changes if it is necessary and also the required knowledge is available. #####
+##### For normal use with the Blueprint, no changes are necessary.                              #####
+#####################################################################################################
+
+---
+substitutions:
+  # Vacuum entity feature bitmask constants (VacuumEntityFeature).
+  VACUUM_FEATURE_PAUSE:       "4"
+  VACUUM_FEATURE_STOP:        "8"
+  VACUUM_FEATURE_RETURN_HOME: "16"
+  VACUUM_FEATURE_BATTERY:     "64"
+  VACUUM_FEATURE_START:       "8192"
+
+  # Lawn mower entity feature bitmask constants (LawnMowerEntityFeature).
+  MOWER_FEATURE_START_MOWING: "1"
+  MOWER_FEATURE_PAUSE:        "2"
+  MOWER_FEATURE_DOCK:         "4"
+
+  TAG_PAGE_VACUUM: nspanel.page.vacuum
+
+display:
+  - id: !extend disp1
+    on_touch:
+      then:
+        - lambda: |-
+            if (page_id != get_page_id("vacuum")) return;  // Page vacuum (shared with lawn_mower)
+            if (touch_event) return;                       // Only act on release
+
+            const std::string entity = detailed_entity->state.c_str();
+
+            // Determine the domain from the entity ID prefix.
+            const bool is_mower = (entity.substr(0, entity.find('.')) == "lawn_mower");
+
+            switch (component_id) {
+              case 8:  // bt_start_pause
+                if (is_mower) {
+                  fire_ha_event("action_call", {
+                    {"action", "lawn_mower.start_mowing"},
+                    {"entity", entity.c_str()}
+                  });
+                } else {
+                  fire_ha_event("action_call", {
+                    {"action", "vacuum.start_pause"},
+                    {"entity", entity.c_str()}
+                  });
+                }
+                break;
+
+              case 9:  // bt_stop — vacuum only; hidden for mower via Blueprint
+                fire_ha_event("action_call", {
+                  {"action", "vacuum.stop"},
+                  {"entity", entity.c_str()}
+                });
+                break;
+
+              case 10:  // bt_return
+                if (is_mower) {
+                  fire_ha_event("action_call", {
+                    {"action", "lawn_mower.dock"},
+                    {"entity", entity.c_str()}
+                  });
+                } else {
+                  fire_ha_event("action_call", {
+                    {"action", "vacuum.return_to_base"},
+                    {"entity", entity.c_str()}
+                  });
+                }
+                break;
+
+              default:
+                break;
+            }
+
+esphome:
+  platformio_options:
+    build_flags:
+      - -D NSPANEL_EASY_PAGE_VACUUM
+
+script:
+  - id: !extend page_change
+    then:
+      - lambda: if (new_page_id == get_page_id("vacuum")) page_vacuum->execute();
+
+  - id: page_vacuum
+    mode: single
+    then:  # Placeholder — Blueprint drives refresh via page_changed handler
+
+  - id: !extend reset_globals
+    then:
+      - lambda: |-
+          if (new_page_id == get_page_id("vacuum")) {
+            display_entity_keep = true;
+          }
+
+  - id: !extend stop_page_constructors
+    then:
+      - lambda: page_vacuum->stop();
+...

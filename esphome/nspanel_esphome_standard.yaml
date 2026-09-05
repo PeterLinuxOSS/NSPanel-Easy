@@ -38,6 +38,7 @@ packages:
   page_switch:       !include nspanel_esphome_page_switch.yaml
   page_timer:        !include nspanel_esphome_page_timer.yaml
   page_utilities:    !include nspanel_esphome_page_utilities.yaml
+  page_vacuum:       !include nspanel_esphome_page_vacuum.yaml
   page_water_heater: !include nspanel_esphome_page_water_heater.yaml
   page_weather:      !include nspanel_esphome_page_weather.yaml
   # yamllint enable rule:colons
