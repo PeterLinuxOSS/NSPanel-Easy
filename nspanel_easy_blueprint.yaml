@@ -11382,10 +11382,8 @@ actions:
                                             {% elif entity_domain == "vacuum" %}
                                               {% if last_click_button_entity_state in ["cleaning", "returning"] %}
                                                 vacuum.pause
-                                              {% elif last_click_button_entity_state == "paused" %}
-                                                vacuum.start_pause
                                               {% else %}
-                                                vacuum.start_pause
+                                                vacuum.start
                                               {% endif %}
                                             {% else %}
                                               homeassistant.update_entity

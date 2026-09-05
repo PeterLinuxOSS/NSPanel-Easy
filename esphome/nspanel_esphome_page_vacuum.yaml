@@ -40,21 +40,17 @@ display:
                 if (is_mower) {
                   const std::string state = get_entity_state(entity);
                   if (state == "mowing") {
-                    fire_ha_event("action_call", {
-                      {"action", "lawn_mower.pause"},
-                      {"entity", entity.c_str()}
-                    });
+                    fire_ha_event("action_call", {{"action", "lawn_mower.pause"}, {"entity", entity.c_str()}});
                   } else {
-                    fire_ha_event("action_call", {
-                      {"action", "lawn_mower.start_mowing"},
-                      {"entity", entity.c_str()}
-                    });
+                    fire_ha_event("action_call", {{"action", "lawn_mower.start_mowing"}, {"entity", entity.c_str()}});
                   }
                 } else {
-                  fire_ha_event("action_call", {
-                    {"action", "vacuum.start_pause"},
-                    {"entity", entity.c_str()}
-                  });
+                  const std::string state = get_entity_state(entity);
+                  if (state == "cleaning" || state == "returning") {
+                    fire_ha_event("action_call", {{"action", "vacuum.pause"}, {"entity", entity.c_str()}});
+                  } else {
+                    fire_ha_event("action_call", {{"action", "vacuum.start"}, {"entity", entity.c_str()}});
+                  }
                 }
                 break;
 
