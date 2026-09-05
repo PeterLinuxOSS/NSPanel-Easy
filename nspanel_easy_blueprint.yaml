@@ -10968,7 +10968,7 @@ actions:
                                   entity_state in ["cleaning", "mowing", "returning", "paused", "idle"]
                                 }}
                               is_docked: '{{ entity_state == "docked" }}'
-                              is_running: '{{ entity_state in ["cleaning", "mowing"] }}'
+                              is_running: '{{ entity_state in ["cleaning", "mowing", "returning"] }}'
 
                               # ── Vacuum feature flags ──────────────────────
                               has_start: '{{ not is_mower and supported_features | bitwise_and(8192) > 0 }}'
