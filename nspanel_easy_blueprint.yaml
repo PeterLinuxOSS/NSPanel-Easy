@@ -6685,8 +6685,10 @@ actions:
           - alarm_control_panel
           - climate
           - input_select
+          - lawn_mower
           - media_player
           - select
+          - vacuum
           - water_heater
 
       # yamllint disable rule:truthy rule:line-length rule:comments-indentation
@@ -11093,6 +11095,18 @@ actions:
                               page: vacuum
                               ids: ["bt_return"]
                               visible: '{{ btn_return_available and not is_docked }}'
+                            continue_on_error: true
+                          - *delay_default
+
+                          ##### Reset buttons colors #####
+                          - action: 'esphome.{{ action_prefix }}_component_text_list'
+                            data:
+                              page: mem
+                              id: command
+                              txt_list:
+                                - 'bt_start_pause.pco={{ nextion.color.grey_white }}'
+                                - 'bt_stop.pco={{ nextion.color.grey_white }}'
+                                - 'bt_return.pco={{ nextion.color.grey_white }}'
                             continue_on_error: true
                           - *delay_default
 

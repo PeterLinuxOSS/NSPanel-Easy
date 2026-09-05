@@ -218,6 +218,10 @@ Text bt_start_pause
         Horizontal Spacing      : 0
         Vertical Spacing        : 0
     
+    Events
+        Touch Press Event
+            bt_start_pause.pco=color_pco_highlight
+        
 Text bt_stop
     Attributes
         ID                      : 9
@@ -245,6 +249,10 @@ Text bt_stop
         Horizontal Spacing      : 0
         Vertical Spacing        : 0
     
+    Events
+        Touch Press Event
+            bt_stop.pco=color_pco_highlight
+        
 Text bt_return
     Attributes
         ID                      : 10
@@ -272,6 +280,10 @@ Text bt_return
         Horizontal Spacing      : 0
         Vertical Spacing        : 0
     
+    Events
+        Touch Press Event
+            bt_return.pco=color_pco_highlight
+        
 Picture vacuum_pic
     Attributes
         ID               : 4
