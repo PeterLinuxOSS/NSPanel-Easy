@@ -69,9 +69,8 @@ display:
             }
 
 esphome:
-  platformio_options:
-    build_flags:
-      - -D NSPANEL_EASY_PAGE_VACUUM
+  build_flags:
+    - -D NSPANEL_EASY_PAGE_VACUUM
 
 script:
   - id: !extend page_change
