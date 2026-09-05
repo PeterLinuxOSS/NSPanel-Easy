@@ -11352,7 +11352,7 @@ actions:
                                             {% elif entity_domain in ["button", "input_button"] %}
                                               {{ entity_domain }}.press
                                             {% elif entity_domain == "lawn_mower" %}
-                                              {% if last_click_button_entity_state == "mowing" %}
+                                              {% if last_click_button_entity_state in ["mowing", "returning"] %}
                                                 lawn_mower.pause
                                               {% else %}
                                                 lawn_mower.start_mowing
