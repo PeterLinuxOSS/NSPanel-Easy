@@ -185,7 +185,7 @@ Text bt_oscillate
     
     Events
         Touch Release Event
-            bt_oscillate.pco=31
+            bt_oscillate.pco=color_pco_highlight
         
 Text power_button
     Attributes

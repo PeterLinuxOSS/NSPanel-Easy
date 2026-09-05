@@ -152,6 +152,7 @@ api:
             else if (entity_id.domain == "input_boolean")       entity_id.domain = "switch";
             else if (entity_id.domain == "input_button")        entity_id.domain = "button";
             else if (entity_id.domain == "input_select")        entity_id.domain = "select";
+            else if (entity_id.domain == "lawn_mower")          entity_id.domain = "vacuum";
             #ifdef NSPANEL_EASY_ADDON_CLIMATE_BASE
             if (entity == "embedded_climate")                   entity_id.domain = "climate";
             #endif  // NSPANEL_EASY_ADDON_CLIMATE_BASE

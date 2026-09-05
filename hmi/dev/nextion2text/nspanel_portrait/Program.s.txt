@@ -18,6 +18,7 @@ Program.s
     int color_pco_secondary=52857  // Foreground font color for secondary information
     int color_pco_navigation=33808  // Foreground font color for navigation components, like back button or page index
     int color_pco_unsupported=6339  // Foreground font color for unsupported or unavailable components
+    int color_pco_highlight=31  // Foreground font color for highlighted or pending-action components
     int button_back_font=8
     int chip_font=7
     int chips_screensaver=1
