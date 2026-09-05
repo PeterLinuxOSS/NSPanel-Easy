@@ -6712,9 +6712,15 @@ actions:
           alarm_control_panel:
             "on": ["armed_home", "armed_away", "armed_vacation", "armed_custom_bypass", "triggered", "pending", "arming"]
             "off": ["disarmed", "disarming"]
+          lawn_mower:
+            "on": ["mowing", "returning"]
+            "off": ["docked", "paused", "error"]
           lock:
             "on": ["unlocked"]
             "off": ["locked"]
+          vacuum:
+            "on": ["cleaning", "returning"]
+            "off": ["docked", "paused", "idle", "error"]
       # yamllint disable rule:comments-indentation
       # yamllint enable rule:truthy rule:line-length
       # yamllint enable rule:comments-indentation
