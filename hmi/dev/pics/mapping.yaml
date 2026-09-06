@@ -147,6 +147,50 @@
   portrait:
     coordinates: "119,143"
     dimensions: "83x233"
+- id: cover_slider_pair_active
+  src: cover/cover_slider_active.png
+  note: "Cover position slider next to the tilt slider - active / pressed state"
+  dark: 104
+  light: 105
+  landscape:
+    coordinates: "145,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "65,143"
+    dimensions: "83x233"
+- id: cover_slider_pair_inactive
+  src: cover/cover_slider_inactive.png
+  note: "Cover position slider next to the tilt slider - inactive state"
+  dark: 106
+  light: 107
+  landscape:
+    coordinates: "145,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "65,143"
+    dimensions: "83x233"
+- id: cover_tilt_slider_active
+  src: cover/cover_tilt_slider_active.png
+  note: "Cover tilt slider - active / pressed state"
+  dark: 108
+  light: 109
+  landscape:
+    coordinates: "252,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "172,143"
+    dimensions: "83x233"
+- id: cover_tilt_slider_inactive
+  src: cover/cover_tilt_slider_inactive.png
+  note: "Cover tilt slider - inactive state"
+  dark: 110
+  light: 111
+  landscape:
+    coordinates: "252,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "172,143"
+    dimensions: "83x233"
 
 # -----------------------------------------------------------------------------
 # Fan page
