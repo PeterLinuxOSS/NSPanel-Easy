@@ -149,9 +149,9 @@
     dimensions: "83x233"
 - id: cover_slider_pair_active
   src: cover/cover_slider_active.png
-  note: "Cover position slider next to the tilt slider - active / pressed state"
+  note: "Cover position slider next to the tilt slider - active / pressed state, dark theme"
   dark: 104
-  light: 105
+  light: null
   landscape:
     coordinates: "145,67"
     dimensions: "83x233"
@@ -171,8 +171,30 @@
     dimensions: "83x233"
 - id: cover_tilt_slider_active
   src: cover/cover_tilt_slider_active.png
-  note: "Cover tilt slider - active / pressed state"
+  note: "Cover tilt slider - active / pressed state, dark theme"
   dark: 108
+  light: null
+  landscape:
+    coordinates: "252,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "172,143"
+    dimensions: "83x233"
+- id: cover_slider_pair_active_light
+  src: cover/cover_slider_active_light.png
+  note: "Cover position slider next to the tilt slider - active / pressed state, light theme"
+  dark: null
+  light: 105
+  landscape:
+    coordinates: "145,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "65,143"
+    dimensions: "83x233"
+- id: cover_tilt_slider_active_light
+  src: cover/cover_tilt_slider_active_light.png
+  note: "Cover tilt slider - active / pressed state, light theme"
+  dark: null
   light: 109
   landscape:
     coordinates: "252,67"
