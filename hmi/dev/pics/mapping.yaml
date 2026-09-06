@@ -159,7 +159,7 @@
     coordinates: "119,143"
     dimensions: "83x233"
 - id: cover_slider_inactive_light
-  src: cover/cover_slider_inactive.png
+  src: cover/cover_slider_inactive_light.png
   note: "Cover slider - inactive state, light theme"
   dark: null
   light: 113
@@ -182,8 +182,19 @@
     dimensions: "83x233"
 - id: cover_slider_pair_inactive
   src: cover/cover_slider_inactive.png
-  note: "Cover position slider next to the tilt slider - inactive state"
+  note: "Cover position slider next to the tilt slider - inactive state, dark theme"
   dark: 106
+  light: null
+  landscape:
+    coordinates: "145,67"
+    dimensions: "83x233"
+  portrait:
+    coordinates: "65,143"
+    dimensions: "83x233"
+- id: cover_slider_pair_inactive_light
+  src: cover/cover_slider_inactive_light.png
+  note: "Cover position slider next to the tilt slider - inactive state, light theme"
+  dark: null
   light: 107
   landscape:
     coordinates: "145,67"
