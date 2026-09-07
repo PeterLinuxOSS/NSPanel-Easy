@@ -9340,7 +9340,9 @@ actions:
                                       # Each button has its own pictures, as the generator bakes the
                                       # background into the rounded corners: four slots per position,
                                       # active and inactive in both themes.
-                                      panel_theme_light: '{{ states(background_type) | lower == "light" }}'
+                                      # The option is named "Light (Under construction)" today, so
+                                      # match the prefix rather than the whole string.
+                                      panel_theme_light: '{{ states(background_type) | lower is match("light") }}'
                                   - action: 'esphome.{{ nspanel_name }}_component_text_list'
                                     data:
                                       page: mem
