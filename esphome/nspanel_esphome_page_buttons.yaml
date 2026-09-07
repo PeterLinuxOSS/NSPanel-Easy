@@ -51,6 +51,7 @@ api:
             if (current_page_id != page_id) {
               ESP_LOGW("${TAG_PAGE_BUTTONS}", "Skipping button render: page '%s' not active (current: '%s')",
                                       page.c_str(), page_names[current_page_id]);
+              id(buttons_render_aborted) = true;
               return;
             }
 
@@ -65,6 +66,14 @@ api:
               label.c_str(),
               is_page_render
             );
+
+globals:
+  # Set when a tile render was cut short by a page change, so the tile is left
+  # with the background of one state and the colours of the other.
+  - id: buttons_render_aborted
+    type: bool
+    restore_value: false
+    initial_value: 'false'
 
 esphome:
   build_flags:
@@ -125,14 +134,23 @@ script:
           }
 
           // Foreground colors
-          if (current_page_id != page_id) return;
+          if (current_page_id != page_id) {
+            // The page changed while this tile was being drawn, so it now carries
+            // the background of one state and the colours of the other. Remember it
+            // and ask Home Assistant for a fresh render when the page returns.
+            id(buttons_render_aborted) = true;
+            return;
+          }
           disp1->set_component_foreground_color(comp_bri, fg_color);
           disp1->set_component_foreground_color(comp_text, fg_color);
           disp1->set_component_font_color(comp_icon, icon_color);
           disp1->set_component_font(comp_icon, icon_font);
 
           // Text content
-          if (current_page_id != page_id) return;
+          if (current_page_id != page_id) {
+            id(buttons_render_aborted) = true;
+            return;
+          }
           disp1->set_component_text(comp_icon, icon.c_str());
           disp1->set_component_text(comp_bri, (strcmp(bri.c_str(), "0") == 0) ? " " : bri.c_str());
 
@@ -140,4 +158,19 @@ script:
           if (is_page_render) {
             disp1->set_component_text(comp_text, wrapText(label.c_str(), 10, ${LANG_BYTES_PER_CHAR}).c_str());
           }
+
+  - id: !extend page_change
+    then:
+      - lambda: |-
+          // A cut-short render leaves the tile half-painted and nothing repaints it,
+          // so ask Home Assistant to render the page again once it is back.
+          if (!id(buttons_render_aborted)) return;
+          const std::string page_name = page_names[new_page_id];
+          if (page_name.rfind("buttonpage", 0) != 0) return;
+          id(buttons_render_aborted) = false;
+          ESP_LOGD("${TAG_PAGE_BUTTONS}", "Re-rendering '%s' after an aborted render", page_name.c_str());
+          fire_ha_event("page_changed", {
+            {"page", page_name.c_str()},
+            {"entity", detailed_entity->state.c_str()}
+          });
 ...
