@@ -9348,8 +9348,10 @@ actions:
                                       id: command
                                       txt_list: >-
                                         {% set ns = namespace(items=[]) %}
+                                        {% set running = states(entity_id) == "on" %}
                                         {% for mode in preset_modes_raw %}
-                                          {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".val=" ~ (1 if mode == current_preset_mode else 0)] %}
+                                          {% set active = running and mode == current_preset_mode %}
+                                          {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".val=" ~ (1 if active else 0)] %}
                                         {% endfor %}
                                         {{ ns.items }}
                                     continue_on_error: true
