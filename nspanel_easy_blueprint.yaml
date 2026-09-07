@@ -9347,11 +9347,13 @@ actions:
                                       id: command
                                       txt_list: >-
                                         {% set ns = namespace(items=[]) %}
+                                        {% set shift = 1 if panel_theme_light else 0 %}
                                         {% for mode in preset_modes_raw %}
                                           {% set base = 114 + (loop.index0 * 4) %}
-                                          {% set slot = base + (0 if mode == current_preset_mode else 2) + (1 if panel_theme_light else 0) %}
-                                          {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".picc=" ~ slot] %}
-                                          {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".pco=65535"] %}
+                                          {% set button = "mode_bt" ~ loop.index %}
+                                          {% set ns.items = ns.items + [button ~ ".pic=" ~ (base + 2 + shift)] %}
+                                          {% set ns.items = ns.items + [button ~ ".pic2=" ~ (base + shift)] %}
+                                          {% set ns.items = ns.items + [button ~ ".val=" ~ (1 if mode == current_preset_mode else 0)] %}
                                         {% endfor %}
                                         {{ ns.items }}
                                     continue_on_error: true
