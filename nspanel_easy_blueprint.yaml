@@ -11655,11 +11655,17 @@ actions:
                                 name: '{{ last_click_button.name if last_click_button.name is defined else None }}'
                           - condition: '{{ entity_id is string and entity_id | length >= 3 }}'
                           - *variable_entity
+                          - variables:
+                              supported_features: '{{ state_attr(entity_id, "supported_features") | int(0) if entity_id_valid else 0 }}'
                           - choose:
                               - alias: Long click
                                 conditions:
-                                  - '{{ nspanel_event.command == "long_click" or
-                                        entity_domain in domains_functionality.detailed_only }}'
+                                  - >-
+                                    {{
+                                      nspanel_event.command == "long_click" or
+                                      entity_domain in domains_functionality.detailed_only or
+                                      (entity_domain == "cover" and supported_features | bitwise_and(132) > 0)
+                                    }}
                                   - '{{ entity_domain in domains_functionality.detailed }}'
                                   - >-
                                     {{
@@ -11669,7 +11675,7 @@ actions:
                                   - >-
                                     {{
                                       entity_domain != "fan" or
-                                      (state_attr(entity_id, "supported_features") | int(0) | bitwise_and(11) > 0)
+                                      (supported_features | bitwise_and(11) > 0)
                                     }}
                                 sequence:
                                   - variables:
