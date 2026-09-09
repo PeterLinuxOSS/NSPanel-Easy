@@ -6720,6 +6720,19 @@ actions:
           - select
           - vacuum
           - water_heater
+        # Single source of truth for "does a tap on this entity open its detail card
+        # instead of performing the short-press action?" — shared by every place that
+        # renders per-entity buttons (Home page, Buttons pages), so a capability added
+        # for one can't silently miss the other. Requires variables_light_modes to
+        # already have run in the calling scope (entity_domain, supported_features,
+        # color_mode_brightness/color/temp).
+        click_opens_details: &click_opens_details_condition >-
+          {{
+            entity_domain in domains_functionality.detailed_only or
+            (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
+            (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
+            (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+          }}
 
       # yamllint disable rule:truthy rule:line-length rule:comments-indentation
       enum:
@@ -11655,17 +11668,13 @@ actions:
                                 name: '{{ last_click_button.name if last_click_button.name is defined else None }}'
                           - condition: '{{ entity_id is string and entity_id | length >= 3 }}'
                           - *variable_entity
+                          - *variables_light_modes
                           - variables:
-                              supported_features: '{{ state_attr(entity_id, "supported_features") | int(0) if entity_id_valid else 0 }}'
+                              click_opens_details: *click_opens_details_condition
                           - choose:
                               - alias: Long click
                                 conditions:
-                                  - >-
-                                    {{
-                                      nspanel_event.command == "long_click" or
-                                      entity_domain in domains_functionality.detailed_only or
-                                      (entity_domain == "cover" and supported_features | bitwise_and(132) > 0)
-                                    }}
+                                  - '{{ nspanel_event.command == "long_click" or click_opens_details }}'
                                   - '{{ entity_domain in domains_functionality.detailed }}'
                                   - >-
                                     {{
@@ -11940,14 +11949,9 @@ actions:
                                 name: '{{ last_click_button.name if last_click_button.name is defined else None }}'
                           - *variables_light_modes
                           - condition: '{{ entity_id_valid }}'
-                          - if: >
-                              {{
-                                entity_domain in domains_functionality.detailed_only or
-                                (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
-                                (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
-                                (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp)) or
-                                (entity_domain == "timer")
-                              }}
+                          - variables:
+                              click_opens_details: *click_opens_details_condition
+                          - if: '{{ click_opens_details or entity_domain == "timer" }}'
                             then:
                               - variables:
                                   back_page: '{{ pages.home }}'
