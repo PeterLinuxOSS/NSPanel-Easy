@@ -6720,19 +6720,6 @@ actions:
           - select
           - vacuum
           - water_heater
-        # Single source of truth for "does a tap on this entity open its detail card
-        # instead of performing the short-press action?" — shared by every place that
-        # renders per-entity buttons (Home page, Buttons pages), so a capability added
-        # for one can't silently miss the other. Requires variables_light_modes to
-        # already have run in the calling scope (entity_domain, supported_features,
-        # color_mode_brightness/color/temp).
-        click_opens_details: &click_opens_details_condition >-
-          {{
-            entity_domain in domains_functionality.detailed_only or
-            (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
-            (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
-            (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
-          }}
 
       # yamllint disable rule:truthy rule:line-length rule:comments-indentation
       enum:
@@ -8867,6 +8854,17 @@ actions:
                                   )
                                 }}
                               effects_available: '{{ entity_domain_is_light and supported_features | bitwise_and(4) > 0 }}'
+                              # Single source of truth for "does a tap on this entity open its detail
+                              # card instead of performing the short-press action?" — shared by every
+                              # place that renders per-entity buttons (Home page, Buttons pages), so a
+                              # capability added for one can't silently miss the other.
+                              click_opens_details: &click_opens_details_condition >-
+                                {{
+                                  entity_domain in domains_functionality.detailed_only or
+                                  (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
+                                  (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
+                                  (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+                                }}
 
                           ##### LIGHT State #####
                           - alias: Light brightness
@@ -11669,8 +11667,6 @@ actions:
                           - condition: '{{ entity_id is string and entity_id | length >= 3 }}'
                           - *variable_entity
                           - *variables_light_modes
-                          - variables:
-                              click_opens_details: *click_opens_details_condition
                           - choose:
                               - alias: Long click
                                 conditions:
@@ -11949,8 +11945,6 @@ actions:
                                 name: '{{ last_click_button.name if last_click_button.name is defined else None }}'
                           - *variables_light_modes
                           - condition: '{{ entity_id_valid }}'
-                          - variables:
-                              click_opens_details: *click_opens_details_condition
                           - if: '{{ click_opens_details or entity_domain == "timer" }}'
                             then:
                               - variables:
