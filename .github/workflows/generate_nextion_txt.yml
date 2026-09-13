@@ -57,7 +57,7 @@ jobs:
 
       - name: Upload regenerated output
         if: steps.drift.outputs.changed == 'true'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: nextion2text
           path: hmi/dev/nextion2text
@@ -88,7 +88,7 @@ jobs:
         run: rm -rf hmi/dev/nextion2text
 
       - name: Download regenerated output
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: nextion2text
           path: hmi/dev/nextion2text
