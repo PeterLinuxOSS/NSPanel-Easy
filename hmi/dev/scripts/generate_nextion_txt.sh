@@ -43,7 +43,7 @@ fi  # python missing
 if [[ ! -f "${TOOL}" ]]; then
     echo "Fetching Nextion2Text @ ${NEXTION2TEXT_REF:0:7}"
     mkdir -p "${CACHE_DIR}"
-    curl -sSfL "${NEXTION2TEXT_URL}" -o "${TOOL}.tmp"
+    curl --connect-timeout 15 --max-time 120 --retry 3 --retry-connrefused -sSfL "${NEXTION2TEXT_URL}" -o "${TOOL}.tmp"
     mv "${TOOL}.tmp" "${TOOL}"
 fi  # tool not cached
 
