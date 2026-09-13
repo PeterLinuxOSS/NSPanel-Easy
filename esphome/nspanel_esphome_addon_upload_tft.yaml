@@ -14,6 +14,8 @@ substitutions:
   nextion_update_url: ""
   upload_tft_automatically: true
   upload_tft_wait_ms_after_setup: 65432  # 65sec - To avoid triggering a reboot before boot is flagged as good
+  tft_upload_http_timeout: 10s
+  tft_upload_watchdog_timeout: 15s
   ##############################################
   TAG_UPLOAD_TFT: "nspanel.addon.upload_tft"
   DISPLAY_MODES_BLANK_TEXT: ${DISPLAY_MODES.BLANK.TEXT}
@@ -112,8 +114,8 @@ button:
 display:
   - id: !extend disp1
     exit_reparse_on_start: true
-    tft_upload_http_timeout: 10s
-    tft_upload_watchdog_timeout: 15s
+    tft_upload_http_timeout: ${tft_upload_http_timeout}
+    tft_upload_watchdog_timeout: ${tft_upload_watchdog_timeout}
     tft_url: "http://unused"  # This is an intentional placeholder URL and will be replaced dynamically
     on_setup:
       then:
