@@ -189,8 +189,9 @@ esp32:
 - **Solution**: Try another http server installed in your computer.
 There are many options available for free to run under your local Windows, macOS, or Linux machine.
 - **Examples**: Just to name some:
+
   | Solution | Website | Supported OSs | Pros | Cons |
-  |----------|---------|---------------|------|------|
+  | ---------- | --------- | --------------- | ------ | ------ |
   | NGINX | [nginx.org](https://nginx.org/en/) | Linux, Windows, macOS | High performance, efficient for static content, good for high concurrency | Configuration can be complex for beginners |
   | IIS | [Microsoft Web Platform](https://www.microsoft.com/web/downloads/platform.aspx) | Windows | Integrated with Windows, GUI for setup, good for Windows environments | Limited to Windows OS |
   | Apache | [httpd.apache.org](https://httpd.apache.org/) | Linux, Windows, macOS | Highly reliable and flexible, wide OS compatibility, extensive customization | Can be less efficient under high load than NGINX |
