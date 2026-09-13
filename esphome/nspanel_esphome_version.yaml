@@ -52,7 +52,7 @@ script:
   - id: !extend boot_early_routines
     then:
       - text_sensor.template.publish:
-          id: version_esphome
+          id: version_firmware
           state: ${version}
 
   - id: check_versions
@@ -182,13 +182,15 @@ script:
       - script.wait: wait_for_version_blueprint
 
 text_sensor:
-  - id: version_esphome
-    name: "Version - ESPHome"
+  - id: version_firmware
+    name: "Version - Firmware"
     platform: template
     entity_category: diagnostic
     icon: mdi:tag-text-outline
     internal: false
     update_interval: never
+    # Holds the NSPanel Easy firmware version (${version}), not the version of
+    # the ESPHome framework used to compile it. See issue #386.
     # Published by boot_early_routines during boot sequence.
 
   - id: version_blueprint
