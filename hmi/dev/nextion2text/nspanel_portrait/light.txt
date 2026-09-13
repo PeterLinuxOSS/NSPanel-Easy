@@ -1208,7 +1208,7 @@ Timer features
             if(light_features_mask>0)
             {
                 features.en=0
-                // Feature mask: bit0=brightness, bit1=temp, bit2=color, bit3=onoff
+                // Feature mask: bit0=brightness, bit1=temp, bit2=color, bit3=effects
                 // Show tab buttons for supported features only; activate highest-priority tab
                 sys0=light_features_mask&1
                 sys1=0
