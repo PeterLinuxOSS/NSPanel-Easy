@@ -171,7 +171,7 @@ models defined in the base firmware:
 | NSPanel US Landscape | `nspanel_landscape.tft` | US hardware mounted in landscape |
 | NSPanel Blank | `nspanel_blank.tft` | First-time installation only. See [NSPanel Blank](nspanel_blank.md) |
 
-### Example: Automatic updates with a shorter wait time
+### Example: Automatic updates with a longer wait time
 
 ```yaml
 substitutions:
@@ -184,7 +184,7 @@ substitutions:
 
   # Upload TFT configuration
   upload_tft_automatically: true
-  upload_tft_wait_ms_after_setup: 120000  # Wait 2 minutes after setup instead of 29s
+  upload_tft_wait_ms_after_setup: 120000  # Wait 2 minutes after setup instead of ~65s
 
 packages:
   remote_package:
