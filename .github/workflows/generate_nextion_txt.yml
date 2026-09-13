@@ -7,7 +7,7 @@ on:
     paths:
       - 'hmi/**.hmi'
       - 'hmi/dev/nextion2text/**'
-      - 'hmi/dev/scripts/generate_nextion_txt.sh'
+      - 'hmi/dev/scripts/**'
       - '.github/workflows/generate_nextion_txt.yml'
   workflow_dispatch:
 
