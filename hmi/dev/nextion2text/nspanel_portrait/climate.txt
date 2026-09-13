@@ -217,7 +217,7 @@ Variable (string) temp_unit
     Attributes
         ID            : 48
         Scope         : local
-        Text          : °
+        Text          : \xc2\xb0
         Max. Text Size: 10
     
 Variable (int32) temp_low_max
@@ -569,7 +569,7 @@ Text button01
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\xba\x8d
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -605,7 +605,7 @@ Text button02
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\x81\xa9
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -641,7 +641,7 @@ Text button03
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\x88\xb7
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -677,7 +677,7 @@ Text button04
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\x9c\x96
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -713,7 +713,7 @@ Text button05
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\x96\x8d
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -749,7 +749,7 @@ Text button06
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\x88\x8f
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -785,7 +785,7 @@ Text button07
         Horizontal Alignment    : center
         Vertical Alignment      : center
         Input Type              : character
-        Text                    : 
+        Text                    : \xee\x90\xa4
         Max. Text Size          : 3
         Word wrap               : disabled
         Horizontal Spacing      : 0
@@ -1143,7 +1143,7 @@ Button button_back
         Horizontal Alignment                : center
         Vertical Alignment                  : center
         State                               : unpressed
-        Text                                : 
+        Text                                : \xee\x85\x98
         Max. Text Size                      : 3
         Word wrap                           : disabled
         Horizontal Spacing                  : 0
