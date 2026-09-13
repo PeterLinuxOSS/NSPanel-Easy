@@ -104,6 +104,22 @@ Pay special attention to memory-intensive customizations.
 - **Solution**: Use the IP address of your Home Assistant directly.
 - **Example**: Replace `http://homeassistant.local:8123/local/nspanel_blank.tft` with `http://192.168.0.100:8123/local/nspanel_blank.tft`.
 
+### Increase the Upload Timeouts
+
+- **Issue**: The upload starts normally but aborts partway, often on slow or congested networks, or when the file is served by a busy Home Assistant instance.
+The ESPHome logs show the HTTP request timing out or the upload watchdog aborting the transfer.
+- **Solution**: Raise `tft_upload_http_timeout` and `tft_upload_watchdog_timeout` in your panel's YAML.
+The defaults are `10s` and `15s`, which are enough for a healthy local network.
+
+```yaml
+substitutions:
+  tft_upload_http_timeout: 30s
+  tft_upload_watchdog_timeout: 45s
+```
+
+- **Additional Guidance**: Keep the watchdog timeout above the HTTP timeout, otherwise the watchdog aborts the transfer before a slow request has a chance to complete.
+These settings require the [Upload TFT add-on](addon_upload_tft.md) and have no effect without it.
+
 ### Check the File Size by Downloading to Your Computer
 
 - **Issue**: Ensuring the file size matches the GitHub version.
