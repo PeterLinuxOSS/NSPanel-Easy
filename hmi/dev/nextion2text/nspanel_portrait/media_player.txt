@@ -589,7 +589,7 @@ Slider vol_slider
             vol_text.txt=va0.txt+"%"
             timer0.en=1
         
-        codesslide
+        Touch Move Event
             covx vol_slider.val,va0.txt,0,0
             vol_text.txt=va0.txt+"%"
             timer0.en=1

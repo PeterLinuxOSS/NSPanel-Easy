@@ -305,7 +305,7 @@ Slider coverslider2
             printh 00
             printh FF FF FF
         
-        codesslide
+        Touch Move Event
             covx coverslider2.val,va1.txt,0,0
             cover_value_2.txt=va1.txt
             cover_value_2.txt+=home.units_sep.txt
@@ -349,7 +349,7 @@ Slider coverslider
             printh 00
             printh FF FF FF
         
-        codesslide
+        Touch Move Event
             covx coverslider.val,va1.txt,0,0
             cover_value.txt=va1.txt
             cover_value.txt+=home.units_sep.txt
@@ -393,7 +393,7 @@ Slider tiltslider
             printh 00
             printh FF FF FF
         
-        codesslide
+        Touch Move Event
             covx tiltslider.val,va1.txt,0,0
             tilt_value.txt=va1.txt
             tilt_value.txt+=home.units_sep.txt

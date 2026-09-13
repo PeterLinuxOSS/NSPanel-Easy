@@ -301,7 +301,7 @@ Slider fanslider
             }
             timer0.en=1
         
-        codesslide
+        Touch Move Event
             sys0=100*fanslider.val/fanslider.maxval
             covx sys0,va0.txt,0,0
             fan_value.txt=va0.txt

@@ -814,7 +814,7 @@ Slider slider
             target.txt+=temp_unit.txt
             timer0.en=1
         
-        codesslide
+        Touch Move Event
             temp_number0.val=slider.val*temp_step.val
             temp_number0.val+=temp_offset.val
             va0.val=temp_number0.val/10

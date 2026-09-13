@@ -345,7 +345,7 @@ Slider brightslider
         Touch Release Event
             tm_bright.en=1
         
-        codesslide
+        Touch Move Event
             covx brightslider.val,bright_text.txt,0,0
             bright_text.txt+="%"
             dim=brightslider.val
@@ -378,7 +378,7 @@ Slider dimslider
         Touch Release Event
             tm_dim.en=1
         
-        codesslide
+        Touch Move Event
             covx dimslider.val,dim_text.txt,0,0
             dim_text.txt+="%"
         

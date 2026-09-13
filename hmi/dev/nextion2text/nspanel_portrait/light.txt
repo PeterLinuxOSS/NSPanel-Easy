@@ -595,7 +595,7 @@ Slider lightslider
             printh 00
             printh FF FF FF
         
-        codesslide
+        Touch Move Event
             covx lightslider.val,va1.txt,0,0
             light_value.txt=va1.txt
             light_value.txt+=home.units_sep.txt
@@ -646,7 +646,7 @@ Slider tempslider
             printh 00
             printh FF FF FF
         
-        codesslide
+        Touch Move Event
             sys0=tempslider.minval+tempslider.maxval-tempslider.val
             covx sys0,va1.txt,0,0
             temp_value.txt=va1.txt
