@@ -22,7 +22,7 @@ English will be used as a fallback.
 
 After changing the language, you must recompile and flash your panel for the change to take effect.
 
-## Supported Languages
+### Supported Languages
 
 | Code | Language |
 | :--- | :------- |
@@ -87,7 +87,21 @@ After changing the language, you must recompile and flash your panel for the cha
 > relevant character set. If your panel displays boxes or question marks instead of characters,
 > your TFT file may not include the required font glyphs.
 
-## Missing Your Language?
+### Missing Your Language?
 
 If your language is not listed, please [open a feature request](https://github.com/edwardtfn/NSPanel-Easy/issues/new)
 and it will be added in a future release.
+
+## Temperature Unit
+
+The temperature unit is set in two places, and both must match.
+
+- **Blueprint**: the "Temperature Unit" option under Localization. This applies to values the Blueprint renders and sends to the panel.
+- **ESPHome**: the `temp_units` substitution in your panel's YAML. This applies to values the panel renders on its own, including while Home Assistant is unreachable.
+
+```yaml
+substitutions:
+  temp_units: "°F"
+```
+
+Setting only one of them leaves the panel showing a mix of units.

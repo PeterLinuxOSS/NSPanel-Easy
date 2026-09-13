@@ -104,7 +104,9 @@ The following keys are available to be used in your `substitutions`:
 | Key | Required | Supported values | Default | Description |
 | :- | :-: | :-: | :-: | :- |
 | `upload_tft_automatically` | Optional | `true` or `false` | `true` | When enabled, the device will automatically upload the TFT file when a version mismatch is detected after boot. When disabled, you must manually press the "Update TFT display" button in Home Assistant. |
-| `upload_tft_wait_ms_after_setup` | Optional | Positive integer (milliseconds) | `300000` (5 min) | Time to wait after display setup completes before starting an automatic TFT upload. This delay allows the system to stabilize after boot. Reduce for faster updates; increase if you experience boot instability. |
+| `upload_tft_wait_ms_after_setup` | Optional | Positive integer (milliseconds) | `65432` (~65 s) | Time to wait after display setup completes before starting an automatic TFT upload. This delay allows the system to stabilize after boot. Reduce for faster updates; increase if you experience boot instability. |
+| `tft_upload_http_timeout` | Optional | Duration (e.g. `10s`, `30s`) | `10s` | How long to wait for the HTTP server to respond while downloading the TFT file. Raise this when the file is served over a slow or congested network, or by a busy Home Assistant instance. |
+| `tft_upload_watchdog_timeout` | Optional | Duration (e.g. `15s`, `45s`) | `15s` | How long the upload may stall before the watchdog aborts the transfer. Keep it above `tft_upload_http_timeout`, otherwise the watchdog aborts before a slow request has a chance to complete. |
 | `nextion_update_base_url` | Optional | Valid HTTP/HTTPS base URL | `https://raw.githubusercontent.com/edwardtfn/NSPanel-Easy/v${version}/hmi` | Base URL used when building the TFT download URL automatically. Override this to host TFT files on a local server while still benefiting from automatic model and version selection. |
 | `nextion_update_url` | Optional | Valid HTTP/HTTPS URL | _(empty)_ | Full URL override for the TFT file. When set, this takes absolute priority. The model selector and version logic are completely bypassed and this URL is used as-is. Use only when you need full control over the TFT source, such as for custom TFT files. See [important note below](#nextion_update_url-behaviour). |
 | `include_action_upload_tft` | Optional | `true` or `false` | `false` | When set to `true`, registers the `upload_tft` API action, allowing the TFT upload to be triggered from Home Assistant scripts or automations via `esphome.<panel>_upload_tft`. Disabled by default to reduce memory usage at boot. See [important note below](#include_action_upload_tft-behaviour). |
@@ -171,7 +173,7 @@ models defined in the base firmware:
 | NSPanel US Landscape | `nspanel_landscape.tft` | US hardware mounted in landscape |
 | NSPanel Blank | `nspanel_blank.tft` | First-time installation only. See [NSPanel Blank](nspanel_blank.md) |
 
-### Example: Automatic updates with a shorter wait time
+### Example: Automatic updates with a longer wait time
 
 ```yaml
 substitutions:
@@ -184,7 +186,7 @@ substitutions:
 
   # Upload TFT configuration
   upload_tft_automatically: true
-  upload_tft_wait_ms_after_setup: 120000  # Wait 2 minutes after setup instead of 29s
+  upload_tft_wait_ms_after_setup: 120000  # Wait 2 minutes after setup instead of ~65s
 
 packages:
   remote_package:

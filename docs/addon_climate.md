@@ -73,7 +73,7 @@ The following keys are available to be used in your `substitutions`:
 | :- | :-: | :-: | :-: | :- |
 | cooler_relay | Mandatory for *cool* and *dual* | `1` or `2` | `0` (disabled) | Relay used to control the cooler. Use `1` for "Relay 1" or `2` for "Relay 2". |
 | heater_relay | Mandatory for *heat* and *dual* | `1` or `2` | `0` (disabled) | Relay used to control the heater. Use `1` for "Relay 1" or `2` for "Relay 2". |
-| temp_units | Optional | `°C` or `°F` | `°C` | Temperature unit. |
+| temp_units | Optional | `°C` or `°F` | `°C` | Temperature unit used by everything the panel renders locally, not just this add-on. It is defined in the core package, so setting it here also changes the embedded temperature sensor and the Blueprint must be set to the same unit. See [Localization](localization.md#temperature-unit). |
 | min_off_time | Optional | Positive integer representing the number of seconds | `300` | Minimum duration (in seconds) the cooling/heating action must be disengaged before it may be engaged. |
 | min_run_time | Optional | Positive integer representing the number of seconds | `300` | Minimum duration (in seconds) the cooling/heating action must be engaged before it may be disengaged. |
 | min_idle_time | Optional | Positive integer representing the number of seconds | `30` | Minimum duration (in seconds) the idle action must be active before calling another climate action. |
