@@ -2,23 +2,26 @@
 """
 nextion2text_shim.py
 
-Runs the pinned upstream Nextion2Text.py unmodified on any platform.
+Runs the pinned upstream Nextion2Text.py unmodified on any platform, producing
+the same pure-ASCII output format the project has always tracked.
 
-Nextion2Text was written for Windows and relies on two Windows behaviours:
+Nextion2Text was written for Windows and relies on two behaviours that do not
+survive a move to Linux:
 
 1. It decodes HMI strings with the "ansi" codec, which exists only on Windows.
-   There it is an alias for "mbcs", which calls MultiByteToWideChar without
-   MB_ERR_INVALID_CHARS: on a Western European system that is Windows-1252 with
-   the five undefined byte values (0x81, 0x8D, 0x8F, 0x90, 0x9D) passed through
-   to the identical C1 control code points rather than rejected. Python's own
-   cp1252 codec rejects those five bytes, and HMI files do contain them.
+   This shim registers "ansi" as an alias for iso-8859-1, which maps every byte
+   value to the identical code point and therefore never rejects input. That
+   matters because HMI files contain bytes cp1252 leaves undefined.
 
-2. It opens its output files with no explicit encoding. On Windows the locale
-   encoding is the same ANSI code page, so the decode above and the re-encode on
-   write cancel out and the original HMI bytes end up in the file. Under a UTF-8
-   locale they no longer cancel and every non-ASCII byte is doubled.
+2. It opens its output files with no explicit encoding, so the result depends on
+   the machine's locale. This shim pins that to ASCII with backslashreplace, so
+   every non-ASCII code point is written back as \\xHH. Combined with the
+   latin-1 decode above, each original HMI byte reappears as its own escape:
+   the MDI icon b"\\xee\\x92\\x97" is written as the text \\xee\\x92\\x97.
 
-This shim supplies both, so the output is byte-identical to a local Windows run.
+The result is byte-for-byte reproducible on any platform and contains no
+non-ASCII characters, which keeps the generated dumps readable in diffs.
+
 The upstream file is left untouched, so the pinned revision stays verifiable
 against its source.
 
@@ -28,87 +31,20 @@ Usage:
 
 import builtins
 import codecs
-import encodings.cp1252
 import runpy
 import sys
 
-# Byte values cp1252 leaves undefined but MultiByteToWideChar passes through.
-_PASSTHROUGH_BYTES = (0x81, 0x8D, 0x8F, 0x90, 0x9D)
-
-
-def _build_tables():
-    """Return cp1252's tables with the undefined slots mapped to themselves."""
-    table = list(encodings.cp1252.decoding_table)
-
-    for byte in _PASSTHROUGH_BYTES:
-        table[byte] = chr(byte)
-    # for byte
-
-    decoding_table = "".join(table)
-
-    return decoding_table, codecs.charmap_build(decoding_table)
-# _build_tables
-
-
-_DECODING_TABLE, _ENCODING_TABLE = _build_tables()
-
-
-class _AnsiCodec(codecs.Codec):
-    """Stateless codec over the patched Windows-1252 tables."""
-
-    def encode(self, input, errors="strict"):  # noqa: A002 - codecs API
-        return codecs.charmap_encode(input, errors, _ENCODING_TABLE)
-    # encode
-
-    def decode(self, input, errors="strict"):  # noqa: A002 - codecs API
-        return codecs.charmap_decode(input, errors, _DECODING_TABLE)
-    # decode
-# _AnsiCodec
-
-
-class _AnsiIncrementalEncoder(codecs.IncrementalEncoder):
-    """Incremental encoder; the mapping is stateless, so final is ignored."""
-
-    def encode(self, input, final=False):  # noqa: A002 - codecs API
-        return codecs.charmap_encode(input, self.errors, _ENCODING_TABLE)[0]
-    # encode
-# _AnsiIncrementalEncoder
-
-
-class _AnsiIncrementalDecoder(codecs.IncrementalDecoder):
-    """Incremental decoder; the mapping is stateless, so final is ignored."""
-
-    def decode(self, input, final=False):  # noqa: A002 - codecs API
-        return codecs.charmap_decode(input, self.errors, _DECODING_TABLE)[0]
-    # decode
-# _AnsiIncrementalDecoder
-
-
-class _AnsiStreamWriter(_AnsiCodec, codecs.StreamWriter):
-    pass
-# _AnsiStreamWriter
-
-
-class _AnsiStreamReader(_AnsiCodec, codecs.StreamReader):
-    pass
-# _AnsiStreamReader
-
-
-_ANSI_CODEC_INFO = codecs.CodecInfo(
-    name="ansi",
-    encode=_AnsiCodec().encode,
-    decode=_AnsiCodec().decode,
-    incrementalencoder=_AnsiIncrementalEncoder,
-    incrementaldecoder=_AnsiIncrementalDecoder,
-    streamwriter=_AnsiStreamWriter,
-    streamreader=_AnsiStreamReader,
-)
+# Output encoding for the generated text dumps. ASCII plus backslashreplace is
+# what produces the tracked \xHH escape format; do not change it without
+# regenerating the whole hmi/dev/nextion2text tree.
+_OUTPUT_ENCODING = "ascii"
+_OUTPUT_ERRORS = "backslashreplace"
 
 
 def _lookup_ansi(name):
-    """Resolve the Windows-only "ansi" codec on platforms that lack it."""
+    """Resolve the Windows-only "ansi" codec to iso-8859-1."""
     if name.lower() == "ansi":
-        return _ANSI_CODEC_INFO
+        return codecs.lookup("iso-8859-1")
     # if ansi
 
     return None
@@ -118,16 +54,24 @@ def _lookup_ansi(name):
 _real_open = builtins.open
 
 
-def _open_as_ansi(file, mode="r", buffering=-1, encoding=None,
-                  errors=None, newline=None, closefd=True, opener=None):
-    """Default text-mode files to the ansi codec, as the Windows locale does."""
+def _open_as_ascii(file, mode="r", buffering=-1, encoding=None,
+                   errors=None, newline=None, closefd=True, opener=None):
+    """Pin text-mode output to ASCII with backslashreplace.
+
+    Nextion2Text opens its output with no explicit encoding, which would
+    otherwise make the result depend on the locale of the machine running it.
+    """
     if "b" not in mode and encoding is None:
-        encoding = "ansi"
+        encoding = _OUTPUT_ENCODING
+
+        if errors is None:
+            errors = _OUTPUT_ERRORS
+        # if default error handler
     # if text mode without explicit encoding
 
     return _real_open(file, mode, buffering, encoding,
                       errors, newline, closefd, opener)
-# _open_as_ansi
+# _open_as_ascii
 
 
 def main():
@@ -141,7 +85,7 @@ def main():
 
     # runpy reads the tool's source through io.open_code, not builtins.open,
     # so patching here does not affect how the script itself is loaded.
-    builtins.open = _open_as_ansi
+    builtins.open = _open_as_ascii
 
     tool = sys.argv[1]
     sys.argv = [tool] + sys.argv[2:]  # Hide the shim from the tool's argparse
