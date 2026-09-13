@@ -25,11 +25,12 @@ NEXTION2TEXT_REF="7edf48558208dcf92ba8d9dd649677b06c1362db"
 NEXTION2TEXT_URL="https://raw.githubusercontent.com/MMMZZZZ/Nextion2Text/${NEXTION2TEXT_REF}/Nextion2Text.py"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+CUSTOM_DICT="${SCRIPT_DIR}/nextion2text_dict.py"
 HMI_DIR="$(cd -- "${SCRIPT_DIR}/../.." &>/dev/null && pwd)"
-OUT_ROOT="${HMI_DIR}/dev/nextion2text"
 CACHE_DIR="${HMI_DIR}/dev/.cache"
-TOOL="${CACHE_DIR}/Nextion2Text-${NEXTION2TEXT_REF:0:7}.py"
+OUT_ROOT="${HMI_DIR}/dev/nextion2text"
 SHIM="${SCRIPT_DIR}/nextion2text_shim.py"
+TOOL="${CACHE_DIR}/Nextion2Text-${NEXTION2TEXT_REF:0:7}.py"
 
 PYTHON="${PYTHON:-python3}"
 
@@ -65,6 +66,7 @@ for hmi in "${HMI_FILES[@]}"; do
         -i "${hmi}" \
         -o "${OUT_ROOT}/${name}" \
         -d \
+        -c "${CUSTOM_DICT}" \
         -p visual unknown
 done  # for hmi
 
