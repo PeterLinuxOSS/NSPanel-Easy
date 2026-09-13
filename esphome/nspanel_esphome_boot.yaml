@@ -154,7 +154,10 @@ script:
           if (system_flags.blueprint_ready and step != "display_ack") return;
           static uint32_t last_boot_event_fired = 0;
           const uint32_t now = App.get_loop_component_start_time();
-          if (step != "start" &&
+          // "start" opens the boot sequence and "display_ack" restarts the state replay after an
+          // unexpected display reset, so neither may be dropped. Every other step is a retry and
+          // stays rate-limited to keep a stalled boot from flooding Home Assistant.
+          if (step != "start" && step != "display_ack" &&
               (uint32_t)(now - last_boot_event_fired) < ${BOOT_EVENT_REPEAT_INTERVAL_MS}) return;
           ESP_LOGD("${TAG_BOOT}", "Request blueprint settings");
           fire_ha_event("boot", {{"step", step.c_str()}});
