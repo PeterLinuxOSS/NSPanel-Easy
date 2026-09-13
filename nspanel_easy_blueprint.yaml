@@ -8405,19 +8405,24 @@ actions:
                               - condition: '{{ entity_id_valid }}'
                               - variables:
                                   hvac_action: '{{ state_attr(entity_id, "hvac_action") }}'
+                                  # "Active only" means the system is doing something, which is what
+                                  # hvac_action reports. That attribute is optional, so an entity that
+                                  # does not publish it falls back to its mode: anything but "off"
+                                  # counts as active, since idle cannot be distinguished. Note the
+                                  # vocabularies differ — the state holds modes ("fan_only"), while
+                                  # hvac_action holds actions ("fan"). See #300.
+                                  climate_active: >-
+                                    {{
+                                      hvac_action in ["heating", "cooling", "drying", "fan", "preheating", "defrosting"]
+                                      if hvac_action is string and hvac_action | length > 0 and hvac_action not in enum.states.unknown
+                                      else entity_state not in ["off"] + enum.states.unknown
+                                    }}
                                   climate_chip_visibility: !input climate_chip_visibility
                                   climate_chip_visible: >-
                                     {{
                                       entity_has_value and
                                       climate_chip_visibility != 'never' and
-                                      (
-                                        climate_chip_visibility == 'always' or
-                                        entity_state in ["heating", "cooling", "drying", "fan_only"] or
-                                        (
-                                          entity_state not in ["idle", "off"] and
-                                          hvac_action in ["heating", "cooling", "drying", "fan_only"]
-                                        )
-                                      )
+                                      (climate_chip_visibility == 'always' or climate_active)
                                     }}
                               - action: 'esphome.{{ action_prefix }}_icon'
                                 data:
