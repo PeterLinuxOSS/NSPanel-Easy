@@ -120,6 +120,15 @@ globals:
     restore_value: false
     initial_value: 'false'
 
+  # Raised while the `theme_apply` page is on its way. That page repaints every
+  # themed component from the theme palette, discarding whatever colour the
+  # Blueprint pushed before it, so the next page change spends this flag on
+  # `theme_applied` to let each module restore what it owns.
+  - id: theme_apply_running
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
 nspanel_easy:
   detailed_entity_id: detailed_entity
   nextion_id: disp1
@@ -378,6 +387,13 @@ script:
             resync_display->execute();
           }
 
+          // `theme_apply` carries no `sendme`, so this page change is the first
+          // observable point after it has run and handed the display back.
+          if (id(theme_apply_running)) {
+            id(theme_apply_running) = false;
+            theme_applied->execute();
+          }
+
   - id: reset_globals
     mode: restart
     parameters:
@@ -415,6 +431,7 @@ script:
           reset_globals->stop();
           resync_display->stop();
           set_brightness->stop();
+          theme_applied->stop();
           theme_update->stop();
           theme_update_all->stop();
           theme_update_dark->stop();
@@ -428,6 +445,10 @@ script:
   - id: stop_page_constructors
     mode: single
     then:  # Page home is an exception, as it can be constructed in the background
+
+  - id: theme_applied
+    mode: single
+    then:  # Modules owning a themed component should subscribe themselves to this
 
   - id: theme_update
     then:
@@ -453,6 +474,7 @@ script:
             return;
           }
           // Call page theme_apply
+          id(theme_apply_running) = true;
           disp1->send_command("theme_apply.previous_page.val=dp");
           disp1->send_command("page theme_apply");
 
@@ -607,7 +629,12 @@ script:
             }
             #endif  // NSPANEL_EASY_PAGE_CLIMATE
             if (id(theme_pending_apply)) {
+              // A theme change deferred from the boot page. Spend it here: the
+              // flag is one-shot, and leaving it raised would route every later
+              // wake-up through `theme_apply`.
+              id(theme_pending_apply) = false;
               // Call page theme_apply
+              id(theme_apply_running) = true;
               disp1->send_command_printf("theme_apply.previous_page.val=%" PRIu8, wakeup_page_id);
               disp1->send_command("page theme_apply");
             } else {
