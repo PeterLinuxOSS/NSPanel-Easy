@@ -33,6 +33,7 @@ api:
         bri: string           # Brightness level or other dynamic info to be displayed close to the icon.
         label: string         # Main text label for the button.
         is_page_render: bool  # Set to true when called from a full page render, or false for a single button refresh
+        icon_only: bool       # True for single-component buttons (climate custom buttons), which have no `pic`/`bri`/`text` siblings.
       then:
         - lambda: |-
             const uint16_t icon_color_rgb565 = rgbTo565(icon_color);
@@ -46,6 +47,7 @@ api:
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  bri: %s", bri.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  label: %s", label.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  is_page_render: %s", YESNO(is_page_render));
+            ESP_LOGV("${TAG_PAGE_BUTTONS}", "  icon_only: %s", YESNO(icon_only));
 
             const uint8_t page_id = get_page_id(page.c_str());
             if (current_page_id != page_id) {
@@ -63,7 +65,8 @@ api:
               static_cast<uint8_t>(icon_font),
               bri.c_str(),
               label.c_str(),
-              is_page_render
+              is_page_render,
+              icon_only
             );
 
 esphome:
@@ -84,9 +87,23 @@ script:
       bri: string           # Brightness level or other dynamic info to be displayed close to the icon
       label: string         # Main text label for the button
       is_page_render: bool  # When true, skips picc calls for off-state buttons (Preinitialize already set them)
+      icon_only: bool       # When true, the button is a single text component holding the glyph (climate custom buttons)
     then:
       - lambda: |-
           if (current_page_id != page_id) return;
+
+          // Icon-only buttons (climate page custom buttons) are a single Nextion text
+          // component holding the glyph. There are no `pic`/`bri`/`text` siblings to
+          // address, and no on/off background, so only the glyph, its color and the
+          // visibility are written. Routing them through this script keeps every
+          // per-entity button on a single render path, so behaviour added here cannot
+          // silently miss one of the surfaces.
+          if (icon_only) {
+            disp1->set_component_text(button_id.c_str(), icon.c_str());
+            disp1->set_component_font_color(button_id.c_str(), icon_color);
+            disp1->set_component_visibility(button_id.c_str(), true);
+            return;
+          }  // if (icon_only)
 
           const uint8_t button_pic_id = (current_theme == ThemeMode::LIGHT) ?
                                         ${THEME_PAGE_BUTTONS_LIGHT_PIC_BUTTON} :
