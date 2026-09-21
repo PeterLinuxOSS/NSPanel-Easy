@@ -4611,6 +4611,66 @@ blueprint:
           default: false
           selector:
             boolean: {}
+        unavailable_behavior:
+          name: Unavailable entities - Button appearance
+          description: >-
+            Please select how a button should be shown when the entity it is bound to reports
+            `unavailable`.
+
+
+            This applies to every button bound to an entity: the button pages, the custom buttons on
+            the climate page and the custom buttons on the home page.
+
+
+            *Grey out* keeps the button in place with its own icon greyed, so the layout does not move
+            and the button is visibly not actionable. *Hide* removes it from the page, leaving an empty
+            slot. *Show as off* is the previous behaviour, where an unavailable entity is
+            indistinguishable from one that is simply off.
+
+
+            With *Grey out* or *Hide*, tapping an unavailable button does nothing.
+
+
+            *An entity reporting `unknown` is not affected: a button or script entity that has never
+            run reports `unknown` while remaining perfectly usable.*
+          default: '1'
+          selector:
+            select:
+              multiple: false
+              options:
+                - label: Show as off
+                  value: '0'
+                - label: Grey out
+                  value: '1'
+                - label: Hide
+                  value: '2'
+        button_tap_behavior:
+          name: Buttons - Tap behavior
+          description: >-
+            Please select what a short tap does on a button bound to an entity, on the button pages and
+            on the custom buttons of the home page.
+
+
+            *Toggle* performs the entity's action (on/off, open/close) and opens the detail page only
+            with a long press. Entities that cannot be toggled, like climate or media players, always
+            open their detail page.
+
+
+            *Open details when adjustable* opens the detail page on a tap for covers with position or
+            tilt, fans with speed, oscillation or preset modes, and lights with brightness or color, so their
+            controls are one tap away. Entities that are only on/off still toggle.
+
+
+            *Hardware buttons and the custom buttons on the climate page are not affected.*
+          default: toggle
+          selector:
+            select:
+              multiple: false
+              options:
+                - label: Toggle
+                  value: toggle
+                - label: Open details when adjustable
+                  value: details_when_adjustable
         value_hide_when_zero:
           name: Values - Hide when zero
           description: >-
@@ -6687,6 +6747,12 @@ actions:
 
       ##### GENERAL SETTINGS #####
       hide_if_zero: !input value_hide_when_zero
+      # How an unavailable entity is rendered. The panel holds the same value and
+      # owns the appearance; the blueprint only needs it to decide whether a tap on
+      # an unavailable button should be dropped.
+      unavailable_behavior: !input unavailable_behavior
+      # What a short tap on a per-entity button does; read by click_opens_details.
+      button_tap_behavior: !input button_tap_behavior
 
       domains_functionality:
         detailed:
@@ -7497,6 +7563,17 @@ actions:
                               page: mem
                               id: custom_buttons_font
                               val: !input custom_buttons_font_size
+                            continue_on_error: true
+                          - *delay_boot
+                          - alias: unavailable_behavior
+                            # Held on the panel rather than passed per call: the home page custom
+                            # buttons are rendered on-device from API subscriptions, with no
+                            # blueprint round trip to carry a parameter.
+                            action: 'esphome.{{ action_prefix }}_component_val'
+                            data:
+                              page: mem
+                              id: unavailable_behavior
+                              val: !input unavailable_behavior
                             continue_on_error: true
                           - *delay_boot
                           - alias: custom_buttons_confirm
@@ -8710,6 +8787,8 @@ actions:
                                         bri: '{{ btn_bri }}'
                                         label: '{{ btn_label if page_constructor else "" }}'
                                         is_page_render: '{{ page_constructor }}'
+                                        icon_only: false
+                                        available: '{{ current_entity_state_available }}'
                                       continue_on_error: true
                                     - if:
                                         - '{{ btn_state }}'
@@ -8731,6 +8810,8 @@ actions:
                                             bri: '{{ btn_bri }}'
                                             label: ""
                                             is_page_render: false
+                                            icon_only: false
+                                            available: '{{ current_entity_state_available }}'
                                           continue_on_error: true
                                     - *delay_default
 
@@ -8885,12 +8966,20 @@ actions:
                               # card instead of performing the short-press action?" — shared by every
                               # place that renders per-entity buttons (Home page, Buttons pages), so a
                               # capability added for one can't silently miss the other.
+                              # Entities without a toggle always open the card. Adjustable entities do so
+                              # only when the user opted in via `button_tap_behavior`; by default a tap
+                              # toggles and the card is reached with a long press (#446).
                               click_opens_details: >-
                                 {{
                                   entity_domain in domains_functionality.detailed_only or
-                                  (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
-                                  (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
-                                  (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+                                  (
+                                    button_tap_behavior == "details_when_adjustable" and
+                                    (
+                                      (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
+                                      (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
+                                      (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+                                    )
+                                  )
                                 }}
 
                           ##### LIGHT State #####
@@ -9882,14 +9971,31 @@ actions:
                                             }}
                                           icon_color: '{{ repeat.item.icon_color_rgb }}'
                                     - *variable_entity
-                                    - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                    # Climate custom buttons are icon-only: a single text component
+                                    # with no `pic`/`bri`/`text` siblings, always toggle, no long
+                                    # click and no detail page. They still go through the shared
+                                    # `button` action (with `icon_only`) so that every per-entity
+                                    # button is rendered by one code path.
+                                    - action: 'esphome.{{ action_prefix }}_button'
                                       data:
-                                        page: mem
-                                        id: command
-                                        txt_list:
-                                          - '{{ repeat.item.component }}.txt="{{ entity.icon }}"'             # Icon
-                                          - '{{ repeat.item.component }}.pco={{ entity.icon_color_rgb565 }}'  # Color
-                                          - 'vis {{ repeat.item.component }},1'                               # Visibility
+                                        page: '{{ pages.climate }}'
+                                        id: '{{ repeat.item.component }}'
+                                        state: false
+                                        icon: '{{ entity.icon }}'
+                                        icon_color: >
+                                          {{
+                                            entity.icon_color
+                                            if entity.icon_color is defined
+                                                and entity.icon_color is list
+                                                and entity.icon_color | count == 3
+                                            else [200, 200, 200]
+                                          }}
+                                        icon_font: 0     # Unused while `icon_only` is set: the font is fixed on the TFT
+                                        bri: ""
+                                        label: ""
+                                        is_page_render: false
+                                        icon_only: true
+                                        available: '{{ entity_state not in ["unavailable"] }}'
                                       continue_on_error: true
                                     - *delay_default
 
@@ -11566,6 +11672,17 @@ actions:
                                     sequence:
                                       - variables:
                                           last_click_button_entity_state: '{{ states(last_click_button.entity) }}'
+                                      # A button the user can see is not actionable while its entity is
+                                      # unavailable. Guarding here covers every surface that calls this
+                                      # anchor: button pages, climate and home custom buttons, hardware
+                                      # buttons. Skipped under "Show as off", where the panel gives the
+                                      # user no indication that the tap would be pointless.
+                                      - condition: >-
+                                          {{
+                                            unavailable_behavior | int(1) == 0 or
+                                            last_click_button_entity_state not in ["unavailable"]
+                                          }}
+                                      - variables:
                                           action_to_call: >-
                                             {% if entity_domain == "cover"
                                                   and last_click_button_entity_state in ["opening", "closing"]

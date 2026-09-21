@@ -92,6 +92,7 @@ enum SubEntityState : uint8_t {
   SUB_STATE_OFF,           ///< Inactive for this domain
   SUB_STATE_ON,            ///< Active for this domain
   SUB_STATE_TRANSITIONAL,  ///< In motion; shown in both polarities
+  SUB_STATE_UNAVAILABLE,   ///< Entity reported unavailable; see UnavailableBehavior
 };
 
 /**
@@ -202,6 +203,16 @@ template<size_t N> inline bool sub_state_in(const char *state, const char *const
 /// @brief States that carry no usable value, for any domain.
 static constexpr const char *SUB_UNUSABLE_STATES[] = {"unknown", "unavailable", "none", "None"};
 
+/// @brief States that mean the entity itself is gone, as opposed to merely
+///        having no usable value yet. "unknown" is deliberately absent: a
+///        `button` or `script` entity that has never run reports "unknown"
+///        while remaining perfectly actionable. "none" and "None" are also
+///        absent: they are not availability states in Home Assistant and can be
+///        legitimate values (e.g. a `select` option). Only "unavailable" is
+///        used, matching the Blueprint render and tap guard, so every surface
+///        agrees on which buttons are unavailable.
+static constexpr const char *SUB_UNAVAILABLE_STATES[] = {"unavailable"};
+
 /**
  * @brief Derive the domain from an entity_id.
  *
@@ -247,7 +258,13 @@ inline SubDomain parse_sub_domain(const char *entity_id) {
  * @return Classification, or SUB_STATE_TRANSITIONAL while moving.
  */
 inline SubEntityState evaluate_sub_state(SubDomain domain, const char *state) {
-  if (state == nullptr || state[0] == '\0' || sub_state_in(state, SUB_UNUSABLE_STATES)) {
+  if (state == nullptr || state[0] == '\0') {
+    return SUB_STATE_NEITHER;  // Nothing received yet, which is not the same as unavailable
+  }
+  if (sub_state_in(state, SUB_UNAVAILABLE_STATES)) {
+    return SUB_STATE_UNAVAILABLE;
+  }
+  if (sub_state_in(state, SUB_UNUSABLE_STATES)) {
     return SUB_STATE_NEITHER;
   }
 

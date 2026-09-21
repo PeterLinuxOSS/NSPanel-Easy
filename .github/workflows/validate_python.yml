@@ -22,7 +22,10 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: step-security/changed-files@v47.0.5
         with:
-          files: '**/*.py'
+          files: |
+            **/*.py
+            .github/requirements.txt
+            .github/workflows/validate_python.yml
 
       - name: Set up Python environment
         if: github.event_name != 'pull_request' || steps.changed.outputs.any_changed == 'true'
@@ -30,9 +33,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install flake8
+      - name: Install flake8 (pinned in .github/requirements.txt)
         if: github.event_name != 'pull_request' || steps.changed.outputs.any_changed == 'true'
-        run: pip install flake8
+        run: pip install -r .github/requirements.txt
 
       - name: flake8 Lint
         if: github.event_name != 'pull_request' || steps.changed.outputs.any_changed == 'true'

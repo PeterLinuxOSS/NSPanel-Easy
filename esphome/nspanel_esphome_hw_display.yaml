@@ -338,6 +338,9 @@ script:
             current_page_id = new_page_id;
           }
 
+          // Page entry resets visibility to the TFT defaults, so no restore is pending
+          unavailable_unhide_pending = false;
+
           // Stop previous constructors
           ESP_LOGV("${TAG_HW_DISPLAY}", "Stop previous constructors");
           stop_page_constructors->execute();

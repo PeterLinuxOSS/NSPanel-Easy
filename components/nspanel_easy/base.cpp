@@ -15,6 +15,13 @@ BlueprintStatusFlags blueprint_status_flags{};
 // Cached device name to avoid repeated lookups and string copies
 std::string cached_device_name;
 
+// Active unavailable-entity behaviour. Defaults to INDICATE so a panel that has
+// not yet received the setting still distinguishes unavailable from off.
+UnavailableBehavior unavailable_behavior = UnavailableBehavior::INDICATE;
+
+// Pending visibility restore after leaving HIDE; see base.h.
+bool unavailable_unhide_pending = false;
+
 // Fire a Home Assistant event for NSPanel HA Blueprint
 void fire_ha_event(const std::string &type, std::map<std::string, std::string> data) {
   // Add device name and type to the event data

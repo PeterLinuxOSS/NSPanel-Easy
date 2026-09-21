@@ -33,6 +33,8 @@ api:
         bri: string           # Brightness level or other dynamic info to be displayed close to the icon.
         label: string         # Main text label for the button.
         is_page_render: bool  # Set to true when called from a full page render, or false for a single button refresh
+        icon_only: bool       # True for single-component buttons (climate custom buttons), which have no `pic`/`bri`/`text` siblings.
+        available: bool       # False when the bound entity reports unavailable; rendering follows the `unavailable_behavior` setting.
       then:
         - lambda: |-
             const uint16_t icon_color_rgb565 = rgbTo565(icon_color);
@@ -46,6 +48,8 @@ api:
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  bri: %s", bri.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  label: %s", label.c_str());
             ESP_LOGV("${TAG_PAGE_BUTTONS}", "  is_page_render: %s", YESNO(is_page_render));
+            ESP_LOGV("${TAG_PAGE_BUTTONS}", "  icon_only: %s", YESNO(icon_only));
+            ESP_LOGV("${TAG_PAGE_BUTTONS}", "  available: %s", YESNO(available));
 
             const uint8_t page_id = get_page_id(page.c_str());
             if (current_page_id != page_id) {
@@ -63,7 +67,9 @@ api:
               static_cast<uint8_t>(icon_font),
               bri.c_str(),
               label.c_str(),
-              is_page_render
+              is_page_render,
+              icon_only,
+              available
             );
 
 esphome:
@@ -84,9 +90,33 @@ script:
       bri: string           # Brightness level or other dynamic info to be displayed close to the icon
       label: string         # Main text label for the button
       is_page_render: bool  # When true, skips picc calls for off-state buttons (Preinitialize already set them)
+      icon_only: bool       # When true, the button is a single text component holding the glyph (climate custom buttons)
+      available: bool       # When false, the bound entity is unavailable; `unavailable_behavior` decides what that looks like
     then:
       - lambda: |-
           if (current_page_id != page_id) return;
+
+          // Availability is resolved once, here, for every button surface that
+          // routes through this script. `indicate` forces the off appearance and
+          // greys the glyph; `hide` suppresses the components entirely.
+          const bool indicate = (!available && unavailable_behavior == UnavailableBehavior::INDICATE);
+          const bool hide = (!available && unavailable_behavior == UnavailableBehavior::HIDE);
+          const bool effective_state = state && !indicate;
+          const uint16_t effective_icon_color = indicate ? Colors::RGB565_GRAY_DARK : icon_color;
+
+          // Icon-only buttons (climate page custom buttons) are a single Nextion text
+          // component holding the glyph. There are no `pic`/`bri`/`text` siblings to
+          // address, and no on/off background, so only the glyph, its color and the
+          // visibility are written. Routing them through this script keeps every
+          // per-entity button on a single render path, so behaviour added here cannot
+          // silently miss one of the surfaces.
+          if (icon_only) {
+            disp1->set_component_visibility(button_id.c_str(), !hide);
+            if (hide) return;
+            disp1->set_component_text(button_id.c_str(), icon.c_str());
+            disp1->set_component_font_color(button_id.c_str(), effective_icon_color);
+            return;
+          }  // if (icon_only)
 
           const uint8_t button_pic_id = (current_theme == ThemeMode::LIGHT) ?
                                         ${THEME_PAGE_BUTTONS_LIGHT_PIC_BUTTON} :
@@ -94,8 +124,8 @@ script:
           const uint8_t button_pressed_pic_id = (current_theme == ThemeMode::LIGHT) ?
                                                 ${THEME_PAGE_BUTTONS_LIGHT_PIC_PRESSED} :
                                                 ${THEME_PAGE_BUTTONS_DARK_PIC_PRESSED};
-          const uint16_t pic_id = state ? button_pressed_pic_id : button_pic_id;
-          const uint16_t fg_color = state ? Colors::RGB565_BLUE_INDIGO : Colors::RGB565_WHITE;
+          const uint16_t pic_id = effective_state ? button_pressed_pic_id : button_pic_id;
+          const uint16_t fg_color = effective_state ? Colors::RGB565_BLUE_INDIGO : Colors::RGB565_WHITE;
 
           // Pre-build component name strings on the stack
           // Nextion object name limit: 14 chars + NUL = 15
@@ -115,9 +145,23 @@ script:
           snprintf(comp_text, sizeof(comp_text), "%stext", btn);
           snprintf(comp_icon, sizeof(comp_icon), "%sicon", btn);
 
+          // Visibility is only ever written when hiding is enabled, or right after
+          // leaving it, so users on the other two behaviours pay nothing for it.
+          // `vis` resets to the TFT default on page entry, so a page render only
+          // needs the hide direction, while a single button refresh must also be
+          // able to bring the button back.
+          if ((unavailable_behavior == UnavailableBehavior::HIDE || unavailable_unhide_pending) &&
+              (hide || !is_page_render)) {
+            disp1->set_component_visibility(comp_pic, !hide);
+            disp1->set_component_visibility(comp_bri, !hide);
+            disp1->set_component_visibility(comp_text, !hide);
+            disp1->set_component_visibility(comp_icon, !hide);
+          }  // if (HIDE || unhide pending)
+          if (hide) return;
+
           // Background images - skip for off-state buttons during page render
           // as Preinitialize already set the correct picc
-          if (!is_page_render || state) {
+          if (!is_page_render || effective_state) {
             disp1->set_component_picc(comp_pic, pic_id);
             disp1->set_component_picc(comp_bri, pic_id);
             disp1->set_component_picc(comp_text, pic_id);
@@ -128,7 +172,7 @@ script:
           if (current_page_id != page_id) return;
           disp1->set_component_foreground_color(comp_bri, fg_color);
           disp1->set_component_foreground_color(comp_text, fg_color);
-          disp1->set_component_font_color(comp_icon, icon_color);
+          disp1->set_component_font_color(comp_icon, effective_icon_color);
           disp1->set_component_font(comp_icon, icon_font);
 
           // Text content
