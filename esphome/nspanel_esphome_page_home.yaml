@@ -15,6 +15,8 @@ substitutions:
   SUN_DEFAULT_LATITUDE: '0'
   SUN_DEFAULT_LONGITUDE: '0'
   ##############################
+  # RGB565 white: the default of every Blueprint colour input on this page.
+  HOME_COLOR_UNSET: '65535'
 
 esphome:
   build_flags:
@@ -38,15 +40,37 @@ globals:
     restore_value: true
     initial_value: 'NAN'
 
-  ##### Date/time formats #####
+  ##### Blueprint-owned colours #####
+  # The `theme_apply` page repaints all of these from the theme palette, and a
+  # display restart drops them back to their design-time value. The Blueprint
+  # pushes each one only once, at boot, so they are shadowed here and restored
+  # by `home_colors_apply`.
+  #
+  # ${HOME_COLOR_UNSET} is the Blueprint's default for every one of these
+  # inputs, so a shadow still holding it means the user never picked a colour
+  # and the theme is left to own the component. A user who picks that exact
+  # value is indistinguishable from one who left the default, which is why the
+  # theme wins there.
   - id: home_date_color
     type: uint16_t
     restore_value: true
-    initial_value: '65535'
+    initial_value: ${HOME_COLOR_UNSET}
   - id: home_time_color
     type: uint16_t
     restore_value: true
-    initial_value: '65535'
+    initial_value: ${HOME_COLOR_UNSET}
+  - id: home_indr_temp_color
+    type: uint16_t
+    restore_value: true
+    initial_value: ${HOME_COLOR_UNSET}
+  - id: home_indr_temp_icon_color
+    type: uint16_t
+    restore_value: true
+    initial_value: ${HOME_COLOR_UNSET}
+  - id: home_outdoor_temp_color
+    type: uint16_t
+    restore_value: true
+    initial_value: ${HOME_COLOR_UNSET}
 
   #### Custom buttons ####
   - id: home_custom_buttons_font_id
@@ -65,6 +89,23 @@ script:
   - id: !extend action_component_color
     then:
       - lambda: |-
+          if (page == "home") {
+            // The base script has already painted the component; all that is
+            // needed here is the shadow the restore paths read back.
+            if (component == "indr_temp") {
+              id(home_indr_temp_color) = color;
+              return;
+            }
+            if (component == "indr_temp_icon") {
+              id(home_indr_temp_icon_color) = color;
+              return;
+            }
+            if (component == "outdoor_temp") {
+              id(home_outdoor_temp_color) = color;
+              return;
+            }
+            return;
+          }  // page == "home"
           if (page != "mem") return;
           if (component == "date_color") {
             id(home_date_color) = color;
@@ -179,6 +220,25 @@ script:
     then:
       - script.execute: sun_coordinates_apply
 
+  - id: home_colors_apply
+    mode: single
+    then:
+      - lambda: |-
+          // Scoped names throughout: this also runs while another page is
+          // showing, right after `theme_apply` has handed the display back.
+          ESP_LOGV("${TAG_PAGE_HOME}", "Restore home page colors");
+          const auto restore = [](const char *component, uint16_t color) {
+            if (color == ${HOME_COLOR_UNSET}) {
+              return;  // Never customised; the theme owns this component
+            }
+            disp1->set_component_font_color(component, color);
+          };
+          restore(hmi::home::TIME.name, id(home_time_color));
+          restore(hmi::home::DATE.name, id(home_date_color));
+          restore(hmi::home::INDR_TEMP.name, id(home_indr_temp_color));
+          restore(hmi::home::INDR_TEMP_ICON.name, id(home_indr_temp_icon_color));
+          restore(hmi::home::OUTDOOR_TEMP.name, id(home_outdoor_temp_color));
+
   - id: !extend page_change
     then:
       - lambda: |-
@@ -204,10 +264,12 @@ script:
           #ifdef NSPANEL_EASY_SUBSCRIBE
           home_button_repaint();
           #endif  // NSPANEL_EASY_SUBSCRIBE
+      - script.execute: home_colors_apply
 
   - id: !extend stop_all
     then:
       - lambda: |-
+          home_colors_apply->stop();
           page_home->stop();  // Page home is an exception to the stop_page_constructor, as it can be constructed in the background
           sun_coordinates_apply->stop();
           sun_state_update->stop();
@@ -241,6 +303,10 @@ script:
           #ifdef NSPANEL_EASY_SUBSCRIBE
           home_weather_resolve();
           #endif  // NSPANEL_EASY_SUBSCRIBE
+
+  - id: !extend theme_applied
+    then:
+      - script.execute: home_colors_apply
 
 sun:
   id: sun_component
