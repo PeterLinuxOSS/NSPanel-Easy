@@ -7569,9 +7569,11 @@ actions:
                             # Held on the panel rather than passed per call: the home page custom
                             # buttons are rendered on-device from API subscriptions, with no
                             # blueprint round trip to carry a parameter.
-                            action: 'esphome.{{ action_prefix }}_unavailable_behavior'
+                            action: 'esphome.{{ action_prefix }}_component_val'
                             data:
-                              behavior: !input unavailable_behavior
+                              page: mem
+                              id: unavailable_behavior
+                              val: !input unavailable_behavior
                             continue_on_error: true
                           - *delay_boot
                           - alias: custom_buttons_confirm

@@ -230,54 +230,6 @@ api:
               target_is_current_page
             );
 
-    # Sets how buttons bound to an unavailable entity are rendered, for every
-    # per-entity button surface at once: button pages, climate page custom
-    # buttons and home page custom buttons. Held on the device because the home
-    # page custom buttons are rendered locally from API subscriptions, with no
-    # blueprint round trip to carry a per-call parameter.
-    - action: unavailable_behavior
-      variables:
-        behavior: int  # 0 = render as off (legacy), 1 = indicate, 2 = hide
-      then:
-        - lambda: |-
-            ESP_LOGV("${TAG_API}", "Action: unavailable_behavior");
-            ESP_LOGV("${TAG_API}", "  behavior: %" PRId32, behavior);
-
-            nspanel_easy::UnavailableBehavior requested;
-            switch (behavior) {
-              case 0:
-                requested = nspanel_easy::UnavailableBehavior::RENDER_AS_OFF;
-                break;
-              case 1:
-                requested = nspanel_easy::UnavailableBehavior::INDICATE;
-                break;
-              case 2:
-                requested = nspanel_easy::UnavailableBehavior::HIDE;
-                break;
-              default:
-                ESP_LOGW("${TAG_API}", "Unknown unavailable_behavior %" PRId32 ", keeping current", behavior);
-                return;
-            }  // switch (behavior)
-
-            if (requested == nspanel_easy::unavailable_behavior) return;
-            // Leaving HIDE: buttons hidden on the current page must be shown again
-            // by the refresh that follows, which is not a page entry.
-            nspanel_easy::unavailable_unhide_pending =
-                (nspanel_easy::unavailable_behavior == nspanel_easy::UnavailableBehavior::HIDE);
-            nspanel_easy::unavailable_behavior = requested;
-
-            // Subscription renders happen on-device and only on state changes, so
-            // a button already rendered under the previous behaviour (including a
-            // hidden one) would keep that appearance until its entity changed.
-            // The setting also arrives after the first renders at boot. Replaying
-            // the stored states applies the new behaviour immediately.
-            // Blueprint-driven buttons are re-rendered by the blueprint's refresh
-            // of the current page, which reads the current setting; leaving HIDE
-            // is covered by unavailable_unhide_pending above.
-            #ifdef NSPANEL_EASY_SUBSCRIBE
-            nspanel_easy::sub_render_all();
-            #endif  // NSPANEL_EASY_SUBSCRIBE
-
 esphome:
   build_flags:
     - -D NSPANEL_EASY_API
@@ -382,7 +334,51 @@ script:
           ESP_LOGV("${TAG_API}", "  page: %s", page.c_str());
           ESP_LOGV("${TAG_API}", "  component: %s", component.c_str());
           ESP_LOGV("${TAG_API}", "  val: %" PRId32, val);
-          if (page == "mem") return;
+          if (page == "mem") {
+            // Sets how buttons bound to an unavailable entity are rendered, for every
+            // per-entity button surface at once: button pages, climate page custom
+            // buttons and home page custom buttons. Held on the device because the home
+            // page custom buttons are rendered locally from API subscriptions, with no
+            // blueprint round trip to carry a per-call parameter.
+            // Values: 0 = render as off (legacy), 1 = indicate, 2 = hide.
+            if (component == "unavailable_behavior") {
+              nspanel_easy::UnavailableBehavior requested;
+              switch (val) {
+                case 0:
+                  requested = nspanel_easy::UnavailableBehavior::RENDER_AS_OFF;
+                  break;
+                case 1:
+                  requested = nspanel_easy::UnavailableBehavior::INDICATE;
+                  break;
+                case 2:
+                  requested = nspanel_easy::UnavailableBehavior::HIDE;
+                  break;
+                default:
+                  ESP_LOGW("${TAG_API}", "Unknown unavailable_behavior %" PRId32 ", keeping current", val);
+                  return;
+              }  // switch (val)
+
+              if (requested == nspanel_easy::unavailable_behavior) return;
+              // Leaving HIDE: buttons hidden on the current page must be shown again
+              // by the refresh that follows, which is not a page entry.
+              nspanel_easy::unavailable_unhide_pending =
+                  (nspanel_easy::unavailable_behavior == nspanel_easy::UnavailableBehavior::HIDE);
+              nspanel_easy::unavailable_behavior = requested;
+
+              // Subscription renders happen on-device and only on state changes, so
+              // a button already rendered under the previous behaviour (including a
+              // hidden one) would keep that appearance until its entity changed.
+              // The setting also arrives after the first renders at boot. Replaying
+              // the stored states applies the new behaviour immediately.
+              // Blueprint-driven buttons are re-rendered by the blueprint's refresh
+              // of the current page, which reads the current setting; leaving HIDE
+              // is covered by unavailable_unhide_pending above.
+              #ifdef NSPANEL_EASY_SUBSCRIBE
+              nspanel_easy::sub_render_all();
+              #endif  // NSPANEL_EASY_SUBSCRIBE
+            }  // if (component == "unavailable_behavior")
+            return;
+          }  // if (page == "mem")
           if (page.empty()) {
             disp1->set_component_value(component.c_str(), val);
             return;
