@@ -206,8 +206,12 @@ static constexpr const char *SUB_UNUSABLE_STATES[] = {"unknown", "unavailable", 
 /// @brief States that mean the entity itself is gone, as opposed to merely
 ///        having no usable value yet. "unknown" is deliberately absent: a
 ///        `button` or `script` entity that has never run reports "unknown"
-///        while remaining perfectly actionable.
-static constexpr const char *SUB_UNAVAILABLE_STATES[] = {"unavailable", "none", "None"};
+///        while remaining perfectly actionable. "none" and "None" are also
+///        absent: they are not availability states in Home Assistant and can be
+///        legitimate values (e.g. a `select` option). Only "unavailable" is
+///        used, matching the Blueprint render and tap guard, so every surface
+///        agrees on which buttons are unavailable.
+static constexpr const char *SUB_UNAVAILABLE_STATES[] = {"unavailable"};
 
 /**
  * @brief Derive the domain from an entity_id.
