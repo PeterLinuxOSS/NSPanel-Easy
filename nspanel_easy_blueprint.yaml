@@ -8710,6 +8710,7 @@ actions:
                                         bri: '{{ btn_bri }}'
                                         label: '{{ btn_label if page_constructor else "" }}'
                                         is_page_render: '{{ page_constructor }}'
+                                        icon_only: false
                                       continue_on_error: true
                                     - if:
                                         - '{{ btn_state }}'
@@ -8731,6 +8732,7 @@ actions:
                                             bri: '{{ btn_bri }}'
                                             label: ""
                                             is_page_render: false
+                                            icon_only: false
                                           continue_on_error: true
                                     - *delay_default
 
