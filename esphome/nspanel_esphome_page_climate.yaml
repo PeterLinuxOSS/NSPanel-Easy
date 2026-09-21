@@ -147,6 +147,16 @@ script:
     then:
       - lambda: |-
           if (new_page_id != get_page_id("climate")) return;
+          #ifdef NSPANEL_EASY_ADDON_CLIMATE_BASE
+          // A touch on the screensaver jumps to the wake-up page inside the Nextion
+          // (`page wakeup_page_id`), so the `wakeup` script, which marks the embedded
+          // thermostat as the entity to draw, never runs on that path. Without the
+          // mark, `page_climate` returns before drawing and the page shows only its
+          // title. Set it here when the page came up with no entity selected.
+          if (id(is_embedded_thermostat) and detailed_entity->state.empty()) {
+            detailed_entity->publish_state("${CLIMATE_EMBEDDED_SENTINEL}");
+          }
+          #endif  // NSPANEL_EASY_ADDON_CLIMATE_BASE
           page_climate->execute();
 
   - id: page_climate
