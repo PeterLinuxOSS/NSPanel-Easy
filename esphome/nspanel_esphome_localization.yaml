@@ -1655,14 +1655,14 @@ substitutions:
         dimming: הכשחה
         dim: ההכ
       meridiem:
-        am: צ"הנפל
-        pm: צ"החא
+        am: "צ\\\"הנפל"
+        pm: "צ\\\"החא"
       light:
-        select_effect: בחר אפקט
+        select_effect: טקפא רחב
       select:
-        please_select: אנא בחר
+        please_select: רחב אנא
       fan:
-        select_preset_mode: בחר מצב מוגדר מראש
+        select_preset_mode: שארמ רדגומ בצמ רחב
     hi:     # Hindi
       bytes_per_char: 3
       weekdays:
