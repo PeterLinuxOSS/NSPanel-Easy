@@ -230,6 +230,34 @@ api:
               target_is_current_page
             );
 
+    # Sets how buttons bound to an unavailable entity are rendered, for every
+    # per-entity button surface at once: button pages, climate page custom
+    # buttons and home page custom buttons. Held on the device because the home
+    # page custom buttons are rendered locally from API subscriptions, with no
+    # blueprint round trip to carry a per-call parameter.
+    - action: unavailable_behavior
+      variables:
+        behavior: int  # 0 = render as off (legacy), 1 = indicate, 2 = hide
+      then:
+        - lambda: |-
+            ESP_LOGV("${TAG_API}", "Action: unavailable_behavior");
+            ESP_LOGV("${TAG_API}", "  behavior: %" PRId32, behavior);
+
+            switch (behavior) {
+              case 0:
+                nspanel_easy::unavailable_behavior = nspanel_easy::UnavailableBehavior::RENDER_AS_OFF;
+                break;
+              case 1:
+                nspanel_easy::unavailable_behavior = nspanel_easy::UnavailableBehavior::INDICATE;
+                break;
+              case 2:
+                nspanel_easy::unavailable_behavior = nspanel_easy::UnavailableBehavior::HIDE;
+                break;
+              default:
+                ESP_LOGW("${TAG_API}", "Unknown unavailable_behavior %" PRId32 ", keeping current", behavior);
+                break;
+            }  // switch (behavior)
+
 esphome:
   build_flags:
     - -D NSPANEL_EASY_API

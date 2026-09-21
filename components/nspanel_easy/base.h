@@ -180,6 +180,26 @@ inline void feed_wdt_delay(uint32_t ms = 5) {
 extern std::string cached_device_name;
 
 /**
+ * @brief How a button bound to an unavailable entity is rendered.
+ *
+ * Applies to every per-entity button surface: the button pages, the climate
+ * page custom buttons and the home page custom buttons. Stored as a single
+ * byte so it can be pushed from the blueprint as a plain integer.
+ *
+ * Only genuinely unavailable entities are affected. An entity reporting
+ * "unknown" is left alone: a `button` or `script` entity that has never run
+ * reports "unknown" for legitimate reasons and is still actionable.
+ */
+enum class UnavailableBehavior : uint8_t {
+  RENDER_AS_OFF = 0,  ///< Legacy behaviour: indistinguishable from an off entity
+  INDICATE = 1,       ///< Forced off, icon and label greyed, click ignored
+  HIDE = 2,           ///< Components hidden, click unreachable
+};
+
+/// @brief Active unavailable-entity behaviour, pushed by the blueprint.
+extern UnavailableBehavior unavailable_behavior;
+
+/**
  * @brief Fire a Home Assistant event for NSPanel HA Blueprint
  *
  * Automatically adds device_name and type to the event data.
