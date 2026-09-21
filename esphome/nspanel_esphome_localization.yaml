@@ -1655,8 +1655,8 @@ substitutions:
         dimming: הכשחה
         dim: ההכ
       meridiem:
-        am: צ"הנפל
-        pm: צ"החא
+        am: "צ\\\"הנפל"
+        pm: "צ\\\"החא"
       light:
         select_effect: בחר אפקט
       select:
