@@ -145,16 +145,18 @@ script:
           snprintf(comp_text, sizeof(comp_text), "%stext", btn);
           snprintf(comp_icon, sizeof(comp_icon), "%sicon", btn);
 
-          // Visibility is only ever written when hiding is enabled, so users on the
-          // other two behaviours pay nothing for it. `vis` resets to the TFT default
-          // on page entry, so a page render only needs the hide direction, while a
-          // single button refresh must also be able to bring the button back.
-          if (unavailable_behavior == UnavailableBehavior::HIDE && (hide || !is_page_render)) {
+          // Visibility is only ever written when hiding is enabled, or right after
+          // leaving it, so users on the other two behaviours pay nothing for it.
+          // `vis` resets to the TFT default on page entry, so a page render only
+          // needs the hide direction, while a single button refresh must also be
+          // able to bring the button back.
+          if ((unavailable_behavior == UnavailableBehavior::HIDE || unavailable_unhide_pending) &&
+              (hide || !is_page_render)) {
             disp1->set_component_visibility(comp_pic, !hide);
             disp1->set_component_visibility(comp_bri, !hide);
             disp1->set_component_visibility(comp_text, !hide);
             disp1->set_component_visibility(comp_icon, !hide);
-          }  // if (HIDE)
+          }  // if (HIDE || unhide pending)
           if (hide) return;
 
           // Background images - skip for off-state buttons during page render

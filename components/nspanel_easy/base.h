@@ -200,6 +200,17 @@ enum class UnavailableBehavior : uint8_t {
 extern UnavailableBehavior unavailable_behavior;
 
 /**
+ * @brief Set when the behaviour changes away from HIDE, cleared on page change.
+ *
+ * Button page renders only write visibility under HIDE. A button hidden on the
+ * page currently shown would otherwise stay hidden after switching to another
+ * behaviour, since the refresh that follows is not a page entry and nothing
+ * restores visibility. While set, refreshes restore it as well. A page change
+ * resets visibility to the TFT defaults, so the flag is no longer needed after it.
+ */
+extern bool unavailable_unhide_pending;
+
+/**
  * @brief Fire a Home Assistant event for NSPanel HA Blueprint
  *
  * Automatically adds device_name and type to the event data.

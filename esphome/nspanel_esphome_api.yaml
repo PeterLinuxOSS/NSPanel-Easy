@@ -260,6 +260,10 @@ api:
             }  // switch (behavior)
 
             if (requested == nspanel_easy::unavailable_behavior) return;
+            // Leaving HIDE: buttons hidden on the current page must be shown again
+            // by the refresh that follows, which is not a page entry.
+            nspanel_easy::unavailable_unhide_pending =
+                (nspanel_easy::unavailable_behavior == nspanel_easy::UnavailableBehavior::HIDE);
             nspanel_easy::unavailable_behavior = requested;
 
             // Subscription renders happen on-device and only on state changes, so
@@ -267,8 +271,9 @@ api:
             // hidden one) would keep that appearance until its entity changed.
             // The setting also arrives after the first renders at boot. Replaying
             // the stored states applies the new behaviour immediately.
-            // Blueprint-driven buttons need nothing here: they are rendered on
-            // page entry, which always reads the current setting.
+            // Blueprint-driven buttons are re-rendered by the blueprint's refresh
+            // of the current page, which reads the current setting; leaving HIDE
+            // is covered by unavailable_unhide_pending above.
             #ifdef NSPANEL_EASY_SUBSCRIBE
             nspanel_easy::sub_render_all();
             #endif  // NSPANEL_EASY_SUBSCRIBE
