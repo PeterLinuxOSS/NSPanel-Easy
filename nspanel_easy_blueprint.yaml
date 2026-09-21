@@ -4657,7 +4657,7 @@ blueprint:
 
 
             *Open details when adjustable* opens the detail page on a tap for covers with position or
-            tilt, fans with speed, oscillation or direction, and lights with brightness or color, so their
+            tilt, fans with speed, oscillation or preset modes, and lights with brightness or color, so their
             controls are one tap away. Entities that are only on/off still toggle.
 
 
