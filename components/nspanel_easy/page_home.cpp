@@ -145,6 +145,18 @@ static void home_button_render(const SubBinding &binding, const SubRuntime &rt, 
     return;
   }
 
+  // An unavailable entity is handled before anything is resolved: the
+  // behaviour is shared with the button pages and the climate custom buttons
+  // through UnavailableBehavior, so the three surfaces cannot drift apart.
+  const bool unavailable = (rt.last_state == SUB_STATE_UNAVAILABLE);
+  if (unavailable && unavailable_behavior == UnavailableBehavior::HIDE) {
+    if (button.shown) {
+      button.shown = false;
+      home_vis_set(binding.component, false);
+    }  // if (button.shown)
+    return;
+  }  // if (unavailable && HIDE)
+
   // SUB_STATE_TRANSITIONAL and SUB_STATE_NEITHER both fall to the inactive
   // appearance, matching how an unavailable entity renders today.
   const bool active = (rt.last_state == SUB_STATE_ON);
@@ -165,6 +177,13 @@ static void home_button_render(const SubBinding &binding, const SubRuntime &rt, 
     ESP_LOGW(TAG, "%s has no icon", binding.component);
     return;
   }
+
+  // Greying happens after resolution so the entity keeps its own icon: the
+  // button reads as "this thing, currently unreachable" rather than as a
+  // generic placeholder.
+  if (unavailable && unavailable_behavior == UnavailableBehavior::INDICATE) {
+    color = Colors::RGB565_GRAY_DARK;
+  }  // if (unavailable && INDICATE)
   const size_t icon_len = strlen(icon);
   if (icon_len >= sizeof(button.icon)) {
     // A truncated copy would leave the strcmp below permanently unequal, so the
@@ -393,7 +412,11 @@ void home_button_repaint() {
     home_button_target(idx, target, sizeof(target));
     nextion_display->set_component_text(target, button.icon);
     nextion_display->set_component_font_color(target, button.color);
-    button.shown = true;
+    // `shown` is deliberately left alone: this repaints text and color only,
+    // while visibility is restored separately by home_vis_resend() from the
+    // mask. A bound button can now be hidden (UnavailableBehavior::HIDE), and
+    // claiming it shown here would stop home_button_render() from ever
+    // unhiding it once its entity returns.
   }  // for each custom button slot
 
   // Temperatures are repainted from the same shadow, for the same reason: the
