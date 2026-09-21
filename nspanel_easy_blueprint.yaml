@@ -4644,6 +4644,33 @@ blueprint:
                   value: '1'
                 - label: Hide
                   value: '2'
+        button_tap_behavior:
+          name: Buttons - Tap behavior
+          description: >-
+            Please select what a short tap does on a button bound to an entity, on the button pages and
+            on the custom buttons of the home page.
+
+
+            *Toggle* performs the entity's action (on/off, open/close) and opens the detail page only
+            with a long press. Entities that cannot be toggled, like climate or media players, always
+            open their detail page.
+
+
+            *Open details when adjustable* opens the detail page on a tap for covers with position or
+            tilt, fans with speed, oscillation or direction, and lights with brightness or color, so their
+            controls are one tap away. Entities that are only on/off still toggle.
+
+
+            *Hardware buttons and the custom buttons on the climate page are not affected.*
+          default: toggle
+          selector:
+            select:
+              multiple: false
+              options:
+                - label: Toggle
+                  value: toggle
+                - label: Open details when adjustable
+                  value: details_when_adjustable
         value_hide_when_zero:
           name: Values - Hide when zero
           description: >-
@@ -6724,6 +6751,8 @@ actions:
       # owns the appearance; the blueprint only needs it to decide whether a tap on
       # an unavailable button should be dropped.
       unavailable_behavior: !input unavailable_behavior
+      # What a short tap on a per-entity button does; read by click_opens_details.
+      button_tap_behavior: !input button_tap_behavior
 
       domains_functionality:
         detailed:
@@ -8935,12 +8964,20 @@ actions:
                               # card instead of performing the short-press action?" — shared by every
                               # place that renders per-entity buttons (Home page, Buttons pages), so a
                               # capability added for one can't silently miss the other.
+                              # Entities without a toggle always open the card. Adjustable entities do so
+                              # only when the user opted in via `button_tap_behavior`; by default a tap
+                              # toggles and the card is reached with a long press (#446).
                               click_opens_details: >-
                                 {{
                                   entity_domain in domains_functionality.detailed_only or
-                                  (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
-                                  (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
-                                  (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+                                  (
+                                    button_tap_behavior == "details_when_adjustable" and
+                                    (
+                                      (entity_domain == "cover" and supported_features | bitwise_and(132) > 0) or
+                                      (entity_domain == "fan" and supported_features | bitwise_and(11) > 0) or
+                                      (entity_domain == "light" and (color_mode_brightness or color_mode_color or color_mode_temp))
+                                    )
+                                  )
                                 }}
 
                           ##### LIGHT State #####
