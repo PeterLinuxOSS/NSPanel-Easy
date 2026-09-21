@@ -8710,6 +8710,7 @@ actions:
                                         bri: '{{ btn_bri }}'
                                         label: '{{ btn_label if page_constructor else "" }}'
                                         is_page_render: '{{ page_constructor }}'
+                                        icon_only: false
                                       continue_on_error: true
                                     - if:
                                         - '{{ btn_state }}'
@@ -8731,6 +8732,7 @@ actions:
                                             bri: '{{ btn_bri }}'
                                             label: ""
                                             is_page_render: false
+                                            icon_only: false
                                           continue_on_error: true
                                     - *delay_default
 
@@ -9882,14 +9884,30 @@ actions:
                                             }}
                                           icon_color: '{{ repeat.item.icon_color_rgb }}'
                                     - *variable_entity
-                                    - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                    # Climate custom buttons are icon-only: a single text component
+                                    # with no `pic`/`bri`/`text` siblings, always toggle, no long
+                                    # click and no detail page. They still go through the shared
+                                    # `button` action (with `icon_only`) so that every per-entity
+                                    # button is rendered by one code path.
+                                    - action: 'esphome.{{ action_prefix }}_button'
                                       data:
-                                        page: mem
-                                        id: command
-                                        txt_list:
-                                          - '{{ repeat.item.component }}.txt="{{ entity.icon }}"'             # Icon
-                                          - '{{ repeat.item.component }}.pco={{ entity.icon_color_rgb565 }}'  # Color
-                                          - 'vis {{ repeat.item.component }},1'                               # Visibility
+                                        page: '{{ pages.climate }}'
+                                        id: '{{ repeat.item.component }}'
+                                        state: false
+                                        icon: '{{ entity.icon }}'
+                                        icon_color: >
+                                          {{
+                                            entity.icon_color
+                                            if entity.icon_color is defined
+                                                and entity.icon_color is list
+                                                and entity.icon_color | count == 3
+                                            else [200, 200, 200]
+                                          }}
+                                        icon_font: 0     # Unused while `icon_only` is set: the font is fixed on the TFT
+                                        bri: ""
+                                        label: ""
+                                        is_page_render: false
+                                        icon_only: true
                                       continue_on_error: true
                                     - *delay_default
 
