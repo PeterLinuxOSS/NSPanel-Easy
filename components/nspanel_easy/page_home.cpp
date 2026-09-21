@@ -412,7 +412,11 @@ void home_button_repaint() {
     home_button_target(idx, target, sizeof(target));
     nextion_display->set_component_text(target, button.icon);
     nextion_display->set_component_font_color(target, button.color);
-    button.shown = true;
+    // `shown` is deliberately left alone: this repaints text and color only,
+    // while visibility is restored separately by home_vis_resend() from the
+    // mask. A bound button can now be hidden (UnavailableBehavior::HIDE), and
+    // claiming it shown here would stop home_button_render() from ever
+    // unhiding it once its entity returns.
   }  // for each custom button slot
 
   // Temperatures are repainted from the same shadow, for the same reason: the
