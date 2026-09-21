@@ -34,11 +34,16 @@ Supported display models: EU (landscape), US portrait, and US landscape.
 Run the relevant checks before proposing a change:
 
 ```bash
-# C++ formatting (config: .clang-format, ColumnLimit 120)
-find components -name '*.h' -o -name '*.cpp' | xargs clang-format --style=file -i
+# One-time setup (Ubuntu/Debian; markdownlint-cli2 requires Node.js/npm)
+sudo apt-get update && sudo apt-get install -y clang-format
+npm install --global markdownlint-cli2
+pip install -r .github/requirements.txt
+pip install esphome  # Intentionally not pinned in requirements.txt
+
+# C++ formatting (config: .clang-format, ColumnLimit 120); same scope as validate_clang_format.yml
+find ./components/nspanel_easy ./.test/unit \( -name '*.h' -o -name '*.c' -o -name '*.cpp' \) -print0 | xargs -0 -r clang-format --style=file -i
 
 # YAML lint (max line length 200)
-pip install -r .github/requirements.txt
 yamllint -c ./.rules/yamllint.yml .
 
 # Python lint
