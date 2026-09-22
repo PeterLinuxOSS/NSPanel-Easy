@@ -8374,6 +8374,38 @@ actions:
                                 target:
                                   entity_id: '{{ nspanel_event.entity }}'
                                 continue_on_error: true
+                          - alias: "fan.set_percentage (speed_index)"
+                            # The display reports which speed button was pressed (0 = off);
+                            # the percentage is resolved here, where the step is known.
+                            conditions:
+                              - '{{ nspanel_event.action == "fan.set_percentage" }}'
+                              - '{{ nspanel_event.key == "speed_index" }}'
+                              - '{{ nspanel_event.value is defined }}'
+                            sequence:
+                              - variables:
+                                  fan_percentage_step: '{{ state_attr(nspanel_event.entity, "percentage_step") | float(0) }}'
+                                  fan_speed_steps: >-
+                                    {{
+                                      (100 / fan_percentage_step) | round(0) | int(0)
+                                      if fan_percentage_step > 0
+                                      else 0
+                                    }}
+                                  fan_speed_index: '{{ nspanel_event.value | int(-1) }}'
+                              - condition: '{{ fan_speed_steps > 0 and fan_speed_index >= 0 and fan_speed_index <= fan_speed_steps }}'
+                              - if: '{{ fan_speed_index == 0 }}'
+                                then:
+                                  - action: fan.turn_off
+                                    target:
+                                      entity_id: '{{ nspanel_event.entity }}'
+                                    continue_on_error: true
+                                else:
+                                  # Integer division, as HA's ordered-list helpers: 3 speeds -> 33, 66, 100
+                                  - action: '{{ nspanel_event.action }}'
+                                    data:
+                                      percentage: '{{ (fan_speed_index * 100) // fan_speed_steps }}'
+                                    target:
+                                      entity_id: '{{ nspanel_event.entity }}'
+                                    continue_on_error: true
                           - alias: "fan.set_preset_mode"
                             # The display sends the index, as a mode name may contain the
                             # separator used by the display protocol.
@@ -9321,6 +9353,10 @@ actions:
                             # so each block below must be gated on its own bit only.
                             variables:
                               fan_speed_available: '{{ fan.steps > 0 and fan.supported_features | bitwise_and(1) > 0 }}'
+                              # Mirrors HA's more-info dialog: up to 3 speeds are shown as buttons
+                              # (off + speeds), more than that as a percentage slider.
+                              fan_speed_buttons: '{{ fan_speed_available and fan.steps <= 3 }}'
+                              fan_speed_slider: '{{ fan_speed_available and not fan_speed_buttons }}'
                               fan_oscillate_available: '{{ fan.supported_features | bitwise_and(2) > 0 }}'
                               fan_preset_mode_available: >
                                 {{
@@ -9369,10 +9405,10 @@ actions:
                                     - fanslider
                                     - button_up
                                     - button_down
-                                  visible: '{{ fan_speed_available }}'
+                                  visible: '{{ fan_speed_slider }}'
                                 continue_on_error: true
                               - *delay_default
-                              - if: '{{ fan_speed_available }}'
+                              - if: '{{ fan_speed_slider }}'
                                 then:
                                   - variables:
                                       color_rgb565:
@@ -9390,6 +9426,89 @@ actions:
                                         - 'button_down.pco={{ color_rgb565.grey_white if fan.percentage > 0 else color_rgb565.grey_dark }}'
                                     continue_on_error: true
                                   - *delay_default
+
+                          - alias: FAN speed buttons
+                            # Reuses the mode_bt1..mode_bt5 slots. Preset modes only take those
+                            # slots when there is no speed control, so both never compete.
+                            # Buttons run top to bottom from the highest speed down to off, and
+                            # each one reports its speed index (0 = off); the percentage is
+                            # resolved by the "fan.set_percentage (speed_index)" action handler.
+                            if: '{{ fan_speed_buttons }}'
+                            then:
+                              - variables:
+                                  speed_buttons_count: '{{ fan.steps + 1 }}'
+                                  # Same rounding as HA's fanPercentageToSpeed
+                                  speed_index_active: >-
+                                    {{
+                                      ((fan.percentage * fan.steps) / 100) | round(0) | int(0)
+                                      if is_state(entity_id, "on")
+                                      else 0
+                                    }}
+
+                              ##### Construction-only: icons, pictures, payloads and visibility #####
+                              - if: '{{ page_constructor }}'
+                                then:
+                                  - action: 'esphome.{{ nspanel_name }}_component_text_list'
+                                    data:
+                                      page: mem
+                                      id: command
+                                      txt_list: >-
+                                        {% set ns = namespace(items=[]) %}
+                                        {% set shift = 1 if states(background_type) | lower is match("light") else 0 %}
+                                        {% for slot in range(1, speed_buttons_count + 1) %}
+                                          {% set speed_index = speed_buttons_count - slot %}
+                                          {% if speed_index == 0 %}
+                                            {% set icon = all_icons["fan-off"] %}
+                                          {% elif fan.steps == 1 %}
+                                            {% set icon = all_icons["fan"] %}
+                                          {% else %}
+                                            {% set icon = all_icons["fan-speed-" ~ speed_index] %}
+                                          {% endif %}
+                                          {% set button = 'mode_bt' ~ slot %}
+                                          {% set base = 114 + ((slot - 1) * 4) %}
+                                          {% set ns.items = ns.items + [button ~ '.font=8'] %}
+                                          {% set ns.items = ns.items + [button ~ '.txt="' ~ icon ~ '"'] %}
+                                          {% set ns.items = ns.items + [button ~ '.pic=' ~ (base + 2 + shift)] %}
+                                          {% set ns.items = ns.items + [button ~ '.pic2=' ~ (base + shift)] %}
+                                          {% set ns.items = ns.items + ['bt_pl' ~ slot ~ '.txt="fan,speed_index,' ~ speed_index ~ '"'] %}
+                                        {% endfor %}
+                                        {{ ns.items }}
+                                    continue_on_error: true
+                                  - *delay_default
+                                  # Payloads are in place before the buttons can be pressed
+                                  - action: 'esphome.{{ nspanel_name }}_components_visibility'
+                                    data:
+                                      page: fan
+                                      ids: >-
+                                        {{ range(1, speed_buttons_count + 1) | map("string") | map("regex_replace", "^", "mode_bt") | list }}
+                                      visible: true
+                                    continue_on_error: true
+                                  - *delay_default
+                                  - action: 'esphome.{{ nspanel_name }}_components_visibility'
+                                    data:
+                                      page: fan
+                                      ids: >-
+                                        {{ range(speed_buttons_count + 1, 6) | map("string") | map("regex_replace", "^", "mode_bt") | list }}
+                                      visible: false
+                                    continue_on_error: true
+                                  - *delay_default
+
+                              ##### Always: confirmed state, which also clears a pending press #####
+                              - action: 'esphome.{{ nspanel_name }}_component_text_list'
+                                data:
+                                  page: mem
+                                  id: command
+                                  txt_list: >-
+                                    {% set ns = namespace(items=[]) %}
+                                    {% for slot in range(1, speed_buttons_count + 1) %}
+                                      {% set active = (speed_buttons_count - slot) == speed_index_active %}
+                                      {% set ns.items = ns.items + ["mode_bt" ~ slot ~ ".val=" ~ (1 if active else 0)] %}
+                                      {% set ns.items = ns.items + ["mode_bt" ~ slot ~ ".pco=65535"] %}  {# nextion.color.white #}
+                                      {% set ns.items = ns.items + ["mode_bt" ~ slot ~ ".pco2=65535"] %}  {# nextion.color.white #}
+                                    {% endfor %}
+                                    {{ ns.items }}
+                                continue_on_error: true
+                              - *delay_default
 
                           - alias: FAN Preset mode
                             if: '{{ fan_preset_mode_available }}'
@@ -9475,9 +9594,11 @@ actions:
                                             {% for mode in preset_modes_raw %}
                                               {% set button = 'mode_bt' ~ loop.index %}
                                               {% set base = 114 + (loop.index0 * 4) %}
+                                              {% set ns.items = ns.items + [button ~ '.font=2'] %}
                                               {% set ns.items = ns.items + [button ~ '.txt="' ~ (mode | replace('"', "")) ~ '"'] %}
                                               {% set ns.items = ns.items + [button ~ '.pic=' ~ (base + 2 + shift)] %}
                                               {% set ns.items = ns.items + [button ~ '.pic2=' ~ (base + shift)] %}
+                                              {% set ns.items = ns.items + ['bt_pl' ~ loop.index ~ '.txt="fan,preset_index,' ~ loop.index0 ~ '"'] %}
                                             {% endfor %}
                                             {{ ns.items }}
                                         continue_on_error: true
@@ -9514,7 +9635,8 @@ actions:
                               - if: '{{ preset_buttons }}'
                                 then:
                                   # The pictures are pushed by the page constructor, so an update
-                                  # only has to move the state of each button.
+                                  # only has to move the state of each button and clear the
+                                  # pending colour a press leaves behind.
                                   - action: 'esphome.{{ nspanel_name }}_component_text_list'
                                     data:
                                       page: mem
@@ -9525,6 +9647,8 @@ actions:
                                         {% for mode in preset_modes_raw %}
                                           {% set active = running and mode == current_preset_mode %}
                                           {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".val=" ~ (1 if active else 0)] %}
+                                          {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".pco=65535"] %}  {# nextion.color.white #}
+                                          {% set ns.items = ns.items + ["mode_bt" ~ loop.index ~ ".pco2=65535"] %}  {# nextion.color.white #}
                                         {% endfor %}
                                         {{ ns.items }}
                                     continue_on_error: true

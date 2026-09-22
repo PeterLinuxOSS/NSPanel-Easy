@@ -107,7 +107,32 @@ script:
               {"value", value.c_str()},
               {"entity", detailed_entity->state.c_str()}
             });
-          }
+          } else if (params[0] == "fan" and params[1] == "speed_index") {
+            // CSV Format: fan,speed_index,<index of the speed button pressed>
+            // 0 is off; the Blueprint resolves the index into a percentage, as only
+            // Home Assistant knows how many speeds the fan has.
+
+            if (params_count != 3) {
+              ESP_LOGW("${TAG_PAGE_FAN}", "Bad params");
+              return;
+            }
+
+            const std::string& value = params[2];
+            const optional<uint8_t> index = parse_number<uint8_t>(value);
+            if (!index.has_value() or *index > 3) {  // Speed buttons are shown for up to 3 speeds
+              ESP_LOGW("${TAG_PAGE_FAN}", "Bad speed index: %s", value.c_str());
+              return;
+            }
+
+            ESP_LOGV("${TAG_PAGE_FAN}", "Fan speed index: %" PRIu8, *index);
+
+            fire_ha_event("action_call", {
+              {"action", "fan.set_percentage"},
+              {"key", "speed_index"},
+              {"value", value.c_str()},
+              {"entity", detailed_entity->state.c_str()}
+            });
+          }  // if (params[0] == "fan" ...)
 
   - id: !extend page_change
     then:
