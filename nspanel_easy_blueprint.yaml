@@ -12246,6 +12246,7 @@ actions:
                               - alias: Short click
                                 conditions:
                                   - '{{ nspanel_event.command == "short_click" }}'
+                                  - '{{ entity_domain not in domains_functionality.detailed_only }}'
                                 sequence:
                                   - *short_press_action_call
 
