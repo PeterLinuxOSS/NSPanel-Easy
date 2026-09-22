@@ -11276,9 +11276,12 @@ actions:
                                 {%- else -%}
                                   {{ s }}
                                 {%- endif -%}
+                              # `remaining` is only updated by HA when the timer is started, paused or finished,
+                              # so it holds the correct value only while paused. While active, the countdown
+                              # must be derived from `finishes_at`, otherwise every refresh resets the display.
                               remaining_raw: '{{ state_attr(entity_id, "remaining") }}'
-                              remaining_secs: >
-                                {%- if timer_state > 0 and remaining_raw is string and remaining_raw | length > 0 -%}
+                              remaining_attr_secs: >
+                                {%- if remaining_raw is string and remaining_raw | length > 0 -%}
                                   {%- set parts = remaining_raw.split(":") -%}
                                   {%- if parts | count == 3 -%}
                                     {{ (parts[0] | int) * 3600 + (parts[1] | int) * 60 + (parts[2] | int) }}
@@ -11287,6 +11290,20 @@ actions:
                                   {%- else -%}
                                     0
                                   {%- endif -%}
+                                {%- else -%}
+                                  0
+                                {%- endif -%}
+                              finishes_at_raw: '{{ state_attr(entity_id, "finishes_at") }}'
+                              remaining_secs: >
+                                {%- if timer_state == 1 -%}
+                                  {%- set finishes_at = as_datetime(finishes_at_raw | string, none) -%}
+                                  {%- if finishes_at is not none -%}
+                                    {{ [((finishes_at - now()).total_seconds()) | round(0, "ceil") | int, 0] | max }}
+                                  {%- else -%}
+                                    {{ remaining_attr_secs }}
+                                  {%- endif -%}
+                                {%- elif timer_state == 2 -%}
+                                  {{ remaining_attr_secs }}
                                 {%- else -%}
                                   0
                                 {%- endif -%}
